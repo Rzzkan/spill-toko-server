@@ -1,0 +1,5 @@
+config.php
+*.pem
+*.log
+.DS_Store
+Thumbs.db
