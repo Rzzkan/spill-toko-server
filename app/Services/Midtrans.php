@@ -91,9 +91,9 @@ class Midtrans
             if ($o->plan === 'lifetime') {
                 $c->update(['lifetime' => true]);
             } else {
-                $days = (int) (Plans::find($o->plan)['days'] ?? 30);
+                $days = (int) (Plans::find($o->plan)['days'] ?? ['monthly' => 30, 'yearly' => 365][$o->plan] ?? 30);
                 $base = max(time(), $c->paid_until?->getTimestamp() ?? 0);
-                $c->update(['paid_until' => \Illuminate\Support\Carbon::createFromTimestampUTC($base + $days * 86400)]);
+                $c->update(['paid_until' => \Illuminate\Support\Carbon::createFromTimestampUTC($base + $days * 86400), 'paid_plan' => $o->plan]);
             }
         });
     }

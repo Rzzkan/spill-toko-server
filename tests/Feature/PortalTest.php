@@ -35,7 +35,7 @@ class PortalTest extends TestCase
     {
         $this->webLogin()->assertOk()->assertJsonPath('redirect', url('/akun'));
         $this->assertSame(1, Customer::count());
-        $this->get('/akun')->assertOk()->assertSee('Trial')->assertSee('web@user.test')->assertSee('Berlangganan Bulanan');
+        $this->get('/akun')->assertOk()->assertSee('Trial')->assertSee('web@user.test')->assertSee('Pilih Bulanan');
     }
 
     public function test_wrong_nonce_is_rejected(): void
@@ -50,7 +50,7 @@ class PortalTest extends TestCase
         Settings::set('midtrans.server_key', 'SB-Mid-server-1');
         Http::fake(['*snap/v1/transactions' => Http::response(['token' => 'T', 'redirect_url' => 'https://pay.test/snap'], 201)]);
         $this->post('/akun/bayar', ['plan' => 'monthly'])->assertRedirect('https://pay.test/snap');
-        $this->assertDatabaseHas('orders', ['plan' => 'monthly', 'amount' => 25000, 'status' => 'pending', 'snap_token' => 'T']);
+        $this->assertDatabaseHas('orders', ['plan' => 'monthly', 'amount' => 24000, 'status' => 'pending', 'snap_token' => 'T']);
         $this->post('/akun/bayar', ['plan' => 'nope'])->assertSessionHas('error');
     }
 
@@ -59,9 +59,49 @@ class PortalTest extends TestCase
         $this->webLogin()->assertOk();
         Customer::query()->update(['lifetime' => true]);
         Settings::set('midtrans.server_key', 'SB-Mid-server-1');
-        $this->get('/akun')->assertOk()->assertSee('Selamanya')->assertSee('Anda sudah Lifetime');
+        $this->get('/akun')->assertOk()->assertSee('Selamanya')->assertSee('Anda memiliki akses Lifetime');
         $this->post('/akun/bayar', ['plan' => 'lifetime'])->assertSessionHas('error');
         $this->assertSame(0, Order::count());
+    }
+
+    public function test_buy_link_guest_goes_login_then_straight_to_midtrans(): void
+    {
+        Settings::set('google.client_id', 'cid.apps.googleusercontent.com');
+        Settings::set('midtrans.server_key', 'SB-Mid-server-1');
+        Http::fake(['*snap/v1/transactions' => Http::response(['token' => 'T', 'redirect_url' => 'https://pay.test/yr'], 201)]);
+        $this->get('/beli/yearly')->assertRedirect('/masuk');
+        $this->get('/masuk')->assertOk()->assertSee('dipilih');
+        $this->webLogin()->assertOk()->assertJsonPath('redirect', url('/beli-lanjut'));
+        $this->get('/beli-lanjut')->assertRedirect('https://pay.test/yr');
+        $this->assertDatabaseHas('orders', ['plan' => 'yearly', 'amount' => 249000, 'status' => 'pending']);
+    }
+
+    public function test_buy_link_when_logged_in_and_unknown_plan(): void
+    {
+        $this->webLogin()->assertOk();
+        Settings::set('midtrans.server_key', 'SB-Mid-server-1');
+        Http::fake(['*snap/v1/transactions' => Http::response(['token' => 'T', 'redirect_url' => 'https://pay.test/m'], 201)]);
+        $this->get('/beli/monthly')->assertRedirect(route('portal.buy.go'));
+        $this->get('/beli-lanjut')->assertRedirect('https://pay.test/m');
+        $this->get('/beli/zzz')->assertRedirect('/#harga');
+    }
+
+    public function test_landing_page_shows_prices_and_buy_links(): void
+    {
+        $this->get('/')->assertOk()->assertSee('Rp24.000', false)->assertSee('Rp49.000', false)->assertSee('Rp249.000', false)->assertSee('Rp549.000', false)
+            ->assertSee('/beli/monthly', false)->assertSee('/beli/yearly', false)->assertSee('3 hari', false);
+    }
+
+    public function test_yearly_payment_extends_365_days_and_labels_tier(): void
+    {
+        $this->webLogin()->assertOk();
+        $c = Customer::first();
+        $o = Order::query()->create(['order_id' => 'ST-Y', 'customer_id' => $c->id, 'plan' => 'yearly', 'amount' => 249000, 'status' => 'pending']);
+        \App\Services\Midtrans::markPaid('ST-Y', 'qris', '{}');
+        $c = $c->fresh();
+        $this->assertSame('yearly', $c->paid_plan);
+        $this->assertTrue($c->paid_until->greaterThan(now()->addDays(364)));
+        $this->get('/akun')->assertSee('Tahunan');
     }
 
     public function test_logout_clears_session(): void

@@ -18,10 +18,15 @@ class SettingDefs
     {
         return [
             // ---- langganan ----
-            'trial_days'          => ['group' => 'langganan', 'label' => 'Lama trial (hari)', 'type' => 'number', 'default' => '7', 'help' => 'Berlaku untuk akun baru. Isi 0 untuk tanpa trial.'],
-            'plan.monthly.price'  => ['group' => 'langganan', 'label' => 'Harga paket Bulanan (Rp)', 'type' => 'number', 'default' => '25000', 'min' => 1000],
+            'trial_days'          => ['group' => 'langganan', 'label' => 'Lama trial (hari)', 'type' => 'number', 'default' => '3', 'help' => 'Berlaku untuk akun baru. Isi 0 untuk tanpa trial.'],
+            'plan.monthly.price'  => ['group' => 'langganan', 'label' => 'Harga Bulanan (Rp)', 'type' => 'number', 'default' => '24000', 'min' => 1000, 'help' => 'Harga yang benar-benar ditagih.'],
+            'plan.monthly.original' => ['group' => 'langganan', 'label' => 'Harga coret Bulanan (Rp)', 'type' => 'number', 'default' => '49000', 'help' => 'Hanya tampilan (dicoret). 0 = tidak ditampilkan.'],
             'plan.monthly.days'   => ['group' => 'langganan', 'label' => 'Masa aktif Bulanan (hari)', 'type' => 'number', 'default' => '30', 'min' => 1],
-            'plan.lifetime.price' => ['group' => 'langganan', 'label' => 'Harga paket Lifetime (Rp)', 'type' => 'number', 'default' => '200000', 'min' => 1000, 'help' => 'Harga baru berlaku untuk transaksi berikutnya.'],
+            'plan.yearly.price'   => ['group' => 'langganan', 'label' => 'Harga Tahunan (Rp)', 'type' => 'number', 'default' => '249000', 'min' => 1000],
+            'plan.yearly.original' => ['group' => 'langganan', 'label' => 'Harga coret Tahunan (Rp)', 'type' => 'number', 'default' => '549000', 'help' => 'Hanya tampilan (dicoret). 0 = tidak ditampilkan.'],
+            'plan.yearly.days'    => ['group' => 'langganan', 'label' => 'Masa aktif Tahunan (hari)', 'type' => 'number', 'default' => '365', 'min' => 1],
+            'plan.lifetime.enabled' => ['group' => 'langganan', 'label' => 'Jual paket Lifetime', 'type' => 'bool', 'default' => '0', 'help' => 'Opsional. Pengguna Lifetime lama tetap aktif walau dimatikan; admin tetap bisa memberi Lifetime manual.'],
+            'plan.lifetime.price' => ['group' => 'langganan', 'label' => 'Harga Lifetime (Rp)', 'type' => 'number', 'default' => '200000', 'min' => 1000, 'help' => 'Dipakai bila paket Lifetime dijual.'],
             'license_ttl_hours'   => ['group' => 'langganan', 'label' => 'Batas offline extension (jam)', 'type' => 'number', 'default' => '72', 'min' => 1, 'help' => 'Extension harus terhubung ke server lagi paling lambat sekian jam.'],
             'app.chrome_store_url' => ['group' => 'langganan', 'label' => 'Link Chrome Web Store', 'type' => 'url', 'default' => '', 'help' => 'Dipakai tombol "Pasang extension" di halaman depan.'],
 

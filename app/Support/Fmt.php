@@ -18,7 +18,7 @@ class Fmt
     {
         return match ($access['plan']) {
             'lifetime' => ['Lifetime', 'brand'],
-            'monthly' => ['Bulanan', 'success'],
+            'monthly' => [($access['tier'] ?? 'monthly') === 'yearly' ? 'Tahunan' : 'Bulanan', 'success'],
             'trial' => ['Trial', 'warning'],
             default => ['Berakhir', 'error'],
         };

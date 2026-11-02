@@ -22,7 +22,8 @@ class PortalController extends Controller
         if ($r->session()->has('customer_id')) return redirect()->route('portal.account');
         $nonce = Str::random(32);
         $r->session()->put('portal_nonce', $nonce);
-        return view('portal.login', ['clientId' => (string) Settings::get('google.client_id', ''), 'nonce' => $nonce]);
+        return view('portal.login', ['clientId' => (string) Settings::get('google.client_id', ''), 'nonce' => $nonce,
+            'buying' => Plans::find((string) $r->session()->get('buy_plan', ''))]);
     }
 
     public function loginGoogle(Request $r)
@@ -36,7 +37,7 @@ class PortalController extends Controller
         $c = Customer::fromGoogle($g);
         $r->session()->regenerate();
         $r->session()->put('customer_id', $c->id);
-        return response()->json(['redirect' => route('portal.account')]);
+        return response()->json(['redirect' => $r->session()->has('buy_plan') ? route('portal.buy.go') : route('portal.account')]);
     }
 
     public function account(Request $r)
@@ -49,23 +50,43 @@ class PortalController extends Controller
         ]);
     }
 
-    public function pay(Request $r)
+    /** Buat order + transaksi Midtrans lalu arahkan ke halaman bayar. Galat -> kembali dengan pesan. */
+    private function checkout(Customer $c, string $plan, string $errorTo)
     {
-        $c = $r->attributes->get('customer');
-        $plan = (string) $r->input('plan');
         $p = Plans::find($plan);
-        if (!$p) return back()->with('error', 'Paket tidak dikenal.');
-        if ($plan === 'lifetime' && $c->lifetime) return back()->with('error', 'Akun ini sudah Lifetime.');
+        if (!$p) return redirect($errorTo)->with('error', 'Paket tidak dikenal.');
+        if ($plan === 'lifetime' && $c->lifetime) return redirect($errorTo)->with('error', 'Akun ini sudah Lifetime.');
+        if ($c->lifetime) return redirect($errorTo)->with('error', 'Akun Anda sudah Lifetime, tidak perlu berlangganan.');
         $order = Order::query()->create(['order_id' => 'ST-' . time() . '-' . Str::lower(Str::random(8)), 'customer_id' => $c->id,
             'plan' => $plan, 'amount' => $p['price'], 'status' => 'pending']);
         try {
             $t = Midtrans::createTransaction($order, $c->email, (string) $c->name, $p['label']);
         } catch (ApiException $e) {
             $order->update(['status' => 'failed']);
-            return back()->with('error', $e->getMessage());
+            return redirect($errorTo)->with('error', $e->getMessage());
         }
         $order->update(['snap_token' => $t['token']]);
         return redirect()->away($t['redirect_url']);
+    }
+
+    public function pay(Request $r)
+    {
+        return $this->checkout($r->attributes->get('customer'), (string) $r->input('plan'), route('portal.account'));
+    }
+
+    /** Tombol harga di landing page: /beli/{plan} -> (login Google bila belum) -> langsung ke Midtrans. */
+    public function buy(Request $r, string $plan)
+    {
+        if (!Plans::find($plan)) return redirect('/#harga');
+        $r->session()->put('buy_plan', $plan);
+        return $r->session()->has('customer_id') ? redirect()->route('portal.buy.go') : redirect()->route('portal.login');
+    }
+
+    public function buyGo(Request $r)
+    {
+        $plan = (string) $r->session()->pull('buy_plan', '');
+        if ($plan === '') return redirect()->route('portal.account');
+        return $this->checkout($r->attributes->get('customer'), $plan, route('portal.account'));
     }
 
     public function logout(Request $r)

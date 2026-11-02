@@ -36,21 +36,21 @@
 <h2 class="mt-8 text-lg font-semibold">{{ $a['plan'] === 'lifetime' ? 'Paket Anda' : ($a['plan'] === 'monthly' ? 'Perpanjang langganan' : 'Pilih paket') }}</h2>
 @if (!$canPay)<div class="mt-3 rounded-lg bg-warning-50 p-4 text-sm text-warning-700">Pembayaran belum tersedia. Hubungi admin.</div>@endif
 <div class="mt-3 grid gap-4 sm:grid-cols-2">
-    <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-theme-sm">
-        <div class="text-sm text-gray-500">{{ $plans['monthly']['label'] }}</div>
-        <div class="mt-1 text-2xl font-bold">{{ Fmt::rp($plans['monthly']['price']) }}<span class="text-sm font-normal text-gray-500"> / {{ $plans['monthly']['days'] }} hari</span></div>
-        <p class="mt-2 text-sm text-gray-500">{{ $a['plan'] === 'monthly' ? 'Ditambahkan setelah masa aktif saat ini berakhir.' : 'Semua fitur riset + analisis AI.' }}</p>
-        <form method="POST" action="{{ route('portal.pay') }}" class="mt-4">@csrf<input type="hidden" name="plan" value="monthly">
-            <button @disabled(!$canPay || $a['plan'] === 'lifetime') class="w-full rounded-lg bg-brand-500 px-4 py-3 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-50">{{ $a['plan'] === 'monthly' ? 'Perpanjang 1 periode' : 'Berlangganan Bulanan' }}</button></form>
-    </div>
-    <div class="rounded-2xl border border-brand-300 bg-white p-6 shadow-theme-sm">
-        <div class="text-sm text-gray-500">{{ $plans['lifetime']['label'] }}</div>
-        <div class="mt-1 text-2xl font-bold">{{ Fmt::rp($plans['lifetime']['price']) }}<span class="text-sm font-normal text-gray-500"> sekali bayar</span></div>
-        <p class="mt-2 text-sm text-gray-500">Akses selamanya + pembaruan gratis.</p>
-        <form method="POST" action="{{ route('portal.pay') }}" class="mt-4">@csrf<input type="hidden" name="plan" value="lifetime">
-            <button @disabled(!$canPay || $c->lifetime) class="w-full rounded-lg bg-gray-900 px-4 py-3 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50">{{ $c->lifetime ? 'Anda sudah Lifetime' : 'Beli Lifetime' }}</button></form>
-    </div>
+    @foreach (['monthly', 'yearly'] as $k)
+        @php $pl = $plans[$k]; $disc = \App\Services\Plans::discount($pl); @endphp
+        <div class="rounded-2xl border {{ $k === 'yearly' ? 'border-brand-300' : 'border-gray-200' }} bg-white p-6 shadow-theme-sm">
+            <div class="flex items-center justify-between text-sm text-gray-500"><span>{{ $pl['label'] }}</span>@if ($disc)<span class="rounded-full bg-success-50 px-2 py-0.5 text-xs font-medium text-success-700">Hemat {{ $disc }}%</span>@endif</div>
+            <div class="mt-1 flex items-baseline gap-2">
+                @if ($pl['original'] > $pl['price'])<s class="text-sm text-gray-400">{{ Fmt::rp($pl['original']) }}</s>@endif
+                <span class="text-2xl font-bold">{{ Fmt::rp($pl['price']) }}</span><span class="text-sm font-normal text-gray-500">/ {{ $k === 'yearly' ? 'tahun' : 'bulan' }}</span>
+            </div>
+            <p class="mt-2 text-sm text-gray-500">{{ $a['plan'] === 'monthly' ? 'Ditambahkan setelah masa aktif saat ini berakhir.' : 'Semua fitur riset + analisis AI.' }}</p>
+            <form method="POST" action="{{ route('portal.pay') }}" class="mt-4">@csrf<input type="hidden" name="plan" value="{{ $k }}">
+                <button @disabled(!$canPay || $a['plan'] === 'lifetime') class="w-full rounded-lg {{ $k === 'yearly' ? 'bg-gray-900 hover:bg-gray-800' : 'bg-brand-500 hover:bg-brand-600' }} px-4 py-3 text-sm font-medium text-white disabled:opacity-50">{{ $a['plan'] === 'monthly' ? 'Perpanjang ' . $pl['label'] : 'Pilih ' . $pl['label'] }}</button></form>
+        </div>
+    @endforeach
 </div>
+@if ($c->lifetime)<p class="mt-3 text-sm text-gray-500">Anda memiliki akses Lifetime — tidak perlu berlangganan.</p>@endif
 
 <h2 class="mt-8 text-lg font-semibold">Riwayat pembayaran</h2>
 <div class="mt-3 overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow-theme-sm">

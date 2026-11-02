@@ -28,7 +28,7 @@ class ApiController extends Controller
 
     private function plansPublic(): array
     {
-        return collect(Plans::all())->map(fn ($p) => ['label' => $p['label'], 'price' => $p['price'], 'days' => $p['days']])->all();
+        return collect(Plans::all())->map(fn ($p) => ['label' => $p['label'], 'price' => $p['price'], 'original' => $p['original'] ?? 0, 'days' => $p['days']])->all();
     }
 
     /** Dukungan gaya lama: /api/index.php?r=plans */

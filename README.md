@@ -1,6 +1,6 @@
 # Spill Toko — Server (Laravel + TailAdmin)
 
-Backend SaaS untuk extension Chrome **Spill Toko**: login Google, langganan (trial 7 hari · Bulanan · Lifetime), pembayaran Midtrans, analisis AI lewat kenari.id, dan panel admin bergaya TailAdmin.
+Backend SaaS untuk extension Chrome **Spill Toko**: login Google, langganan (trial 3 hari · Bulanan · Lifetime), pembayaran Midtrans, analisis AI lewat kenari.id, dan panel admin bergaya TailAdmin.
 
 - **Laravel 12** (PHP 8.2+), MySQL/MariaDB, Blade + Alpine + Tailwind v4 (TailAdmin free), ApexCharts.
 - **Semua konfigurasi provider diatur dari dashboard admin** (Pengaturan): Google Client ID, Midtrans (Server Key, mode), kenari.id (API key, model, kuota, prompt). Disimpan di database; kunci rahasia dienkripsi dengan `APP_KEY`. File `.env` hanya berisi koneksi database & `APP_KEY`.

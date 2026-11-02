@@ -26,7 +26,7 @@ class ApiTest extends TestCase
 
     public function test_plans_and_unknown_route(): void
     {
-        $this->getJson('/api/index.php?r=plans')->assertOk()->assertJsonPath('plans.monthly.price', 25000)->assertJsonPath('trial_days', 7);
+        $this->getJson('/api/index.php?r=plans')->assertOk()->assertJsonPath('plans.monthly.price', 24000)->assertJsonPath('trial_days', 3);
         $this->getJson('/api/index.php?r=nope')->assertStatus(404)->assertJsonPath('error', 'Endpoint tidak ditemukan');
         $this->getJson('/api/index.php?r=me')->assertStatus(401);
     }
@@ -59,13 +59,13 @@ class ApiTest extends TestCase
         $oid = $r->json('order_id');
         $this->assertSame('https://pay.test/x', $r->json('redirect_url'));
 
-        $note = ['order_id' => $oid, 'status_code' => '200', 'gross_amount' => '25000.00'];
-        $note['signature_key'] = hash('sha512', $oid . '200' . '25000.00' . 'SB-Mid-server-xyz');
+        $note = ['order_id' => $oid, 'status_code' => '200', 'gross_amount' => '24000.00'];
+        $note['signature_key'] = hash('sha512', $oid . '200' . '24000.00' . 'SB-Mid-server-xyz');
         $this->postJson('/api/index.php?r=midtrans/notify', array_merge($note, ['signature_key' => 'salah']))->assertStatus(403);
 
         Http::fake(['*/v2/*/status' => fn ($req) => Http::response(str_contains($req->url(), 'ST-2')
             ? ['order_id' => 'ST-2', 'status_code' => '200', 'gross_amount' => '1.00', 'transaction_status' => 'settlement']
-            : ['order_id' => $oid, 'status_code' => '200', 'gross_amount' => '25000.00', 'transaction_status' => 'settlement', 'payment_type' => 'qris'])]);
+            : ['order_id' => $oid, 'status_code' => '200', 'gross_amount' => '24000.00', 'transaction_status' => 'settlement', 'payment_type' => 'qris'])]);
         $this->postJson('/api/index.php?r=midtrans/notify', $note)->assertOk();
         $until = Customer::first()->paid_until;
         $this->assertNotNull($until);

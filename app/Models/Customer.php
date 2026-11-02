@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Customer extends Model
 {
-    protected $fillable = ['google_sub', 'email', 'name', 'picture', 'trial_ends_at', 'paid_until', 'lifetime', 'last_login_at'];
+    protected $fillable = ['google_sub', 'email', 'name', 'picture', 'trial_ends_at', 'paid_until', 'paid_plan', 'lifetime', 'last_login_at'];
 
     protected function casts(): array
     {
@@ -36,7 +36,7 @@ class Customer extends Model
         $paid = $this->paid_until?->getTimestamp() ?? 0;
         $trial = $this->trial_ends_at?->getTimestamp() ?? 0;
         if ($this->lifetime) return ['plan' => 'lifetime', 'access' => true, 'until' => null];
-        if ($paid > $now) return ['plan' => 'monthly', 'access' => true, 'until' => $paid];
+        if ($paid > $now) return ['plan' => 'monthly', 'access' => true, 'until' => $paid, 'tier' => $this->paid_plan ?: 'monthly'];
         if ($trial > $now) return ['plan' => 'trial', 'access' => true, 'until' => $trial];
         return ['plan' => 'expired', 'access' => false, 'until' => max($paid, $trial) ?: null];
     }
