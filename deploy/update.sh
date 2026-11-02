@@ -1,16 +1,22 @@
 #!/usr/bin/env bash
-# Memperbarui aplikasi di server dari repo git (dijalankan sebagai root di folder repo spill-toko-server):
+# Perbarui aplikasi dari repo git (sebagai root di folder repo):
 #   cd ~/spill-toko-server && git pull --ff-only && sudo bash deploy/update.sh
-# config.php, kunci lisensi, dan data tidak berubah. Skema DB hanya menambah tabel yang belum ada.
+# .env, APP_KEY, kunci lisensi, dan data (termasuk semua pengaturan dashboard) tidak berubah.
 set -euo pipefail
 APP_DIR="${APP_DIR:-/var/www/spilltoko}"
 SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-[ -f "$APP_DIR/config.php" ] || { echo "config.php tidak ada di $APP_DIR, jalankan setup.sh dulu" >&2; exit 1; }
-DB_NAME="$(php -r '$c=require $argv[1]; preg_match("/dbname=([^;]+)/",$c["db"]["dsn"],$m); echo $m[1];' "$APP_DIR/config.php")"
-rsync -a --delete --exclude 'config.php' --exclude '.git' --exclude 'deploy' --exclude 'tools/*.pem' "$SRC/" "$APP_DIR/"
-cp "$SRC"/deploy/*.sh "$SRC"/deploy/make-config.php "$APP_DIR/deploy/" && chmod +x "$APP_DIR"/deploy/*.sh
-mysql "$DB_NAME" < "$APP_DIR/schema.sql"
-chown -R root:www-data "$APP_DIR"; chmod 640 "$APP_DIR/config.php"
+[ -f "$APP_DIR/.env" ] || { echo ".env tidak ada di $APP_DIR, jalankan setup.sh dulu" >&2; exit 1; }
+rsync -a --delete --exclude '.env' --exclude '.git' --exclude 'storage/' --exclude 'vendor/' --exclude 'node_modules/' --exclude 'tests/' "$SRC/" "$APP_DIR/"
+cd "$APP_DIR"
+php artisan down --retry=10 >/dev/null 2>&1 || true
+COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --optimize-autoloader --no-interaction --no-progress
+php artisan migrate --force --no-interaction
+php artisan optimize:clear >/dev/null
+php artisan config:cache && php artisan route:cache && php artisan view:cache
+chown -R root:www-data "$APP_DIR"; chmod 640 "$APP_DIR/.env"
+chown -R www-data:www-data "$APP_DIR/storage" "$APP_DIR/bootstrap/cache"
+chmod +x "$APP_DIR"/deploy/*.sh
+php artisan up >/dev/null 2>&1 || true
 PHPV="$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;')"
 systemctl reload "php${PHPV}-fpm"
 echo "Update selesai ($(date '+%F %T'))."

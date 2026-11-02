@@ -1,14 +1,16 @@
 #!/usr/bin/env bash
-# Penyiapan server Spill Toko di VPS Ubuntu/Debian (nginx + PHP-FPM + MariaDB + SSL Let's Encrypt).
-# Aman dijalankan ulang (idempoten): tidak mengubah situs lain, tidak mengganti kunci lisensi yang sudah ada.
+# Penyiapan Spill Toko (Laravel + TailAdmin) di VPS Ubuntu/Debian: nginx + PHP-FPM + MariaDB + SSL Let's Encrypt.
+# Aman dijalankan ulang (idempoten): tidak mengubah situs lain, tidak mengganti APP_KEY / kunci lisensi yang sudah ada.
 #
 # Pemakaian (sebagai root):
-#   DOMAIN=spill.delova.id EMAIL=kamu@gmail.com ADMIN_PASS='password-admin' bash deploy/setup.sh
-# Opsional: GOOGLE_CLIENT_ID, MIDTRANS_SERVER_KEY, MIDTRANS_PROD=1, APP_DIR, DB_NAME, DB_USER, SKIP_SSL=1, CHROME_STORE_URL
+#   DOMAIN=spill.delova.id EMAIL=kamu@gmail.com ADMIN_EMAIL=kamu@gmail.com ADMIN_PASS='password-admin' bash deploy/setup.sh
+# Opsional: APP_DIR, DB_NAME, DB_USER, SKIP_SSL=1
+# Google / Midtrans / kenari.id TIDAK diisi di sini — semuanya diatur dari dashboard admin (Pengaturan).
 set -euo pipefail
 
 DOMAIN="${DOMAIN:?isi DOMAIN, mis. DOMAIN=spill.delova.id}"
 EMAIL="${EMAIL:-}"
+ADMIN_EMAIL="${ADMIN_EMAIL:-$EMAIL}"
 APP_DIR="${APP_DIR:-/var/www/spilltoko}"
 DB_NAME="${DB_NAME:-spilltoko}"
 DB_USER="${DB_USER:-spilltoko}"
@@ -19,54 +21,87 @@ die() { printf '\033[1;31mGAGAL: %s\033[0m\n' "$*" >&2; exit 1; }
 [ "$(id -u)" -eq 0 ] || die "jalankan sebagai root (sudo -i)"
 [[ "$DOMAIN" =~ ^[a-zA-Z0-9.-]+$ ]] || die "DOMAIN tidak valid"
 [[ "$DB_NAME$DB_USER" =~ ^[a-zA-Z0-9_]+$ ]] || die "DB_NAME/DB_USER hanya boleh huruf, angka, underscore"
-[ -f "$SRC/schema.sql" ] || die "jalankan dari folder spill-toko-server (schema.sql tidak ditemukan)"
+[ -f "$SRC/artisan" ] || die "jalankan dari folder repo (file artisan tidak ditemukan)"
 [ "${SKIP_SSL:-0}" = "1" ] || [ -n "$EMAIL" ] || die "isi EMAIL untuk sertifikat SSL (atau SKIP_SSL=1)"
+[ -f "$APP_DIR/.env" ] || [[ "$ADMIN_EMAIL" == *@* ]] || die "isi ADMIN_EMAIL (email untuk login admin)"
 
 say "Memeriksa web server di port 80"
 LISTENER="$(ss -ltnp 2>/dev/null | awk '$4 ~ /:80$/ {print $NF}' | head -1 || true)"
 if [ -n "$LISTENER" ] && ! grep -q nginx <<<"$LISTENER"; then
-  die "port 80 dipakai bukan nginx ($LISTENER). Pakai panduan manual Apache/cPanel di deploy/README.md agar situs lain tidak terganggu."
+  die "port 80 dipakai bukan nginx ($LISTENER). Pakai panduan manual di deploy/README.md agar situs lain tidak terganggu."
 fi
 
 say "Memasang paket yang belum ada"
 export DEBIAN_FRONTEND=noninteractive
 NEED=()
-for p in nginx mariadb-server php-fpm php-mysql php-curl php-mbstring rsync curl; do dpkg -s "$p" >/dev/null 2>&1 || NEED+=("$p"); done
+for p in nginx mariadb-server php-fpm php-cli php-mysql php-curl php-mbstring php-xml php-zip unzip rsync curl openssl; do dpkg -s "$p" >/dev/null 2>&1 || NEED+=("$p"); done
 [ "${SKIP_SSL:-0}" = "1" ] || for p in certbot python3-certbot-nginx; do dpkg -s "$p" >/dev/null 2>&1 || NEED+=("$p"); done
 if [ ${#NEED[@]} -gt 0 ]; then apt-get update -qq && apt-get install -y -qq "${NEED[@]}"; fi
 systemctl enable --now mariadb nginx >/dev/null 2>&1 || true
 
 PHPV="$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;')"
-php -r 'exit(version_compare(PHP_VERSION,"8.1.0",">=")?0:1);' || die "PHP $PHPV terlalu lama, butuh 8.1+"
+php -r 'exit(version_compare(PHP_VERSION,"8.2.0",">=")?0:1);' || die "PHP $PHPV terlalu lama, Laravel 12 butuh PHP 8.2+ (Ubuntu 24.04 membawa 8.3)"
 php -m | grep -qi sodium || die "ekstensi PHP sodium tidak ada"
 PHP_SOCK="/run/php/php${PHPV}-fpm.sock"
 systemctl enable --now "php${PHPV}-fpm" >/dev/null 2>&1 || true
 [ -S "$PHP_SOCK" ] || die "socket PHP-FPM tidak ditemukan ($PHP_SOCK)"
 
+if ! command -v composer >/dev/null 2>&1; then
+  say "Memasang Composer"
+  curl -fsSL https://getcomposer.org/installer -o /tmp/composer-setup.php && php /tmp/composer-setup.php --quiet --install-dir=/usr/local/bin --filename=composer && rm -f /tmp/composer-setup.php \
+    || die "gagal memasang composer (cek koneksi ke getcomposer.org)"
+fi
+
 say "Menyalin aplikasi ke $APP_DIR"
 mkdir -p "$APP_DIR"
-rsync -a --delete --exclude 'config.php' --exclude '.git' --exclude 'deploy' --exclude 'tools/*.pem' "$SRC/" "$APP_DIR/"
-mkdir -p "$APP_DIR/deploy" && cp "$SRC"/deploy/*.sh "$SRC"/deploy/make-config.php "$APP_DIR/deploy/" && chmod +x "$APP_DIR"/deploy/*.sh
+rsync -a --delete --exclude '.env' --exclude '.git' --exclude 'storage/' --exclude 'vendor/' --exclude 'node_modules/' --exclude 'tests/' "$SRC/" "$APP_DIR/"
+mkdir -p "$APP_DIR"/storage/{app/public,framework/{cache/data,sessions,views},logs} "$APP_DIR/bootstrap/cache"
 
 say "Database"
-if [ -f "$APP_DIR/config.php" ]; then
-  DB_PASS="$(php -r '$c=require $argv[1]; echo $c["db"]["pass"];' "$APP_DIR/config.php")"
+if [ -f "$APP_DIR/.env" ]; then
+  DB_PASS="$(grep -E '^DB_PASSWORD=' "$APP_DIR/.env" | head -1 | cut -d= -f2-)"
 else
   DB_PASS="$(openssl rand -hex 16)"
 fi
-mysql -e "CREATE DATABASE IF NOT EXISTS \`$DB_NAME\` CHARACTER SET utf8mb4;
+mysql -e "CREATE DATABASE IF NOT EXISTS \`$DB_NAME\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
           CREATE USER IF NOT EXISTS '$DB_USER'@'localhost' IDENTIFIED BY '$DB_PASS';
           ALTER USER '$DB_USER'@'localhost' IDENTIFIED BY '$DB_PASS';
           GRANT ALL ON \`$DB_NAME\`.* TO '$DB_USER'@'localhost'; FLUSH PRIVILEGES;"
-mysql "$DB_NAME" < "$APP_DIR/schema.sql"
 
-say "Membuat config.php"
+say "Membuat .env (hanya koneksi database & APP_KEY)"
 SCHEME=https; [ "${SKIP_SSL:-0}" = "1" ] && SCHEME=http
+NEWENV=0
+if [ ! -f "$APP_DIR/.env" ]; then
+  cp "$APP_DIR/.env.example" "$APP_DIR/.env"; NEWENV=1
+  sed -i -e "s#^APP_URL=.*#APP_URL=$SCHEME://$DOMAIN#" -e "s#^DB_DATABASE=.*#DB_DATABASE=$DB_NAME#" \
+         -e "s#^DB_USERNAME=.*#DB_USERNAME=$DB_USER#" -e "s#^DB_PASSWORD=.*#DB_PASSWORD=$DB_PASS#" "$APP_DIR/.env"
+fi
+
+say "Memasang dependensi (composer, tanpa paket dev)"
+cd "$APP_DIR"
+COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --optimize-autoloader --no-interaction --no-progress
+[ "$NEWENV" = "1" ] && php artisan key:generate --force --no-interaction
+
+say "Migrasi database, kunci lisensi, admin"
 ADMIN_GENERATED=""
-if [ ! -f "$APP_DIR/config.php" ] && [ -z "${ADMIN_PASS:-}" ]; then ADMIN_PASS="$(openssl rand -base64 12 | tr -d '/+=')"; ADMIN_GENERATED=1; fi
-PUBKEY="$(APP_URL="$SCHEME://$DOMAIN" DB_NAME="$DB_NAME" DB_USER="$DB_USER" DB_PASS="$DB_PASS" ADMIN_PASS="${ADMIN_PASS:-}" \
-  php "$APP_DIR/deploy/make-config.php" "$APP_DIR/config.php" | tail -1)"
-chown -R root:www-data "$APP_DIR"; chmod 640 "$APP_DIR/config.php"; find "$APP_DIR" -type d -exec chmod 750 {} +
+ADMIN_ARGS=()
+if [ -n "$ADMIN_EMAIL" ] && [[ "$ADMIN_EMAIL" == *@* ]]; then
+  if [ -z "${ADMIN_PASS:-}" ] && [ "$NEWENV" = "1" ]; then ADMIN_PASS="$(openssl rand -base64 12 | tr -d '/+=')"; ADMIN_GENERATED=1; fi
+  ADMIN_ARGS=(--admin="$ADMIN_EMAIL")
+fi
+php artisan migrate --force --no-interaction
+PUBKEY="$(php artisan tinker --execute='echo App\Services\License::publicKey();' 2>/dev/null | tail -1)"
+if [ ${#ADMIN_ARGS[@]} -gt 0 ] && [ -n "${ADMIN_PASS:-}" ]; then
+  php artisan spill:admin "$ADMIN_EMAIL" --name=Admin --password="$ADMIN_PASS" >/dev/null
+fi
+
+say "Cache & izin"
+php artisan optimize:clear >/dev/null
+php artisan config:cache && php artisan route:cache && php artisan view:cache
+chown -R root:www-data "$APP_DIR"; chmod 640 "$APP_DIR/.env"
+find "$APP_DIR" -type d -exec chmod 750 {} +
+chown -R www-data:www-data "$APP_DIR/storage" "$APP_DIR/bootstrap/cache"; chmod -R u+rwX,g+rX "$APP_DIR/storage" "$APP_DIR/bootstrap/cache"
+chmod +x "$APP_DIR"/deploy/*.sh
 
 say "Konfigurasi nginx"
 cp "$SRC/deploy/nginx-ratelimit.conf" /etc/nginx/conf.d/spilltoko-ratelimit.conf
@@ -82,12 +117,12 @@ if [ "${SKIP_SSL:-0}" != "1" ]; then
     || die "certbot gagal. Cek DNS $DOMAIN lalu jalankan ulang skrip ini."
 fi
 
-say "Cadangan harian & pembersihan"
+say "Scheduler Laravel & cadangan harian"
 cat > /etc/cron.d/spilltoko <<CRON
+* * * * * www-data cd $APP_DIR && php artisan schedule:run >> /dev/null 2>&1
 30 2 * * * root $APP_DIR/deploy/backup.sh >> /var/log/spilltoko-backup.log 2>&1
 CRON
 chmod 644 /etc/cron.d/spilltoko
-sed -i "s#^DB_NAME=.*#DB_NAME=$DB_NAME#" "$APP_DIR/deploy/backup.sh"
 
 say "Pemeriksaan akhir"
 APP_URL="$SCHEME://$DOMAIN" bash "$APP_DIR/deploy/check.sh" || true
@@ -95,17 +130,13 @@ APP_URL="$SCHEME://$DOMAIN" bash "$APP_DIR/deploy/check.sh" || true
 cat <<INFO
 
 ======================= SELESAI =======================
-URL situs        : $SCHEME://$DOMAIN
-Admin            : $SCHEME://$DOMAIN/admin/   (user: admin${ADMIN_GENERATED:+, password: $ADMIN_PASS  <-- catat, hanya tampil sekali})
+Admin            : $SCHEME://$DOMAIN/admin   (email: ${ADMIN_EMAIL:-—}${ADMIN_GENERATED:+, password: $ADMIN_PASS  <-- catat, hanya tampil sekali})
 LICENSE_PUBKEY   : $PUBKEY      (isi ke extension, aman dipublikasikan)
-Redirect URI Google (Authorized redirect URIs):
-   https://<ID-EXTENSION>.chromiumapp.org/
-Notification URL Midtrans:
-   $SCHEME://$DOMAIN/api/index.php?r=midtrans/notify
 Extension -> API_BASE: $SCHEME://$DOMAIN/api/index.php
 
-Lanjut: isi Google Client ID & Midtrans Server Key lewat ulang skrip ini
-   (GOOGLE_CLIENT_ID=... MIDTRANS_SERVER_KEY=... DOMAIN=$DOMAIN EMAIL=$EMAIL bash deploy/setup.sh)
- lalu API key kenari.id di Admin > Pengaturan > Analisis AI.
+Langkah berikut ada di dashboard admin → Pengaturan:
+  • Google Login  → Client ID + Redirect URI yang ditampilkan di halaman itu
+  • Midtrans      → Server Key + Notification URL
+  • AI (kenari.id)→ API key → Tes koneksi → pilih model
 INFO
 { echo "LICENSE_PUBKEY=$PUBKEY"; echo "DOMAIN=$DOMAIN"; echo "APP_DIR=$APP_DIR"; } > /root/spilltoko-deploy-info.txt; chmod 600 /root/spilltoko-deploy-info.txt

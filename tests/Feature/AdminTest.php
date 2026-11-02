@@ -1,0 +1,119 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\Customer;
+use App\Models\User;
+use App\Services\Settings;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
+use Tests\TestCase;
+
+class AdminTest extends TestCase
+{
+    use RefreshDatabase;
+
+    private function admin(): User
+    {
+        return User::query()->create(['name' => 'Adm', 'email' => 'adm@test.id', 'password' => 'rahasia123']);
+    }
+
+    public function test_guest_is_redirected_and_login_works(): void
+    {
+        $this->get('/admin')->assertRedirect('/admin/login');
+        $this->get('/admin/pengaturan/ai')->assertRedirect('/admin/login');
+        $this->post('/admin/login', ['email' => 'adm@test.id', 'password' => 'salah'])->assertSessionHasErrors('email');
+        $this->admin();
+        $this->post('/admin/login', ['email' => 'adm@test.id', 'password' => 'rahasia123'])->assertRedirectContains('/admin');
+        $this->get('/admin')->assertOk()->assertSee('Dashboard');
+    }
+
+    public function test_all_pages_render(): void
+    {
+        $c = Customer::query()->create(['google_sub' => 's', 'email' => 'c@test.id', 'name' => 'C', 'trial_ends_at' => now()->addDays(3)]);
+        $this->actingAs($this->admin());
+        foreach (['/admin', '/admin/pengguna', "/admin/pengguna/{$c->id}", '/admin/order', '/admin/pemakaian-ai', '/admin/profil',
+            '/admin/pengaturan/langganan', '/admin/pengaturan/google', '/admin/pengaturan/midtrans', '/admin/pengaturan/ai', '/admin/pengaturan/prompt', '/admin/pengaturan/ekstensi'] as $u) {
+            $this->get($u)->assertOk();
+        }
+        $this->get('/admin/pengaturan/zzz')->assertNotFound();
+    }
+
+    public function test_settings_are_saved_secrets_encrypted_and_blank_keeps(): void
+    {
+        $this->actingAs($this->admin());
+        $this->post('/admin/pengaturan/ai', ['s' => ['ai__api_key' => 'kn-RAHASIA', 'ai__model' => 'model-x', 'ai__enabled' => '1', 'ai__quota__trial' => '5']])->assertRedirect();
+        $this->assertSame('kn-RAHASIA', Settings::get('ai.api_key'));
+        $this->assertSame('model-x', Settings::get('ai.model'));
+        $this->assertSame(5, Settings::int('ai.quota.trial'));
+        $stored = \App\Models\Setting::find('ai.api_key')->value;
+        $this->assertStringNotContainsString('RAHASIA', $stored);   // terenkripsi di database
+
+        $this->post('/admin/pengaturan/ai', ['s' => ['ai__api_key' => '', 'ai__model' => 'model-x']]);
+        $this->assertSame('kn-RAHASIA', Settings::get('ai.api_key'));   // kosong = tetap
+        $this->get('/admin/pengaturan/ai')->assertOk()->assertDontSee('kn-RAHASIA');
+
+        $this->post('/admin/pengaturan/ai', ['s' => ['ai__api_key' => ''], 'clear' => ['ai__api_key' => '1']]);
+        $this->assertFalse(Settings::has('ai.api_key'));
+    }
+
+    public function test_settings_validation_and_google_midtrans(): void
+    {
+        $this->actingAs($this->admin());
+        $this->post('/admin/pengaturan/google', ['s' => ['google__client_id' => 'salah-format']])->assertSessionHas('error');
+        $this->assertFalse(Settings::has('google.client_id'));
+        $this->post('/admin/pengaturan/google', ['s' => ['google__client_id' => 'abc-123.apps.googleusercontent.com']]);
+        $this->assertSame('abc-123.apps.googleusercontent.com', Settings::get('google.client_id'));
+        $this->post('/admin/pengaturan/midtrans', ['s' => ['midtrans__server_key' => 'SB-Mid-server-1', 'midtrans__production' => '0']]);
+        $this->assertSame('SB-Mid-server-1', Settings::get('midtrans.server_key'));
+        $this->post('/admin/pengaturan/langganan', ['s' => ['plan__monthly__price' => 'abc']])->assertSessionHas('error');
+        $this->post('/admin/pengaturan/langganan', ['s' => ['plan__monthly__price' => '30000', 'trial_days' => '14']]);
+        $this->getJson('/api/index.php?r=plans')->assertJsonPath('plans.monthly.price', 30000)->assertJsonPath('trial_days', 14);
+    }
+
+    public function test_prompt_default_is_not_stored_and_custom_is(): void
+    {
+        $this->actingAs($this->admin());
+        $this->post('/admin/pengaturan/prompt', ['s' => ['ai__prompt__system' => \App\Services\AiPrompts::defaultSystem()]]);
+        $this->assertNull(Settings::raw('ai.prompt.system'));
+        $this->post('/admin/pengaturan/prompt', ['s' => ['ai__prompt__system' => 'Prompt kustom']]);
+        $this->assertSame('Prompt kustom', Settings::raw('ai.prompt.system'));
+    }
+
+    public function test_connection_test_buttons(): void
+    {
+        $this->actingAs($this->admin());
+        $this->postJson('/admin/pengaturan-tes/ai')->assertOk()->assertJsonPath('ok', false);
+        Settings::set('ai.api_key', 'kn-1');
+        Http::fake(['*/chat/completions' => Http::response(['model' => 'm1', 'choices' => [['message' => ['content' => 'OK']]]]),
+            '*/models' => Http::response(['data' => [['id' => 'b-model'], ['id' => 'a-model']]])]);
+        $this->postJson('/admin/pengaturan-tes/ai')->assertJsonPath('ok', true);
+        $this->postJson('/admin/pengaturan-tes/models')->assertJsonPath('ok', true)->assertJsonPath('models', ['a-model', 'b-model']);
+        $this->postJson('/admin/pengaturan-tes/midtrans')->assertJsonPath('ok', false);
+    }
+
+    public function test_customer_actions_and_logging(): void
+    {
+        $admin = $this->admin();
+        $this->actingAs($admin);
+        $c = Customer::query()->create(['google_sub' => 's', 'email' => 'c@test.id', 'trial_ends_at' => now()->subDay()]);
+        $this->post("/admin/pengguna/{$c->id}", ['action' => 'add_days', 'days' => 10]);
+        $this->assertSame('monthly', $c->fresh()->access()['plan']);
+        $this->post("/admin/pengguna/{$c->id}", ['action' => 'lifetime']);
+        $this->assertTrue($c->fresh()->lifetime);
+        $this->post("/admin/pengguna/{$c->id}", ['action' => 'revoke']);
+        $this->assertSame('expired', $c->fresh()->access()['plan']);
+        $this->assertDatabaseCount('admin_logs', 3);
+        $this->get('/admin/pengguna?status=expired&q=c@test')->assertOk()->assertSee('c@test.id');
+    }
+
+    public function test_regenerate_key_requires_confirmation(): void
+    {
+        $this->actingAs($this->admin());
+        $old = \App\Services\License::publicKey();
+        $this->post('/admin/pengaturan-kunci-lisensi', ['confirm' => 'ya'])->assertSessionHas('error');
+        $this->assertSame($old, \App\Services\License::publicKey());
+        $this->post('/admin/pengaturan-kunci-lisensi', ['confirm' => 'GANTI KUNCI'])->assertSessionHas('ok');
+        $this->assertNotSame($old, \App\Services\License::publicKey());
+    }
+}

@@ -1,4 +1,4 @@
-# Vhost Spill Toko (dibuat setup.sh). Hanya menambah situs baru; situs lain di VPS tidak disentuh.
+# Vhost Spill Toko (Laravel, dibuat setup.sh). Hanya menambah situs baru; situs lain di VPS tidak disentuh.
 server {
     listen 80;
     __LISTEN6__
@@ -9,17 +9,21 @@ server {
     client_max_body_size 256k;       # data analisis AI maks ~60 KB
 
     add_header X-Content-Type-Options nosniff always;
-    add_header X-Frame-Options DENY always;
-    add_header Referrer-Policy no-referrer always;
+    add_header X-Frame-Options SAMEORIGIN always;
+    add_header Referrer-Policy strict-origin-when-cross-origin always;
 
-    location / { try_files $uri $uri/ =404; }
+    location / { try_files $uri /index.php?$query_string; }
 
-    location ~ \.php$ {
+    # hanya front controller Laravel yang boleh dieksekusi
+    location = /index.php {
         limit_req zone=spilltoko burst=40 nodelay;
         include snippets/fastcgi-php.conf;
+        fastcgi_param SCRIPT_FILENAME $realpath_root/index.php;
         fastcgi_pass unix:__PHP_SOCK__;
         fastcgi_read_timeout 200s;   # panggilan AI bisa sampai ~70 detik
     }
+    # URL berakhiran .php lain (mis. /api/index.php milik extension) tetap lewat Laravel; file .php tidak pernah dieksekusi langsung
+    location ~ \.php$ { rewrite ^ /index.php last; }
 
     location ~ /\.(?!well-known) { deny all; }
 }
