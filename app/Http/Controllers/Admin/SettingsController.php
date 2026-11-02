@@ -32,9 +32,15 @@ class SettingsController extends Controller
             $d['is_set'] = Settings::has($key);
             $fields[] = $d;
         }
+        try {
+            $pubkey = License::publicKey();
+        } catch (\Throwable $e) {
+            report($e);
+            $pubkey = '(gagal membuat kunci: ' . $e->getMessage() . ')';
+        }
         $ext = [
             'api_base' => url('/api/index.php'),
-            'pubkey' => License::publicKey(),
+            'pubkey' => $pubkey,
             'ext_id' => (string) Settings::get('app.extension_id'),
         ];
         return view('admin.settings', ['group' => $group, 'groups' => SettingDefs::GROUPS, 'fields' => $fields, 'ext' => $ext,
