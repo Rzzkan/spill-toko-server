@@ -23,7 +23,6 @@ die() { printf '\033[1;31mGAGAL: %s\033[0m\n' "$*" >&2; exit 1; }
 [[ "$DB_NAME$DB_USER" =~ ^[a-zA-Z0-9_]+$ ]] || die "DB_NAME/DB_USER hanya boleh huruf, angka, underscore"
 [ -f "$SRC/artisan" ] || die "jalankan dari folder repo (file artisan tidak ditemukan)"
 [ "${SKIP_SSL:-0}" = "1" ] || [ -n "$EMAIL" ] || die "isi EMAIL untuk sertifikat SSL (atau SKIP_SSL=1)"
-[ -f "$APP_DIR/.env" ] || [[ "$ADMIN_EMAIL" == *@* ]] || die "isi ADMIN_EMAIL (email untuk login admin)"
 
 say "Memeriksa web server di port 80"
 LISTENER="$(ss -ltnp 2>/dev/null | awk '$4 ~ /:80$/ {print $NF}' | head -1 || true)"
@@ -90,6 +89,7 @@ if [ -n "$ADMIN_EMAIL" ] && [[ "$ADMIN_EMAIL" == *@* ]]; then
   ADMIN_ARGS=(--admin="$ADMIN_EMAIL")
 fi
 php artisan migrate --force --no-interaction
+php artisan db:seed --force --no-interaction   # admin awal: username rzzkan
 PUBKEY="$(php artisan tinker --execute='echo App\Services\License::publicKey();' 2>/dev/null | tail -1)"
 if [ ${#ADMIN_ARGS[@]} -gt 0 ] && [ -n "${ADMIN_PASS:-}" ]; then
   php artisan spill:admin "$ADMIN_EMAIL" --name=Admin --password="$ADMIN_PASS" >/dev/null
@@ -130,7 +130,7 @@ APP_URL="$SCHEME://$DOMAIN" bash "$APP_DIR/deploy/check.sh" || true
 cat <<INFO
 
 ======================= SELESAI =======================
-Admin            : $SCHEME://$DOMAIN/admin   (email: ${ADMIN_EMAIL:-—}${ADMIN_GENERATED:+, password: $ADMIN_PASS  <-- catat, hanya tampil sekali})
+Admin            : $SCHEME://$DOMAIN/admin   (username awal: rzzkan — segera ganti kata sandi di Profil Admin)${ADMIN_EMAIL:+; admin tambahan: $ADMIN_EMAIL${ADMIN_GENERATED:+ / password: $ADMIN_PASS}}
 LICENSE_PUBKEY   : $PUBKEY      (isi ke extension, aman dipublikasikan)
 Extension -> API_BASE: $SCHEME://$DOMAIN/api/index.php
 

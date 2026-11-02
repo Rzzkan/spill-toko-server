@@ -15,17 +15,27 @@ class AdminTest extends TestCase
 
     private function admin(): User
     {
-        return User::query()->create(['name' => 'Adm', 'email' => 'adm@test.id', 'password' => 'rahasia123']);
+        return User::query()->create(['name' => 'Adm', 'username' => 'adm', 'email' => 'adm@test.id', 'password' => 'rahasia123']);
     }
 
     public function test_guest_is_redirected_and_login_works(): void
     {
         $this->get('/admin')->assertRedirect('/admin/login');
         $this->get('/admin/pengaturan/ai')->assertRedirect('/admin/login');
-        $this->post('/admin/login', ['email' => 'adm@test.id', 'password' => 'salah'])->assertSessionHasErrors('email');
+        $this->post('/admin/login', ['login' => 'adm', 'password' => 'salah'])->assertSessionHasErrors('login');
         $this->admin();
-        $this->post('/admin/login', ['email' => 'adm@test.id', 'password' => 'rahasia123'])->assertRedirectContains('/admin');
+        $this->post('/admin/login', ['login' => 'adm', 'password' => 'rahasia123'])->assertRedirectContains('/admin');
         $this->get('/admin')->assertOk()->assertSee('Dashboard');
+    }
+
+    public function test_login_by_email_and_seeded_admin(): void
+    {
+        $this->seed();
+        $this->post('/admin/login', ['login' => 'rzzkan', 'password' => 'Delova@2026'])->assertRedirectContains('/admin');
+        $this->post('/admin/logout');
+        $this->post('/admin/login', ['login' => 'rzzkan@gmail.com', 'password' => 'Delova@2026'])->assertRedirectContains('/admin');
+        $this->seed();   // seed ulang tidak menimpa / menggandakan
+        $this->assertSame(1, User::count());
     }
 
     public function test_all_pages_render(): void

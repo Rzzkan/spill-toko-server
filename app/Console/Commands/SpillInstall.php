@@ -14,6 +14,7 @@ class SpillInstall extends Command
     public function handle(): int
     {
         $this->call('migrate', ['--force' => true]);
+        $this->call('db:seed', ['--force' => true]);   // admin awal (rzzkan)
         $pub = License::publicKey();   // membuat kunci lisensi & JWT bila belum ada
         $this->info('Kunci lisensi siap.');
         $this->line("LICENSE_PUBKEY = $pub");

@@ -13,14 +13,17 @@ class AuthController extends Controller
 
     public function login(Request $r)
     {
-        $cred = $r->validate(['email' => 'required|email', 'password' => 'required|string']);
-        $key = 'admin-login|' . strtolower($cred['email']) . '|' . $r->ip();
+        $in = $r->validate(['login' => 'required|string|max:120', 'password' => 'required|string']);
+        $login = trim($in['login']);
+        $field = str_contains($login, '@') ? 'email' : 'username';
+        $cred = [$field => $login, 'password' => $in['password']];
+        $key = 'admin-login|' . strtolower($login) . '|' . $r->ip();
         if (RateLimiter::tooManyAttempts($key, 5)) {
-            return back()->withErrors(['email' => 'Terlalu banyak percobaan. Coba lagi dalam ' . RateLimiter::availableIn($key) . ' detik.'])->onlyInput('email');
+            return back()->withErrors(['login' => 'Terlalu banyak percobaan. Coba lagi dalam ' . RateLimiter::availableIn($key) . ' detik.'])->onlyInput('login');
         }
         if (!Auth::attempt($cred, $r->boolean('remember'))) {
             RateLimiter::hit($key, 300);
-            return back()->withErrors(['email' => 'Email atau kata sandi salah.'])->onlyInput('email');
+            return back()->withErrors(['login' => 'Username/email atau kata sandi salah.'])->onlyInput('login');
         }
         RateLimiter::clear($key);
         $r->session()->regenerate();

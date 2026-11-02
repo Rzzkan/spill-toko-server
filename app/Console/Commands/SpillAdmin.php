@@ -8,7 +8,7 @@ use Illuminate\Support\Str;
 
 class SpillAdmin extends Command
 {
-    protected $signature = 'spill:admin {email : Email admin} {--name=Admin : Nama} {--password= : Kata sandi (kosong = dibuat acak)}';
+    protected $signature = 'spill:admin {email : Email admin} {--name=Admin : Nama} {--username= : Username login (default: bagian email sebelum @)} {--password= : Kata sandi (kosong = dibuat acak)}';
     protected $description = 'Buat admin baru atau setel ulang kata sandi admin yang ada';
 
     public function handle(): int
@@ -20,6 +20,7 @@ class SpillAdmin extends Command
         $u = User::query()->firstOrNew(['email' => $email]);
         $new = !$u->exists;
         $u->name = $new ? (string) $this->option('name') : $u->name;
+        if ($this->option('username') || !$u->username) $u->username = (string) ($this->option('username') ?: Str::before($email, '@'));
         $u->password = $pass;
         $u->save();
         $this->info(($new ? 'Admin dibuat' : 'Kata sandi diganti') . ": $email");

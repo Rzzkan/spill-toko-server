@@ -4,6 +4,7 @@
 <x-admin.card title="Akun admin" desc="Kosongkan kata sandi bila tidak ingin mengubahnya." class="max-w-2xl">
     <form method="POST" action="{{ route('admin.profile.update') }}" class="space-y-5">@csrf
         <x-admin.input label="Nama" name="name" :value="auth()->user()->name" required />
+        <x-admin.input label="Username" name="username" :value="auth()->user()->username" required />
         <x-admin.input label="Email" name="email" type="email" :value="auth()->user()->email" required />
         <div class="grid gap-5 sm:grid-cols-2">
             <x-admin.input label="Kata sandi saat ini" name="current_password" type="password" autocomplete="current-password" />
