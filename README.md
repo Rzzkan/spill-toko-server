@@ -7,7 +7,7 @@ Backend SaaS untuk extension Chrome **Spill Toko**: login Google, langganan (tri
 - Kontrak API untuk extension tidak berubah: `/api/index.php?r=plans|auth|me|checkout|orders|ai/analyze|midtrans/notify` (juga tersedia rute bersih `/api/plans`, dst).
 
 ## Portal pengguna (web)
-`/masuk` login dengan akun Google (akun yang sama dengan extension) → `/akun`: status langganan (Trial/Bulanan/Lifetime, tanggal berakhir, sisa hari, kuota AI hari ini), tombol **Berlangganan / Perpanjang** (Midtrans) dan riwayat pembayaran. Perpanjangan Bulanan ditambahkan setelah masa aktif berjalan. Butuh *Authorized JavaScript origins* = domain situs di OAuth client Google.
+`/login` login dengan akun Google (akun yang sama dengan extension) → `/akun`: status langganan (Trial/Bulanan/Lifetime, tanggal berakhir, sisa hari, kuota AI hari ini), tombol **Berlangganan / Perpanjang** (Midtrans) dan riwayat pembayaran. Perpanjangan Bulanan ditambahkan setelah masa aktif berjalan. Butuh *Authorized JavaScript origins* = domain situs di OAuth client Google.
 
 ## Halaman admin (`/admin`)
 Dashboard (statistik + grafik) · Pengguna (cari/filter, tambah hari, Lifetime, cabut akses, riwayat) · Order · Pemakaian AI (grafik, pengguna teratas, log galat, kosongkan cache) · **Pengaturan** (Langganan, Google Login, Midtrans, AI kenari.id, Prompt AI, Extension) dengan tombol **Tes** untuk Google/Midtrans/kenari.id dan **Muat daftar model** · Profil admin.

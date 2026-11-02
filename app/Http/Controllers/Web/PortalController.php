@@ -22,8 +22,7 @@ class PortalController extends Controller
         if ($r->session()->has('customer_id')) return redirect()->route('portal.account');
         $nonce = Str::random(32);
         $r->session()->put('portal_nonce', $nonce);
-        return view('portal.login', ['clientId' => (string) Settings::get('google.client_id', ''), 'nonce' => $nonce,
-            'buying' => Plans::find((string) $r->session()->get('buy_plan', ''))]);
+        return view('portal.login', ['clientId' => (string) Settings::get('google.client_id', ''), 'nonce' => $nonce]);
     }
 
     public function loginGoogle(Request $r)

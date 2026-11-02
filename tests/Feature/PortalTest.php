@@ -16,19 +16,19 @@ class PortalTest extends TestCase
     private function webLogin(string $nonceOverride = null): \Illuminate\Testing\TestResponse
     {
         Settings::set('google.client_id', 'cid.apps.googleusercontent.com');
-        $this->get('/masuk')->assertOk();
+        $this->get('/login')->assertOk();
         $nonce = session('portal_nonce');
         Http::fake(['*tokeninfo*' => Http::response(['aud' => 'cid.apps.googleusercontent.com', 'iss' => 'accounts.google.com', 'exp' => time() + 600,
             'sub' => 'g9', 'email' => 'web@user.test', 'email_verified' => 'true', 'name' => 'Sari', 'nonce' => $nonceOverride ?? $nonce])]);
-        return $this->postJson('/masuk/google', ['credential' => 'tok']);
+        return $this->postJson('/login/google', ['credential' => 'tok']);
     }
 
     public function test_guest_redirected_and_login_page_states(): void
     {
-        $this->get('/akun')->assertRedirect('/masuk');
-        $this->get('/masuk')->assertOk()->assertSee('belum dikonfigurasi');
+        $this->get('/akun')->assertRedirect('/login');
+        $this->get('/login')->assertOk()->assertSee('belum dikonfigurasi');
         Settings::set('google.client_id', 'cid.apps.googleusercontent.com');
-        $this->get('/masuk')->assertOk()->assertSee('g_id_onload', false)->assertSee('cid.apps.googleusercontent.com');
+        $this->get('/login')->assertOk()->assertSee('g_id_onload', false)->assertSee('cid.apps.googleusercontent.com');
     }
 
     public function test_google_login_creates_trial_account_and_shows_status(): void
@@ -41,7 +41,7 @@ class PortalTest extends TestCase
     public function test_wrong_nonce_is_rejected(): void
     {
         $this->webLogin('nonce-lain')->assertStatus(401);
-        $this->get('/akun')->assertRedirect('/masuk');
+        $this->get('/akun')->assertRedirect('/login');
     }
 
     public function test_pay_creates_order_and_redirects_to_midtrans(): void
@@ -69,8 +69,8 @@ class PortalTest extends TestCase
         Settings::set('google.client_id', 'cid.apps.googleusercontent.com');
         Settings::set('midtrans.server_key', 'SB-Mid-server-1');
         Http::fake(['*snap/v1/transactions' => Http::response(['token' => 'T', 'redirect_url' => 'https://pay.test/yr'], 201)]);
-        $this->get('/beli/yearly')->assertRedirect('/masuk');
-        $this->get('/masuk')->assertOk()->assertSee('dipilih');
+        $this->get('/beli/yearly')->assertRedirect('/login');
+        $this->get('/login')->assertOk()->assertDontSee('dipilih');
         $this->webLogin()->assertOk()->assertJsonPath('redirect', url('/beli-lanjut'));
         $this->get('/beli-lanjut')->assertRedirect('https://pay.test/yr');
         $this->assertDatabaseHas('orders', ['plan' => 'yearly', 'amount' => 249000, 'status' => 'pending']);
@@ -114,10 +114,19 @@ class PortalTest extends TestCase
         $this->get('/akun')->assertOk()->assertSee('55 analisis/hari', false);
     }
 
+    public function test_landing_has_no_raw_blade_directives(): void
+    {
+        foreach ([false, true] as $aiOn) {
+            if ($aiOn) { Settings::set('ai.enabled', '1'); Settings::set('ai.api_key', 'kn-x', true); }
+            $html = $this->get('/')->assertOk()->getContent();
+            $this->assertDoesNotMatchRegularExpression('/@(if|endif|else|foreach|endforeach|php)\b|\{\{|\{!!/', $html);
+        }
+    }
+
     public function test_logout_clears_session(): void
     {
         $this->webLogin()->assertOk();
         $this->post('/keluar')->assertRedirect('/');
-        $this->get('/akun')->assertRedirect('/masuk');
+        $this->get('/akun')->assertRedirect('/login');
     }
 }
