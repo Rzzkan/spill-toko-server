@@ -1,0 +1,13 @@
+# Cadangan untuk hosting (Hostinger/Apache) yang document root-nya masih di folder proyek.
+# Cara terbaik tetap: arahkan document root ke folder /public di hPanel.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Jangan pernah sajikan file tersembunyi / folder internal
+    RewriteRule (^|/)\.(?!well-known) - [F,L]
+    RewriteRule ^(app|bootstrap|config|database|deploy|lang|resources|routes|storage|tests|vendor|node_modules)(/|$) - [F,L]
+
+    # Teruskan semuanya ke public/
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
