@@ -89,7 +89,7 @@ class PortalTest extends TestCase
     public function test_landing_page_shows_prices_and_buy_links(): void
     {
         $this->get('/')->assertOk()->assertSee('Rp24.000', false)->assertSee('Rp49.000', false)->assertSee('Rp249.000', false)->assertSee('Rp549.000', false)
-            ->assertSee('/beli/monthly', false)->assertSee('/beli/yearly', false)->assertSee('3 hari', false);
+            ->assertSee('img/preview/toko-analisa-ai.jpg', false)->assertSee('/beli/monthly', false)->assertSee('/beli/yearly', false)->assertSee('3 hari', false);
     }
 
     public function test_yearly_payment_extends_365_days_and_labels_tier(): void

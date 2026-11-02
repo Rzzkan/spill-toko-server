@@ -32,7 +32,7 @@
     <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5">
         <a href="{{ url('/') }}" class="flex items-center gap-2.5 text-lg font-bold"><span class="grid size-9 place-items-center rounded-xl bg-[#ee4d2d] text-white shadow-sm">🛍️</span>{{ config('app.name') }}</a>
         <nav class="hidden items-center gap-7 text-sm font-medium text-slate-600 md:flex">
-            <a href="#fitur" class="hover:text-[#ee4d2d]">Fitur</a><a href="#cara" class="hover:text-[#ee4d2d]">Cara Kerja</a><a href="#harga" class="hover:text-[#ee4d2d]">Harga</a><a href="#faq" class="hover:text-[#ee4d2d]">FAQ</a>
+            <a href="#fitur" class="hover:text-[#ee4d2d]">Fitur</a><a href="#pratinjau" class="hover:text-[#ee4d2d]">Pratinjau</a><a href="#cara" class="hover:text-[#ee4d2d]">Cara Kerja</a><a href="#harga" class="hover:text-[#ee4d2d]">Harga</a><a href="#faq" class="hover:text-[#ee4d2d]">FAQ</a>
         </nav>
         <div class="flex items-center gap-2">
             <a href="{{ url('/masuk') }}" class="hidden rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:text-[#ee4d2d] sm:block">Masuk</a>
@@ -101,6 +101,61 @@
             <div><div class="text-xl font-extrabold text-slate-900">{{ $a }}</div><div class="mt-0.5 text-sm text-slate-500">{{ $b }}</div></div>
         @endforeach
     </div>
+</section>
+
+{{-- PRATINJAU --}}
+<section id="pratinjau" class="bg-white py-20">
+    <div class="mx-auto max-w-6xl px-4">
+        <div class="mx-auto max-w-2xl text-center">
+            <span class="text-sm font-bold uppercase tracking-wider text-[#ee4d2d]">Pratinjau</span>
+            <h2 class="mt-2 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">Begini tampilannya saat dipakai</h2>
+            <p class="mt-3 text-slate-600">Klik tab untuk melihat tiap fitur. Ini tampilan asli extension, diisi data contoh.</p>
+        </div>
+        @php
+            $shots = [
+                ['toko-ringkasan', 'Ringkasan toko', 'Buka halaman toko kompetitor: estimasi omzet, terjual, dan rentang harga langsung muncul.'],
+                ['toko-produk-andalan', 'Produk andalan', 'Lihat produk mana yang menopang omzet toko beserta porsinya.'],
+                ['toko-analisa-ai', 'Analisa AI', 'Skor peluang, temuan, risiko, rekomendasi aksi, kata kunci, dan saran judul listing.'],
+                ['analisa-detail-grid', 'Analisa Detail (grid)', 'Semua produk toko dalam satu layar: omzet, tren 30 hari, market share, rating, wishlist.'],
+                ['analisa-detail-tabel', 'Analisa Detail (tabel)', 'Urutkan, filter, lalu ekspor ke CSV atau salin ke Google Sheets.'],
+                ['produk-transaksi', 'Halaman produk', 'Harga, stok, tren 30 hari, nilai jual stok, dan persentase komplain.'],
+                ['produk-ulasan', 'Ulasan produk', 'Distribusi bintang dan persen komplain ★1–2 untuk menilai kualitas.'],
+                ['pencarian-market', 'Market size', 'Cari kata kunci, lihat total omzet pasar dan seberapa terkonsentrasi di top 10.'],
+            ];
+        @endphp
+        <div class="mt-10 flex flex-wrap justify-center gap-2" id="shot-tabs">
+            @foreach ($shots as $i => [$f, $t, $d])
+                <button type="button" data-i="{{ $i }}" class="shot-tab rounded-full border px-4 py-2 text-sm font-semibold transition {{ $i === 0 ? 'border-[#ee4d2d] bg-[#ee4d2d] text-white' : 'border-slate-200 bg-white text-slate-600 hover:border-[#ee4d2d] hover:text-[#ee4d2d]' }}">{{ $t }}</button>
+            @endforeach
+        </div>
+        <div class="mx-auto mt-8 max-w-5xl">
+            <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-orange-100">
+                <div class="flex items-center gap-2 border-b border-slate-100 bg-slate-50 px-4 py-2.5"><span class="size-2.5 rounded-full bg-red-300"></span><span class="size-2.5 rounded-full bg-amber-300"></span><span class="size-2.5 rounded-full bg-green-300"></span><span class="ml-3 text-xs text-slate-400">Tampilan extension · data contoh</span></div>
+                <a id="shot-link" href="{{ asset('img/preview/' . $shots[0][0] . '.jpg') }}" target="_blank" rel="noopener" class="block bg-slate-100">
+                    @foreach ($shots as $i => [$f, $t, $d])
+                        <img src="{{ asset('img/preview/' . $f . '.jpg') }}" alt="{{ config('app.name') }}: {{ $t }}" loading="{{ $i === 0 ? 'eager' : 'lazy' }}" class="shot-img w-full {{ $i === 0 ? '' : 'hidden' }}" data-i="{{ $i }}">
+                    @endforeach
+                </a>
+            </div>
+            <p id="shot-cap" class="mt-4 text-center text-base font-medium text-slate-700">{{ $shots[0][2] }}</p>
+            <p class="mt-1 text-center text-xs text-slate-400">Angka dan nama toko/produk pada tangkapan layar adalah contoh fiktif. Hasil di Shopee Anda akan berbeda.</p>
+        </div>
+    </div>
+    <script>
+        (function () {
+            var caps = @json(array_column($shots, 2)), files = @json(array_map(fn ($s) => asset('img/preview/' . $s[0] . '.jpg'), $shots));
+            var tabs = document.querySelectorAll('.shot-tab'), imgs = document.querySelectorAll('.shot-img');
+            tabs.forEach(function (b) {
+                b.addEventListener('click', function () {
+                    var i = +b.dataset.i;
+                    tabs.forEach(function (x) { var on = x === b; x.className = 'shot-tab rounded-full border px-4 py-2 text-sm font-semibold transition ' + (on ? 'border-[#ee4d2d] bg-[#ee4d2d] text-white' : 'border-slate-200 bg-white text-slate-600 hover:border-[#ee4d2d] hover:text-[#ee4d2d]'); });
+                    imgs.forEach(function (m) { m.classList.toggle('hidden', +m.dataset.i !== i); });
+                    document.getElementById('shot-cap').textContent = caps[i];
+                    document.getElementById('shot-link').href = files[i];
+                });
+            });
+        })();
+    </script>
 </section>
 
 {{-- MASALAH --}}
