@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Web\PortalController;
+use App\Http\Middleware\PortalAuth;
 use App\Services\Plans;
 use App\Services\Settings;
 use Illuminate\Http\Request;
@@ -10,5 +12,14 @@ Route::get('/', fn () => view('public.home', [
     'store' => Settings::get('app.chrome_store_url', ''),
 ]));
 Route::get('/thanks', fn (Request $r) => view('public.thanks', ['order' => preg_replace('/[^A-Za-z0-9\-]/', '', (string) $r->query('order'))]));
+
+// Portal pengguna: masuk dengan Google, status langganan, perpanjang
+Route::get('/masuk', [PortalController::class, 'loginForm'])->name('portal.login');
+Route::post('/masuk/google', [PortalController::class, 'loginGoogle'])->middleware('throttle:15,1')->name('portal.login.google');
+Route::middleware(PortalAuth::class)->group(function () {
+    Route::get('/akun', [PortalController::class, 'account'])->name('portal.account');
+    Route::post('/akun/bayar', [PortalController::class, 'pay'])->middleware('throttle:10,1')->name('portal.pay');
+    Route::post('/keluar', [PortalController::class, 'logout'])->name('portal.logout');
+});
 
 require __DIR__ . '/admin.php';

@@ -55,13 +55,7 @@ class ApiController extends Controller
     public function auth(Request $r): JsonResponse
     {
         $g = GoogleAuth::verify((string) $r->input('id_token', ''), (string) $r->input('nonce', ''));
-        $c = Customer::query()->where('google_sub', $g['sub'])->first();
-        if (!$c) {
-            $c = Customer::query()->create(['google_sub' => $g['sub'], 'email' => $g['email'], 'name' => $g['name'] ?? null, 'picture' => $g['picture'] ?? null,
-                'trial_ends_at' => now()->addDays(Plans::trialDays()), 'lifetime' => false, 'last_login_at' => now()]);
-        } else {
-            $c->update(['email' => $g['email'], 'name' => $g['name'] ?? $c->name, 'picture' => $g['picture'] ?? $c->picture, 'last_login_at' => now()]);
-        }
+        $c = Customer::fromGoogle($g);
         $token = Jwt::sign(['sub' => $c->id, 'iat' => time(), 'exp' => time() + 60 * 86400]);
         return $this->out(['token' => $token, 'license' => License::make($c), 'plans' => $this->plansPublic(), 'ai' => Ai::info($c)]);
     }

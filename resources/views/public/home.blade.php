@@ -5,4 +5,4 @@ a.b{display:inline-block;margin-top:12px;background:#ee4d2d;color:#fff;text-deco
 <body><div class="c"><h1>🛍️ {{ config('app.name') }}</h1>
 <p>Riset produk, toko, dan kata kunci Shopee langsung di halaman Shopee — lengkap dengan analisis AI.</p>
 <p>Coba gratis {{ $trial }} hari. Bulanan Rp{{ number_format($monthly,0,',','.') }} · Lifetime Rp{{ number_format($lifetime,0,',','.') }}.</p>
-@if($store)<a class="b" href="{{ $store }}">Pasang di Chrome</a>@endif</div></body></html>
+<a class="b" href="{{ url('/masuk') }}" style="background:#344054">Masuk / Akun saya</a> @if($store)<a class="b" href="{{ $store }}">Pasang di Chrome</a>@endif</div></body></html>

@@ -14,6 +14,18 @@ class Customer extends Model
         return ['trial_ends_at' => 'datetime', 'paid_until' => 'datetime', 'last_login_at' => 'datetime', 'lifetime' => 'boolean'];
     }
 
+    /** Buat / perbarui pelanggan dari klaim token Google yang sudah terverifikasi (dipakai extension & web). */
+    public static function fromGoogle(array $g): self
+    {
+        $c = static::query()->where('google_sub', $g['sub'])->first();
+        if (!$c) {
+            return static::query()->create(['google_sub' => $g['sub'], 'email' => $g['email'], 'name' => $g['name'] ?? null, 'picture' => $g['picture'] ?? null,
+                'trial_ends_at' => now()->addDays(\App\Services\Plans::trialDays()), 'lifetime' => false, 'last_login_at' => now()]);
+        }
+        $c->update(['email' => $g['email'], 'name' => $g['name'] ?? $c->name, 'picture' => $g['picture'] ?? $c->picture, 'last_login_at' => now()]);
+        return $c;
+    }
+
     public function orders(): HasMany { return $this->hasMany(Order::class); }
     public function aiLogs(): HasMany { return $this->hasMany(AiLog::class); }
 

@@ -6,6 +6,9 @@ Backend SaaS untuk extension Chrome **Spill Toko**: login Google, langganan (tri
 - **Semua konfigurasi provider diatur dari dashboard admin** (Pengaturan): Google Client ID, Midtrans (Server Key, mode), kenari.id (API key, model, kuota, prompt). Disimpan di database; kunci rahasia dienkripsi dengan `APP_KEY`. File `.env` hanya berisi koneksi database & `APP_KEY`.
 - Kontrak API untuk extension tidak berubah: `/api/index.php?r=plans|auth|me|checkout|orders|ai/analyze|midtrans/notify` (juga tersedia rute bersih `/api/plans`, dst).
 
+## Portal pengguna (web)
+`/masuk` login dengan akun Google (akun yang sama dengan extension) → `/akun`: status langganan (Trial/Bulanan/Lifetime, tanggal berakhir, sisa hari, kuota AI hari ini), tombol **Berlangganan / Perpanjang** (Midtrans) dan riwayat pembayaran. Perpanjangan Bulanan ditambahkan setelah masa aktif berjalan. Butuh *Authorized JavaScript origins* = domain situs di OAuth client Google.
+
 ## Halaman admin (`/admin`)
 Dashboard (statistik + grafik) · Pengguna (cari/filter, tambah hari, Lifetime, cabut akses, riwayat) · Order · Pemakaian AI (grafik, pengguna teratas, log galat, kosongkan cache) · **Pengaturan** (Langganan, Google Login, Midtrans, AI kenari.id, Prompt AI, Extension) dengan tombol **Tes** untuk Google/Midtrans/kenari.id dan **Muat daftar model** · Profil admin.
 
@@ -24,13 +27,13 @@ Lihat [`deploy/README.md`](deploy/README.md) — satu perintah `deploy/setup.sh`
 
 ## Tes
 ```bash
-vendor/bin/phpunit      # 15 tes: API, webhook, AI (cache/kuota/fallback), admin, pengaturan
+vendor/bin/phpunit      # 22 tes: API, webhook, AI (cache/kuota/fallback), admin, pengaturan
 ```
 
 ## Perintah
 | Perintah | Fungsi |
 |---|---|
-| `php artisan spill:install` | Migrasi, seed admin awal (`rzzkan`), buat kunci lisensi/JWT |
+| `php artisan spill:install --admin=EMAIL` | Migrasi, buat kunci lisensi/JWT, admin pertama |
 | `php artisan spill:admin EMAIL [--password=…]` | Buat admin / reset kata sandi |
 | `php artisan schedule:run` (cron tiap menit) | Bersihkan log AI >90 hari & cache AI >30 hari |
 
