@@ -4,6 +4,9 @@ Backend langganan untuk extension Spill Toko: login Google, trial 7 hari, paket 
 
 Tanpa framework — cukup PHP 8.1+ (ekstensi `pdo_mysql`, `curl`, `sodium`) dan MySQL/MariaDB. Jalan di shared hosting (cPanel) maupun VPS.
 
+## Deploy cepat
+Untuk VPS Ubuntu/Debian dengan nginx: `DOMAIN=spill.delova.id EMAIL=kamu@gmail.com ADMIN_PASS='…' bash deploy/setup.sh` — panduan lengkap (DNS, Google, Midtrans, build extension, update, backup) ada di [`deploy/README.md`](deploy/README.md).
+
 ## Struktur
 ```
 config.php            ← buat sendiri dari config.sample.php (di luar folder public/!)
@@ -15,7 +18,8 @@ public/               ← ini yang jadi document root (public_html)
   thanks.php          ← halaman setelah bayar
   api/index.php       ← API (dipanggil extension & webhook Midtrans)
   admin/index.php     ← dashboard admin (HTTP Basic Auth)
-tools/keygen.php      ← generate kunci lisensi & JWT secret
+tools/keygen.php      ← generate kunci lisensi & JWT secret (setup.sh melakukannya otomatis)
+deploy/               ← setup.sh, update.sh, backup.sh, check.sh, template nginx, panduan deploy
 tools/extension-key.pem ← kunci ID extension (JANGAN dimasukkan ke paket extension)
 ```
 

@@ -4,6 +4,14 @@ require __DIR__ . '/../../src/bootstrap.php';
 require __DIR__ . '/../../src/ai.php';
 
 // ---- Basic Auth ----
+// Sebagian hosting (CGI/FastCGI Apache) tidak mengisi PHP_AUTH_*; ambil dari header Authorization.
+if (empty($_SERVER['PHP_AUTH_USER'])) {
+    $ah = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
+    if (stripos($ah, 'basic ') === 0) {
+        $dec = explode(':', (string) base64_decode(substr($ah, 6)), 2);
+        if (count($dec) === 2) { $_SERVER['PHP_AUTH_USER'] = $dec[0]; $_SERVER['PHP_AUTH_PW'] = $dec[1]; }
+    }
+}
 $adm = cfg('admin', []);
 $ok = !empty($adm['pass_hash'])
     && hash_equals((string) ($adm['user'] ?? 'admin'), (string) ($_SERVER['PHP_AUTH_USER'] ?? ''))

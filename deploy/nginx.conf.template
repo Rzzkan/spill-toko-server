@@ -1,0 +1,25 @@
+# Vhost Spill Toko (dibuat setup.sh). Hanya menambah situs baru; situs lain di VPS tidak disentuh.
+server {
+    listen 80;
+    __LISTEN6__
+    server_name __DOMAIN__;
+
+    root __APP_DIR__/public;
+    index index.php;
+    client_max_body_size 256k;       # data analisis AI maks ~60 KB
+
+    add_header X-Content-Type-Options nosniff always;
+    add_header X-Frame-Options DENY always;
+    add_header Referrer-Policy no-referrer always;
+
+    location / { try_files $uri $uri/ =404; }
+
+    location ~ \.php$ {
+        limit_req zone=spilltoko burst=40 nodelay;
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:__PHP_SOCK__;
+        fastcgi_read_timeout 200s;   # panggilan AI bisa sampai ~70 detik
+    }
+
+    location ~ /\.(?!well-known) { deny all; }
+}

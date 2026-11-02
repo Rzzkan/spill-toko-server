@@ -1,0 +1,9 @@
+# Hanya dipakai bila hosting memakai Apache/cPanel (di nginx diabaikan).
+Options -Indexes
+DirectoryIndex index.php
+# Teruskan header Authorization (Bearer extension & Basic Auth admin) ke PHP
+RewriteEngine On
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+<FilesMatch "^\.">
+  Require all denied
+</FilesMatch>
