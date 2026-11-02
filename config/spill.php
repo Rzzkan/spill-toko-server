@@ -6,5 +6,7 @@ return [
     // override URL Midtrans (hanya untuk pengujian); kosong = otomatis sandbox/production dari Pengaturan
     'midtrans_snap_url' => env('SPILL_MIDTRANS_SNAP_URL'),
     'midtrans_api_url' => env('SPILL_MIDTRANS_API_URL'),
+    // versi aplikasi server (naik tiap pembaruan; file VERSION di root). Tampil di admin, landing, portal.
+    'version' => is_file(base_path('VERSION')) ? trim((string) file_get_contents(base_path('VERSION'))) : 'dev',
     'display_timezone' => 'Asia/Jakarta',
 ];

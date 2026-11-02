@@ -342,7 +342,7 @@
     <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-8 text-sm text-slate-500 sm:flex-row">
         <div class="flex items-center gap-2 font-semibold text-slate-700"><span class="grid size-7 place-items-center rounded-lg bg-[#ee4d2d] text-sm text-white">🛍️</span>{{ config('app.name') }}</div>
         <div class="flex gap-5"><a href="#fitur" class="hover:text-[#ee4d2d]">Fitur</a><a href="#harga" class="hover:text-[#ee4d2d]">Harga</a><a href="#faq" class="hover:text-[#ee4d2d]">FAQ</a><a href="{{ url('/login') }}" class="hover:text-[#ee4d2d]">Akun</a></div>
-        <div>© {{ date('Y') }} {{ config('app.name') }}. Bukan produk resmi Shopee.</div>
+        <div>© {{ date('Y') }} {{ config('app.name') }}. Bukan produk resmi Shopee. <span class="text-xs text-slate-400">v{{ config('spill.version') }}</span></div>
     </div>
 </footer>
 </body>

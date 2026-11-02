@@ -19,6 +19,7 @@
     @if (session('error'))<div class="mb-5 rounded-xl border border-error-500 bg-error-50 p-4 text-sm text-error-700">⚠ {{ session('error') }}</div>@endif
     @if (session('ok'))<div class="mb-5 rounded-xl border border-success-500 bg-success-50 p-4 text-sm text-success-700">✓ {{ session('ok') }}</div>@endif
     @yield('content')
+    <p class="py-6 text-center text-xs text-gray-400">{{ config('app.name') }} · versi {{ config('spill.version') }}</p>
 </main>
 @stack('scripts')
 </body>
