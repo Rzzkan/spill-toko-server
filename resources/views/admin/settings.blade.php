@@ -13,8 +13,8 @@
 <x-admin.card title="Cara menyiapkan Google Login" class="mb-6">
     <ol class="list-decimal space-y-1.5 pl-5 text-sm text-gray-600 dark:text-gray-400">
         <li>Buka <b>Google Cloud Console → APIs &amp; Services → Credentials → Create credentials → OAuth client ID</b>, tipe <b>Web application</b>.</li>
-        <li>Pada <b>Authorized redirect URIs</b>, tambahkan URI di bawah (ID extension dari tab Extension).</li>
-        <li>Pada <b>Authorized JavaScript origins</b>, tambahkan <code>{{ $origin }}</code> (untuk login Google di halaman web <code>/login</code>).</li>
+        <li>Pada <b>Authorized redirect URIs</b>, tambahkan: <code>{{ $redirect }}</code></li>
+        <li>Pada <b>Authorized JavaScript origins</b>, tambahkan <b>dua</b> alamat (tanpa garis miring di akhir): <code>{{ $origin }}</code> (login di halaman web <code>/login</code>) dan <code>{{ rtrim($redirect, '/') }}</code> (login dari extension). Jika yang kedua tidak ada, Google menampilkan <i>Error 401: invalid_client — no registered origin</i>.</li>
         <li>Salin <b>Client ID</b> ke kolom di bawah lalu simpan. Pastikan OAuth consent screen berstatus <i>In production</i> agar semua akun Google bisa masuk.</li>
     </ol>
     <div class="mt-4 flex flex-wrap items-center gap-2"><code id="redir" class="break-all rounded-lg bg-gray-100 px-3 py-2 text-xs dark:bg-white/10 dark:text-gray-200">{{ $redirect }}</code><x-admin.btn tone="outline" size="sm" type="button" data-copy-target="#redir">Salin</x-admin.btn></div>
