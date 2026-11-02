@@ -25,13 +25,26 @@ class Ai
         return now(config('spill.display_timezone'))->startOfDay()->utc();   // 00:00 WIB
     }
 
+    /** Kuota analisis AI per hari untuk satu jenis paket (trial|monthly|yearly|lifetime). null = tanpa batas. */
+    public static function quota(string $kind): ?int
+    {
+        $defaults = ['trial' => 20, 'monthly' => 100, 'yearly' => 150, 'lifetime' => 100];
+        if (!isset($defaults[$kind])) return 0;
+        $v = Settings::int("ai.quota.$kind", $defaults[$kind]);
+        return $v <= 0 ? null : $v;
+    }
+
+    /** Semua kuota untuk ditampilkan di landing/portal/extension. */
+    public static function quotas(): array
+    {
+        return ['trial' => self::quota('trial'), 'monthly' => self::quota('monthly'), 'yearly' => self::quota('yearly'), 'lifetime' => self::quota('lifetime')];
+    }
+
     public static function limitFor(Customer $c): ?int
     {
-        $plan = $c->access()['plan'];
-        if (!in_array($plan, ['trial', 'monthly', 'lifetime'], true)) return 0;
-        $defaults = ['trial' => 20, 'monthly' => 100, 'lifetime' => 100];
-        $v = Settings::int("ai.quota.$plan", $defaults[$plan]);
-        return $v <= 0 ? null : $v;   // null = tanpa batas
+        $a = $c->access();
+        $kind = $a['plan'] === 'monthly' && ($a['tier'] ?? '') === 'yearly' ? 'yearly' : $a['plan'];
+        return self::quota($kind);
     }
 
     public static function usedToday(Customer $c): int
@@ -48,6 +61,7 @@ class Ai
             'auto' => $on && Settings::bool('ai.auto'),
             'used' => $on ? self::usedToday($c) : 0,
             'limit' => $on ? self::limitFor($c) : 0,
+            'quotas' => $on ? self::quotas() : null,
         ];
     }
 
@@ -122,11 +136,17 @@ class Ai
     /** Daftar model dari kenari.id (publik). @return array{0:bool,1:string|array} */
     public static function fetchModels(): array
     {
+        $base = rtrim((string) Settings::get('ai.base_url'), '/');
+        if ($base === '') return [false, 'Base URL kenari.id belum diisi.'];
         try {
-            $r = Http::acceptJson()->timeout(20)->get(rtrim((string) Settings::get('ai.base_url'), '/') . '/models');
-        } catch (\Throwable) { return [false, 'Tidak bisa menghubungi kenari.id']; }
+            $req = Http::acceptJson()->timeout(20);
+            if (self::key() !== '') $req = $req->withToken(self::key());
+            $r = $req->get($base . '/models');
+        } catch (\Throwable $e) { return [false, 'Tidak bisa menghubungi ' . $base . ' — ' . \Illuminate\Support\Str::limit($e->getMessage(), 120)]; }
         $ids = collect($r->json('data') ?? [])->pluck('id')->filter()->map('strval')->sort()->values()->all();
-        return $r->ok() && $ids ? [true, $ids] : [false, 'Gagal memuat daftar model (HTTP ' . $r->status() . ')'];
+        if ($r->ok() && $ids) return [true, $ids];
+        $hint = $r->status() === 401 || $r->status() === 403 ? ' — API key salah/belum diisi.' : ($r->status() === 404 ? ' — periksa Base URL (biasanya berakhiran /v1).' : '.');
+        return [false, 'Gagal memuat daftar model (HTTP ' . $r->status() . ')' . $hint];
     }
 
     public static function parseJson(string $s): ?array

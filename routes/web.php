@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => view('public.home', [
-    'trial' => Plans::trialDays(), 'plans' => Plans::all(), 'store' => Settings::get('app.chrome_store_url', ''),
+    'trial' => Plans::trialDays(), 'plans' => Plans::all(), 'aiq' => \App\Services\Ai::quotas(), 'aiOn' => \App\Services\Ai::on(), 'store' => Settings::get('app.chrome_store_url', ''),
 ]));
 Route::get('/thanks', fn (Request $r) => view('public.thanks', ['order' => preg_replace('/[^A-Za-z0-9\-]/', '', (string) $r->query('order'))]));
 

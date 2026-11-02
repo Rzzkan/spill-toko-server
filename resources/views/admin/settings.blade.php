@@ -55,15 +55,15 @@
 
 <form method="POST" action="{{ route('admin.settings.update', $group) }}"
     x-data="{
-        res: {}, busy: {}, models: [],
+        res: {}, busy: { google: false, midtrans: false, ai: false, models: false }, models: [],
         async run(what) {
             this.busy[what] = true; this.res[what] = null;
             try {
-                const r = await fetch('{{ url('/admin/pengaturan-tes') }}/' + what, { method: 'POST', headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'Accept': 'application/json' } });
-                const j = await r.json();
+                const r = await fetch('/admin/pengaturan-tes/' + what, { method: 'POST', credentials: 'same-origin', headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } });
+                let j; try { j = await r.json(); } catch (_) { j = { ok: false, message: 'Server membalas HTTP ' + r.status + (r.status === 419 ? ' (sesi kedaluwarsa — muat ulang halaman lalu coba lagi)' : '') + '.' }; }
                 this.res[what] = j;
                 if (j.models) this.models = j.models;
-            } catch (e) { this.res[what] = { ok: false, message: 'Gagal menghubungi server admin.' }; }
+            } catch (e) { this.res[what] = { ok: false, message: 'Gagal menghubungi server admin: ' + e.message }; }
             this.busy[what] = false;
         }
     }">
@@ -111,11 +111,11 @@
             <x-admin.btn>Simpan pengaturan</x-admin.btn>
             @if (in_array($group, ['google', 'midtrans', 'ai']))
                 <span class="text-xs text-gray-500">Tes memakai nilai yang <b>sudah tersimpan</b>:</span>
-                @if ($group === 'google')<x-admin.btn tone="outline" type="button" @click="run('google')" x-bind:disabled="busy.google"><span x-text="busy.google ? 'Menguji…' : 'Tes Google'"></span></x-admin.btn>@endif
-                @if ($group === 'midtrans')<x-admin.btn tone="outline" type="button" @click="run('midtrans')" x-bind:disabled="busy.midtrans"><span x-text="busy.midtrans ? 'Menguji…' : 'Tes Midtrans'"></span></x-admin.btn>@endif
+                @if ($group === 'google')<x-admin.btn tone="outline" type="button" @click="run('google')" x-bind:disabled="busy.google === true"><span x-text="busy.google ? 'Menguji…' : 'Tes Google'"></span></x-admin.btn>@endif
+                @if ($group === 'midtrans')<x-admin.btn tone="outline" type="button" @click="run('midtrans')" x-bind:disabled="busy.midtrans === true"><span x-text="busy.midtrans ? 'Menguji…' : 'Tes Midtrans'"></span></x-admin.btn>@endif
                 @if ($group === 'ai')
-                    <x-admin.btn tone="outline" type="button" @click="run('ai')" x-bind:disabled="busy.ai"><span x-text="busy.ai ? 'Menguji…' : 'Tes koneksi kenari.id'"></span></x-admin.btn>
-                    <x-admin.btn tone="outline" type="button" @click="run('models')" x-bind:disabled="busy.models"><span x-text="busy.models ? 'Memuat…' : 'Muat daftar model'"></span></x-admin.btn>
+                    <x-admin.btn tone="outline" type="button" @click="run('ai')" x-bind:disabled="busy.ai === true"><span x-text="busy.ai ? 'Menguji…' : 'Tes koneksi kenari.id'"></span></x-admin.btn>
+                    <x-admin.btn tone="outline" type="button" @click="run('models')" x-bind:disabled="busy.models === true"><span x-text="busy.models ? 'Memuat…' : 'Muat daftar model'"></span></x-admin.btn>
                 @endif
             @endif
         </div>

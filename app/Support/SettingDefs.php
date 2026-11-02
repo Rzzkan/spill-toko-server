@@ -56,6 +56,7 @@ class SettingDefs
             'ai.max_items'      => ['group' => 'ai', 'label' => 'Maks produk dikirim ke AI', 'type' => 'number', 'default' => '40', 'min' => 5, 'help' => 'Membatasi ukuran prompt (5–80).'],
             'ai.quota.trial'    => ['group' => 'ai', 'label' => 'Kuota/hari – Trial', 'type' => 'number', 'default' => '20', 'help' => '0 = tanpa batas. Hanya analisis baru yang dihitung (bukan cache). Reset 00:00 WIB.'],
             'ai.quota.monthly'  => ['group' => 'ai', 'label' => 'Kuota/hari – Bulanan', 'type' => 'number', 'default' => '100'],
+            'ai.quota.yearly'   => ['group' => 'ai', 'label' => 'Kuota/hari – Tahunan', 'type' => 'number', 'default' => '150', 'help' => '0 = tanpa batas.'],
             'ai.quota.lifetime' => ['group' => 'ai', 'label' => 'Kuota/hari – Lifetime', 'type' => 'number', 'default' => '100'],
             'ai.rate_per_min'   => ['group' => 'ai', 'label' => 'Maks analisis/menit per pengguna', 'type' => 'number', 'default' => '6', 'help' => '0 = tanpa batas.'],
 

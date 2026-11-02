@@ -6,6 +6,7 @@
     $perMonth = (int) round($y['price'] / max(1, $y['days'] / 30));
     $save = max(0, $m['price'] * (int) round($y['days'] / $m['days']) - $y['price']);
     $cta = url('/masuk');
+    $aiTxt = fn ($n) => $n === null ? 'tanpa batas' : number_format($n, 0, ',', '.') . 'x';
 @endphp
 <!DOCTYPE html>
 <html lang="id" class="scroll-smooth">
@@ -211,7 +212,7 @@
     <div class="mx-auto max-w-6xl px-4">
         <div class="mx-auto max-w-2xl text-center"><span class="text-sm font-bold uppercase tracking-wider text-[#ee4d2d]">Harga</span>
             <h2 class="mt-2 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">Coba gratis {{ $trial }} hari, lanjut kalau cocok</h2>
-            <p class="mt-3 text-slate-600">Semua paket mendapat semua fitur, termasuk Analisa AI.</p></div>
+            <p class="mt-3 text-slate-600">Semua paket mendapat semua fitur, termasuk Analisa AI@if ($aiOn) dengan batas pemakaian harian sesuai paket@endif.</p></div>
 
         <div class="mx-auto mt-12 grid max-w-5xl gap-6 lg:grid-cols-3">
             {{-- Trial --}}
@@ -219,7 +220,7 @@
                 <div class="text-sm font-semibold text-slate-500">Trial</div>
                 <div class="mt-3 flex items-baseline gap-1"><span class="text-4xl font-extrabold text-slate-900">Gratis</span></div>
                 <div class="text-sm text-slate-500">selama {{ $trial }} hari</div>
-                <ul class="mt-6 flex-1 space-y-2.5 text-sm text-slate-700"><li>✓ Semua fitur riset</li><li>✓ Analisa AI</li><li>✓ Ekspor CSV &amp; Sheets</li><li>✓ Tanpa kartu kredit</li></ul>
+                <ul class="mt-6 flex-1 space-y-2.5 text-sm text-slate-700"><li>✓ Semua fitur riset</li><li>✓ Analisa AI @if ($aiOn)· {{ $aiTxt($aiq['trial']) }}/hari @endif</li><li>✓ Ekspor CSV &amp; Sheets</li><li>✓ Tanpa kartu kredit</li></ul>
                 <a href="{{ $cta }}" class="mt-7 block rounded-xl border-2 border-[#ee4d2d] px-5 py-3 text-center font-semibold text-[#ee4d2d] hover:bg-orange-50">Mulai Trial Gratis</a>
             </div>
             {{-- Bulanan --}}
@@ -228,7 +229,7 @@
                 <div class="mt-3">@if ($m['original'] > $m['price'])<s class="text-lg text-slate-400">{{ Fmt::rp($m['original']) }}</s>@endif</div>
                 <div class="flex items-baseline gap-1"><span class="text-4xl font-extrabold text-slate-900">{{ Fmt::rp($m['price']) }}</span><span class="text-slate-500">/ bulan</span></div>
                 <div class="text-sm text-slate-500">Ditagih per {{ $m['days'] }} hari</div>
-                <ul class="mt-6 flex-1 space-y-2.5 text-sm text-slate-700"><li>✓ Semua fitur &amp; Analisa AI</li><li>✓ Perpanjang kapan saja</li><li>✓ Berhenti kapan saja</li><li>✓ Sisa hari tidak hangus saat perpanjang</li></ul>
+                <ul class="mt-6 flex-1 space-y-2.5 text-sm text-slate-700"><li>✓ Semua fitur &amp; Analisa AI @if ($aiOn)· <b>{{ $aiTxt($aiq['monthly']) }}/hari</b> @endif</li><li>✓ Perpanjang kapan saja</li><li>✓ Berhenti kapan saja</li><li>✓ Sisa hari tidak hangus saat perpanjang</li></ul>
                 <a href="{{ route('portal.buy', 'monthly') }}" class="mt-7 block rounded-xl bg-slate-900 px-5 py-3 text-center font-semibold text-white hover:bg-slate-800">Pilih Bulanan</a>
             </div>
             {{-- Tahunan --}}
@@ -238,7 +239,7 @@
                 <div class="mt-3">@if ($y['original'] > $y['price'])<s class="text-lg text-slate-400">{{ Fmt::rp($y['original']) }}</s>@endif</div>
                 <div class="flex items-baseline gap-1"><span class="text-4xl font-extrabold text-slate-900">{{ Fmt::rp($y['price']) }}</span><span class="text-slate-500">/ tahun</span></div>
                 <div class="text-sm font-medium text-emerald-700">≈ {{ Fmt::rp($perMonth) }} per bulan {!! $save > 0 ? '· hemat ' . e(Fmt::rp($save)) . ' dari Bulanan' : '' !!}</div>
-                <ul class="mt-6 flex-1 space-y-2.5 text-sm text-slate-700"><li>✓ Semua fitur &amp; Analisa AI</li><li>✓ Bayar sekali untuk {{ $y['days'] }} hari</li><li>✓ Harga terkunci selama setahun</li><li>✓ Pembaruan fitur gratis</li></ul>
+                <ul class="mt-6 flex-1 space-y-2.5 text-sm text-slate-700"><li>✓ Semua fitur &amp; Analisa AI @if ($aiOn)· <b>{{ $aiTxt($aiq['yearly']) }}/hari</b> @endif</li><li>✓ Bayar sekali untuk {{ $y['days'] }} hari</li><li>✓ Harga terkunci selama setahun</li><li>✓ Pembaruan fitur gratis</li></ul>
                 <a href="{{ route('portal.buy', 'yearly') }}" class="mt-7 block rounded-xl bg-[#ee4d2d] px-5 py-3 text-center font-semibold text-white shadow-lg shadow-orange-200 hover:bg-[#d7401f]">Pilih Tahunan</a>
             </div>
         </div>

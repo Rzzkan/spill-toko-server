@@ -44,7 +44,8 @@
                 @if ($pl['original'] > $pl['price'])<s class="text-sm text-gray-400">{{ Fmt::rp($pl['original']) }}</s>@endif
                 <span class="text-2xl font-bold">{{ Fmt::rp($pl['price']) }}</span><span class="text-sm font-normal text-gray-500">/ {{ $k === 'yearly' ? 'tahun' : 'bulan' }}</span>
             </div>
-            <p class="mt-2 text-sm text-gray-500">{{ $a['plan'] === 'monthly' ? 'Ditambahkan setelah masa aktif saat ini berakhir.' : 'Semua fitur riset + analisis AI.' }}</p>
+            <p class="mt-2 text-sm text-gray-500">{{ $a['plan'] === 'monthly' ? 'Ditambahkan setelah masa aktif saat ini berakhir.' : 'Semua fitur riset + analisis AI.' }}
+                @if ($ai['enabled']) <br>Analisis AI: <b>{{ ($q = $ai['quotas'][$k] ?? null) === null ? 'tanpa batas' : number_format($q, 0, ',', '.') . ' analisis' }}/hari</b>@endif</p>
             <form method="POST" action="{{ route('portal.pay') }}" class="mt-4">@csrf<input type="hidden" name="plan" value="{{ $k }}">
                 <button @disabled(!$canPay || $a['plan'] === 'lifetime') class="w-full rounded-lg {{ $k === 'yearly' ? 'bg-gray-900 hover:bg-gray-800' : 'bg-brand-500 hover:bg-brand-600' }} px-4 py-3 text-sm font-medium text-white disabled:opacity-50">{{ $a['plan'] === 'monthly' ? 'Perpanjang ' . $pl['label'] : 'Pilih ' . $pl['label'] }}</button></form>
         </div>

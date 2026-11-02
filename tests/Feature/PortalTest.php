@@ -104,6 +104,16 @@ class PortalTest extends TestCase
         $this->get('/akun')->assertSee('Tahunan');
     }
 
+    public function test_ai_daily_quota_is_dynamic_from_admin_settings(): void
+    {
+        Settings::set('ai.enabled', '1'); Settings::set('ai.api_key', 'kn-x', true);
+        Settings::set('ai.quota.trial', '7'); Settings::set('ai.quota.monthly', '55'); Settings::set('ai.quota.yearly', '0');
+        $this->get('/')->assertSee('7x/hari', false)->assertSee('55x/hari', false)->assertSee('tanpa batas/hari', false);
+        $this->getJson('/api/index.php?r=plans')->assertJsonPath('plans.monthly.ai_limit', 55)->assertJsonPath('plans.yearly.ai_limit', null);
+        $this->webLogin()->assertOk();
+        $this->get('/akun')->assertOk()->assertSee('55 analisis/hari', false);
+    }
+
     public function test_logout_clears_session(): void
     {
         $this->webLogin()->assertOk();
