@@ -46,6 +46,7 @@ class PortalController extends Controller
             'c' => $c, 'a' => $c->access(), 'plans' => Plans::all(), 'trialDays' => Plans::trialDays(),
             'orders' => Order::query()->where('customer_id', $c->id)->latest('id')->limit(15)->get(),
             'ai' => Ai::info($c), 'canPay' => Midtrans::configured(),
+            'devices' => $c->devices()->orderByDesc('last_seen_at')->get(), 'maxDevices' => max(1, (int) config('spill.max_devices', 2)),
         ]);
     }
 
@@ -86,6 +87,14 @@ class PortalController extends Controller
         $plan = (string) $r->session()->pull('buy_plan', '');
         if ($plan === '') return redirect()->route('portal.account');
         return $this->checkout($r->attributes->get('customer'), $plan, route('portal.account'));
+    }
+
+    /** Lepas satu browser dari akun: token extension di browser itu langsung tidak berlaku. */
+    public function revokeDevice(Request $r, int $id)
+    {
+        $c = $r->attributes->get('customer');
+        $n = $c->devices()->whereKey($id)->delete();
+        return redirect()->route('portal.account')->with($n ? 'ok' : 'error', $n ? 'Browser dilepas. Slot-nya kini bisa dipakai browser lain.' : 'Browser tidak ditemukan.');
     }
 
     public function logout(Request $r)

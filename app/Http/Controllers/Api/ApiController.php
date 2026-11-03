@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Exceptions\ApiException;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
+use App\Models\CustomerDevice;
 use App\Models\Order;
 use App\Services\Ai;
 use App\Services\GoogleAuth;
@@ -55,8 +56,20 @@ class ApiController extends Controller
     public function auth(Request $r): JsonResponse
     {
         $g = GoogleAuth::verify((string) $r->input('id_token', ''), (string) $r->input('nonce', ''));
+        $did = trim((string) $r->input('device_id', ''));
+        if (!preg_match('/^[A-Za-z0-9\-]{16,64}$/', $did)) throw new ApiException('Versi extension terlalu lama. Perbarui extension lalu masuk lagi.', 400);
         $c = Customer::fromGoogle($g);
-        $token = Jwt::sign(['sub' => $c->id, 'iat' => time(), 'exp' => time() + 60 * 86400]);
+        $hash = CustomerDevice::hash($did);
+        $dev = $c->devices()->where('device_hash', $hash)->first();
+        if (!$dev) {
+            $max = max(1, (int) config('spill.max_devices', 2));
+            if ($c->devices()->count() >= $max) {
+                throw new ApiException("Akun ini sudah dipakai di $max browser (batas maksimal). Masuk di " . url('/login') . ' lalu lepas salah satu browser di halaman Akun, setelah itu coba masuk lagi.', 403);
+            }
+            $dev = new CustomerDevice(['customer_id' => $c->id, 'device_hash' => $hash]);
+        }
+        $dev->fill(['label' => CustomerDevice::labelFrom((string) $r->input('device_name', ''), (string) $r->userAgent()), 'ip' => $r->ip(), 'last_seen_at' => now()])->save();
+        $token = Jwt::sign(['sub' => $c->id, 'dev' => $dev->id, 'iat' => time(), 'exp' => time() + 60 * 86400]);
         return $this->out(['token' => $token, 'license' => License::make($c), 'plans' => $this->plansPublic(), 'ai' => Ai::info($c)]);
     }
 

@@ -38,6 +38,20 @@ class PortalTest extends TestCase
         $this->get('/akun')->assertOk()->assertSee('Trial')->assertSee('web@user.test')->assertSee('Pilih Bulanan');
     }
 
+    public function test_revoke_device_from_portal(): void
+    {
+        $this->webLogin()->assertOk();
+        $c = Customer::first();
+        $d = \App\Models\CustomerDevice::create(['customer_id' => $c->id, 'device_hash' => str_repeat('a', 64), 'label' => 'Chrome · Windows', 'last_seen_at' => now()]);
+        $other = Customer::create(['google_sub' => 'x', 'email' => 'o@o.test', 'trial_ends_at' => now()]);
+        $od = \App\Models\CustomerDevice::create(['customer_id' => $other->id, 'device_hash' => str_repeat('b', 64)]);
+        $this->get('/akun')->assertOk()->assertSee('Browser terhubung')->assertSee('Chrome · Windows');
+        $this->delete('/akun/browser/' . $od->id)->assertSessionHas('error');   // milik akun lain: tidak bisa
+        $this->assertDatabaseHas('customer_devices', ['id' => $od->id]);
+        $this->delete('/akun/browser/' . $d->id)->assertSessionHas('ok');
+        $this->assertDatabaseMissing('customer_devices', ['id' => $d->id]);
+    }
+
     public function test_wrong_nonce_is_rejected(): void
     {
         $this->webLogin('nonce-lain')->assertStatus(401);

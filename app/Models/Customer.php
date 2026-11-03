@@ -28,6 +28,7 @@ class Customer extends Model
 
     public function orders(): HasMany { return $this->hasMany(Order::class); }
     public function aiLogs(): HasMany { return $this->hasMany(AiLog::class); }
+    public function devices(): HasMany { return $this->hasMany(CustomerDevice::class); }
 
     /** @return array{plan:string,access:bool,until:?int} until = unix timestamp */
     public function access(): array

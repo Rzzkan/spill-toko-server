@@ -14,12 +14,12 @@ class ApiTest extends TestCase
 {
     use RefreshDatabase;
 
-    private function login(string $sub = 'g1', string $email = 'a@b.test'): array
+    private function login(string $sub = 'g1', string $email = 'a@b.test', string $dev = 'dev-aaaaaaaaaaaaaaaa'): array
     {
         Settings::set('google.client_id', 'cid.apps.googleusercontent.com');
         Http::fake(['*tokeninfo*' => Http::response(['aud' => 'cid.apps.googleusercontent.com', 'iss' => 'accounts.google.com', 'exp' => time() + 600,
             'sub' => $sub, 'email' => $email, 'email_verified' => 'true', 'name' => 'Budi', 'nonce' => 'n1'])]);
-        $r = $this->postJson('/api/index.php?r=auth', ['id_token' => 'tok', 'nonce' => 'n1']);
+        $r = $this->postJson('/api/index.php?r=auth', ['id_token' => 'tok', 'nonce' => 'n1', 'device_id' => $dev, 'device_name' => 'Chrome · Windows']);
         $r->assertOk();
         return [$r->json('token'), $r];
     }
@@ -48,6 +48,23 @@ class ApiTest extends TestCase
         $this->assertTrue(sodium_crypto_sign_verify_detached(base64_decode($r->json('license.sig')), $payload, $pub));
         $this->assertSame(1, Customer::count());
         $this->getJson('/api/index.php?r=me', ['Authorization' => "Bearer $token"])->assertOk()->assertJsonStructure(['license', 'plans', 'ai' => ['enabled', 'auto', 'used', 'limit']]);
+    }
+
+    public function test_max_two_browsers_and_revoke(): void
+    {
+        [$t1] = $this->login('g1', 'a@b.test', 'dev-aaaaaaaaaaaaaaaa');
+        [$t2] = $this->login('g1', 'a@b.test', 'dev-bbbbbbbbbbbbbbbb');
+        $this->login('g1', 'a@b.test', 'dev-aaaaaaaaaaaaaaaa');   // browser yang sama: tidak menambah slot
+        $this->assertSame(2, \App\Models\CustomerDevice::count());
+        Http::fake(['*tokeninfo*' => Http::response(['aud' => 'cid.apps.googleusercontent.com', 'iss' => 'accounts.google.com', 'exp' => time() + 600, 'sub' => 'g1', 'email' => 'a@b.test', 'email_verified' => 'true', 'nonce' => 'n1'])]);
+        $this->postJson('/api/index.php?r=auth', ['id_token' => 'tok', 'nonce' => 'n1', 'device_id' => 'dev-cccccccccccccccc'])->assertStatus(403);
+        $this->postJson('/api/index.php?r=auth', ['id_token' => 'tok', 'nonce' => 'n1'])->assertStatus(400);   // tanpa device_id
+        // cabut browser pertama -> tokennya mati, browser ketiga bisa masuk
+        $first = \App\Models\CustomerDevice::query()->orderBy('id')->first();
+        $first->delete();
+        $this->getJson('/api/index.php?r=me', ['Authorization' => "Bearer $t1"])->assertStatus(401);
+        $this->getJson('/api/index.php?r=me', ['Authorization' => "Bearer $t2"])->assertOk();
+        $this->postJson('/api/index.php?r=auth', ['id_token' => 'tok', 'nonce' => 'n1', 'device_id' => 'dev-cccccccccccccccc'])->assertOk();
     }
 
     public function test_checkout_then_webhook_is_idempotent_and_verifies(): void

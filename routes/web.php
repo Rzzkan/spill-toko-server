@@ -21,6 +21,7 @@ Route::middleware(PortalAuth::class)->group(function () {
     Route::get('/beli-lanjut', [PortalController::class, 'buyGo'])->middleware('throttle:10,1')->name('portal.buy.go');
     Route::get('/akun', [PortalController::class, 'account'])->name('portal.account');
     Route::post('/akun/bayar', [PortalController::class, 'pay'])->middleware('throttle:10,1')->name('portal.pay');
+    Route::delete('/akun/browser/{id}', [PortalController::class, 'revokeDevice'])->whereNumber('id')->middleware('throttle:20,1')->name('portal.device.revoke');
     Route::post('/keluar', [PortalController::class, 'logout'])->name('portal.logout');
 });
 

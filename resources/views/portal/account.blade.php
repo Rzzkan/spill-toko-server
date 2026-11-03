@@ -53,6 +53,22 @@
 </div>
 @if ($c->lifetime)<p class="mt-3 text-sm text-gray-500">Anda memiliki akses Lifetime — tidak perlu berlangganan.</p>@endif
 
+<h2 class="mt-8 text-lg font-semibold">Browser terhubung <span class="text-sm font-normal text-gray-500">({{ $devices->count() }} dari {{ $maxDevices }})</span></h2>
+@if (session('ok'))<div class="mt-3 rounded-lg bg-success-50 p-3 text-sm text-success-700">{{ session('ok') }}</div>@endif
+@if (session('error'))<div class="mt-3 rounded-lg bg-error-50 p-3 text-sm text-error-700">{{ session('error') }}</div>@endif
+<p class="mt-1 text-sm text-gray-500">Extension hanya bisa dipakai di {{ $maxDevices }} browser. Lepas browser yang tidak dipakai agar bisa masuk dari browser lain; extension di browser yang dilepas akan keluar otomatis.</p>
+<div class="mt-3 overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow-theme-sm">
+    <table class="w-full text-left text-sm">
+        <thead><tr class="border-b border-gray-100 text-xs uppercase text-gray-500"><th class="px-5 py-3">Browser</th><th class="px-5 py-3">Terakhir aktif</th><th class="px-5 py-3">IP</th><th class="px-5 py-3"></th></tr></thead>
+        <tbody class="divide-y divide-gray-100">
+        @forelse ($devices as $d)
+            <tr><td class="px-5 py-3 font-medium">{{ $d->label ?: 'Browser' }}</td><td class="px-5 py-3 whitespace-nowrap">{{ $d->last_seen_at ? Fmt::dt($d->last_seen_at) . ' WIB' : '—' }}</td><td class="px-5 py-3 text-gray-500">{{ $d->ip ?: '—' }}</td>
+                <td class="px-5 py-3 text-right"><form method="POST" action="{{ route('portal.device.revoke', $d->id) }}" onsubmit="return confirm('Lepas browser ini dari akun?')">@csrf @method('DELETE')<button class="rounded-lg border border-error-300 px-3 py-1.5 text-xs font-medium text-error-700 hover:bg-error-50">Lepas</button></form></td></tr>
+        @empty <tr><td colspan="4" class="px-5 py-8 text-center text-gray-500">Belum ada browser terhubung. Masuk lewat extension untuk mendaftarkan browser.</td></tr> @endforelse
+        </tbody>
+    </table>
+</div>
+
 <h2 class="mt-8 text-lg font-semibold">Riwayat pembayaran</h2>
 <div class="mt-3 overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow-theme-sm">
     <table class="w-full text-left text-sm">
