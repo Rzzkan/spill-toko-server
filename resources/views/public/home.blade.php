@@ -5,7 +5,8 @@
     $mDisc = Plans::discount($m); $yDisc = Plans::discount($y);
     $perMonth = (int) round($y['price'] / max(1, $y['days'] / 30));
     $save = max(0, $m['price'] * (int) round($y['days'] / $m['days']) - $y['price']);
-    $cta = url('/login');
+    $main = rtrim((string) config('app.url'), '/');   // semua tombol akun/beli selalu ke domain utama
+    $cta = $main . '/login';
     $aiTxt = fn ($n) => $n === null ? 'tanpa batas' : number_format($n, 0, ',', '.') . 'x';
 @endphp
 <!DOCTYPE html>
@@ -36,7 +37,7 @@
             <a href="#fitur" class="hover:text-[#ee4d2d]">Fitur</a><a href="#pratinjau" class="hover:text-[#ee4d2d]">Pratinjau</a><a href="#cara" class="hover:text-[#ee4d2d]">Cara Kerja</a><a href="#harga" class="hover:text-[#ee4d2d]">Harga</a><a href="#faq" class="hover:text-[#ee4d2d]">FAQ</a>
         </nav>
         <div class="flex items-center gap-2">
-            <a href="{{ url('/login') }}" class="hidden rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:text-[#ee4d2d] sm:block">Masuk</a>
+            <a href="{{ $main }}/login" class="hidden rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:text-[#ee4d2d] sm:block">Masuk</a>
             <a href="{{ $cta }}" class="rounded-lg bg-[#ee4d2d] px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#d7401f]">Coba Gratis {{ $trial }} Hari</a>
         </div>
     </div>
@@ -286,7 +287,7 @@
                 <div class="flex items-baseline gap-1"><span class="text-4xl font-extrabold text-slate-900">{{ Fmt::rp($m['price']) }}</span><span class="text-slate-500">/ bulan</span></div>
                 <div class="text-sm text-slate-500">Ditagih per {{ $m['days'] }} hari</div>
                 <ul class="mt-6 flex-1 space-y-2.5 text-sm text-slate-700"><li>✓ Semua fitur &amp; Analisa AI{!! $aiOn ? ' · <b>' . e($aiTxt($aiq['monthly'])) . '/hari</b>' : '' !!}</li><li>✓ Perpanjang kapan saja</li><li>✓ Berhenti kapan saja</li><li>✓ Sisa hari tidak hangus saat perpanjang</li></ul>
-                <a href="{{ route('portal.buy', 'monthly') }}" class="mt-7 block rounded-xl bg-slate-900 px-5 py-3 text-center font-semibold text-white hover:bg-slate-800">Pilih Bulanan</a>
+                <a href="{{ $main . route('portal.buy', 'monthly', false) }}" class="mt-7 block rounded-xl bg-slate-900 px-5 py-3 text-center font-semibold text-white hover:bg-slate-800">Pilih Bulanan</a>
             </div>
             {{-- Tahunan --}}
             <div class="relative flex flex-col rounded-3xl border-2 border-[#ee4d2d] bg-gradient-to-b from-orange-50 to-white p-7 shadow-xl shadow-orange-100">
@@ -296,10 +297,10 @@
                 <div class="flex items-baseline gap-1"><span class="text-4xl font-extrabold text-slate-900">{{ Fmt::rp($y['price']) }}</span><span class="text-slate-500">/ tahun</span></div>
                 <div class="text-sm font-medium text-emerald-700">≈ {{ Fmt::rp($perMonth) }} per bulan {!! $save > 0 ? '· hemat ' . e(Fmt::rp($save)) . ' dari Bulanan' : '' !!}</div>
                 <ul class="mt-6 flex-1 space-y-2.5 text-sm text-slate-700"><li>✓ Semua fitur &amp; Analisa AI{!! $aiOn ? ' · <b>' . e($aiTxt($aiq['yearly'])) . '/hari</b>' : '' !!}</li><li>✓ Bayar sekali untuk {{ $y['days'] }} hari</li><li>✓ Harga terkunci selama setahun</li><li>✓ Pembaruan fitur gratis</li></ul>
-                <a href="{{ route('portal.buy', 'yearly') }}" class="mt-7 block rounded-xl bg-[#ee4d2d] px-5 py-3 text-center font-semibold text-white shadow-lg shadow-orange-200 hover:bg-[#d7401f]">Pilih Tahunan</a>
+                <a href="{{ $main . route('portal.buy', 'yearly', false) }}" class="mt-7 block rounded-xl bg-[#ee4d2d] px-5 py-3 text-center font-semibold text-white shadow-lg shadow-orange-200 hover:bg-[#d7401f]">Pilih Tahunan</a>
             </div>
         </div>
-        <p class="mx-auto mt-8 max-w-2xl text-center text-sm text-slate-500">Klik paket → masuk dengan Google → langsung ke halaman pembayaran aman <b>Midtrans</b>. Akses aktif otomatis setelah pembayaran berhasil. Anda bisa melihat status &amp; memperpanjang kapan saja di <a href="{{ url('/login') }}" class="font-semibold text-[#ee4d2d] underline">halaman akun</a>.</p>
+        <p class="mx-auto mt-8 max-w-2xl text-center text-sm text-slate-500">Klik paket → masuk dengan Google → langsung ke halaman pembayaran aman <b>Midtrans</b>. Akses aktif otomatis setelah pembayaran berhasil. Anda bisa melihat status &amp; memperpanjang kapan saja di <a href="{{ $main }}/login" class="font-semibold text-[#ee4d2d] underline">halaman akun</a>.</p>
     </div>
 </section>
 
@@ -342,7 +343,7 @@
 <footer class="border-t border-slate-100 bg-white">
     <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-8 text-sm text-slate-500 sm:flex-row">
         <x-brand name="shofee" size="size-7" class="font-semibold text-slate-700" />
-        <div class="flex gap-5"><a href="#fitur" class="hover:text-[#ee4d2d]">Fitur</a><a href="#harga" class="hover:text-[#ee4d2d]">Harga</a><a href="#faq" class="hover:text-[#ee4d2d]">FAQ</a><a href="{{ url('/login') }}" class="hover:text-[#ee4d2d]">Akun</a><a href="{{ $hubUrl }}" class="hover:text-[#ee4d2d]">Aplikasi lain</a></div>
+        <div class="flex gap-5"><a href="#fitur" class="hover:text-[#ee4d2d]">Fitur</a><a href="#harga" class="hover:text-[#ee4d2d]">Harga</a><a href="#faq" class="hover:text-[#ee4d2d]">FAQ</a><a href="{{ $main }}/login" class="hover:text-[#ee4d2d]">Akun</a><a href="{{ $hubUrl }}" class="hover:text-[#ee4d2d]">Aplikasi lain</a></div>
         <div>© {{ date('Y') }} <a href="{{ $hubUrl }}" class="hover:text-[#ee4d2d]">TemanSeller</a>. Bukan produk resmi Shopee. <span class="text-xs text-slate-400">v{{ config('spill.version') }}</span></div>
     </div>
 </footer>
