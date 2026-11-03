@@ -67,6 +67,20 @@ class ApiTest extends TestCase
         $this->postJson('/api/index.php?r=auth', ['id_token' => 'tok', 'nonce' => 'n1', 'device_id' => 'dev-cccccccccccccccc'])->assertOk();
     }
 
+    public function test_snapshot_returns_value_from_30_days_ago(): void
+    {
+        [$token] = $this->login();
+        $h = ['Authorization' => "Bearer $token"];
+        \App\Models\ItemSnapshot::create(['item_key' => '1.2', 'day' => now('UTC')->subDays(30)->toDateString(), 'sold' => 900, 'm30' => 80]);
+        \App\Models\ItemSnapshot::create(['item_key' => '1.2', 'day' => now('UTC')->subDays(5)->toDateString(), 'sold' => 990, 'm30' => 95]);   // di luar jendela 20-45 hari
+        $r = $this->postJson('/api/index.php?r=snap', ['items' => [['k' => '1.2', 's' => 1000, 'm' => 100, 'p' => 5000], ['k' => 'bad', 'm' => 1], ['k' => '9.9', 'm' => 5]]], $h)->assertOk();
+        $this->assertSame(80, $r->json('prev')['1.2']['m']);
+        $this->assertArrayNotHasKey('9.9', $r->json('prev'));
+        $this->assertSame(1, \App\Models\ItemSnapshot::where('item_key', '1.2')->where('day', now('UTC')->toDateString())->count());
+        $this->assertSame(0, \App\Models\ItemSnapshot::where('item_key', 'bad')->count());
+        $this->postJson('/api/index.php?r=snap', ['items' => []])->assertStatus(401);
+    }
+
     public function test_checkout_then_webhook_is_idempotent_and_verifies(): void
     {
         [$token] = $this->login();

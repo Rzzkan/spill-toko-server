@@ -38,11 +38,11 @@ class ApiController extends Controller
         $route = trim((string) $r->query('r', ''), '/');
         $map = [
             'GET plans' => 'plans', 'POST auth' => 'auth', 'GET me' => 'me', 'POST checkout' => 'checkout',
-            'GET orders' => 'orders', 'POST ai/analyze' => 'analyze', 'POST midtrans/notify' => 'notify',
+            'GET orders' => 'orders', 'POST snap' => 'snap', 'POST ai/analyze' => 'analyze', 'POST midtrans/notify' => 'notify',
         ];
         $m = $map[$r->method() . ' ' . $route] ?? null;
         if (!$m) throw new ApiException('Endpoint tidak ditemukan', 404);
-        if (in_array($m, ['me', 'checkout', 'orders', 'analyze'], true)) {
+        if (in_array($m, ['me', 'checkout', 'orders', 'analyze', 'snap'], true)) {
             return app(\App\Http\Middleware\CustomerAuth::class)->handle($r, fn ($req) => $this->$m($req));
         }
         return $this->$m($r);
@@ -104,6 +104,38 @@ class ApiController extends Controller
             ->map(fn ($o) => ['order_id' => $o->order_id, 'plan' => $o->plan, 'amount' => $o->amount, 'status' => $o->status,
                 'created_at' => $o->created_at?->utc()->format('Y-m-d H:i:s'), 'paid_at' => $o->paid_at?->utc()->format('Y-m-d H:i:s')]);
         return $this->out(['orders' => $rows]);
+    }
+
+    /**
+     * Terima snapshot harian produk dari extension (angka pasti API) & balas dengan nilai ~30 hari lalu per produk,
+     * dipakai extension untuk menghitung trend terjual/omset. Butuh akses aktif.
+     */
+    public function snap(Request $r): JsonResponse
+    {
+        if (!$this->cust($r)->access()['access']) throw new ApiException('Akses berakhir', 402);
+        $rows = array_slice((array) $r->input('items', []), 0, 150);
+        $today = now('UTC')->toDateString();
+        $keys = [];
+        foreach ($rows as $it) {
+            $k = (string) ($it['k'] ?? '');
+            if (!preg_match('/^\d{1,12}\.\d{1,14}$/', $k)) continue;
+            $m = isset($it['m']) && is_numeric($it['m']) ? max(0, (int) $it['m']) : null;
+            $sold = isset($it['s']) && is_numeric($it['s']) ? max(0, (int) $it['s']) : null;
+            if ($m === null && $sold === null) continue;
+            $keys[] = $k;
+            \App\Models\ItemSnapshot::query()->updateOrCreate(['item_key' => $k, 'day' => $today],
+                ['sold' => $sold, 'm30' => $m, 'price' => isset($it['p']) && is_numeric($it['p']) ? max(0, (int) $it['p']) : null]);
+        }
+        $from = now('UTC')->subDays(45)->toDateString();
+        $to = now('UTC')->subDays(20)->toDateString();
+        $prev = [];
+        \App\Models\ItemSnapshot::query()->whereIn('item_key', $keys)->whereBetween('day', [$from, $to])->whereNotNull('m30')->orderBy('day')->get()
+            ->each(function ($row) use (&$prev) {
+                $age = abs(now('UTC')->startOfDay()->diffInDays(\Illuminate\Support\Carbon::parse($row->day, 'UTC')->startOfDay()) - 30);
+                if (!isset($prev[$row->item_key]) || $age < $prev[$row->item_key]['_a']) $prev[$row->item_key] = ['m' => $row->m30, 's' => $row->sold, 'd' => substr((string) $row->day, 0, 10), '_a' => $age];
+            });
+        foreach ($prev as &$p) unset($p['_a']);
+        return $this->out(['prev' => (object) $prev]);
     }
 
     public function analyze(Request $r): JsonResponse
