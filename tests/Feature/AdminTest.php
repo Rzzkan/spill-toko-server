@@ -88,9 +88,12 @@ class AdminTest extends TestCase
         $this->assertSame('abc-123.apps.googleusercontent.com', Settings::get('google.client_id'));
         $this->post('/admin/pengaturan/midtrans', ['s' => ['midtrans__server_key' => 'SB-Mid-server-1', 'midtrans__production' => '0']]);
         $this->assertSame('SB-Mid-server-1', Settings::get('midtrans.server_key'));
-        $this->post('/admin/pengaturan/langganan', ['s' => ['plan__monthly__price' => 'abc']])->assertSessionHas('error');
-        $this->post('/admin/pengaturan/langganan', ['s' => ['plan__monthly__price' => '30000', 'trial_days' => '14']]);
+        // harga & trial per aplikasi: diatur di Admin -> Aplikasi -> Ubah (Shofee termasuk)
+        $base = ['name' => 'Shofee', 'trial_days' => 14, 'sort' => 1, 'active' => 1, 'monthly_price' => 30000, 'monthly_days' => 30, 'yearly_price' => 249000, 'yearly_days' => 365];
+        $this->post('/admin/aplikasi/shofee', array_merge($base, ['monthly_price' => 500]))->assertSessionHasErrors('monthly_price');
+        $this->post('/admin/aplikasi/shofee', $base)->assertRedirect();
         $this->getJson('/api/index.php?r=plans')->assertJsonPath('plans.monthly.price', 30000)->assertJsonPath('trial_days', 14);
+        $this->getJson('/api/index.php?r=plans&app=shofee')->assertJsonPath('plans.yearly.days', 365);
     }
 
     public function test_prompt_default_is_not_stored_and_custom_is(): void

@@ -5,7 +5,7 @@ namespace App\Services;
 use App\Models\App as AppModel;
 
 /**
- * Paket & harga per aplikasi. Shofee memakai Pengaturan dashboard (kunci plan.*), aplikasi lain memakai kolom `plans` di tabel apps.
+ * Paket & harga per aplikasi, semuanya disimpan di kolom `plans` tabel apps (diatur di Admin → Aplikasi → Ubah).
  * `original` = harga coret (tampilan saja).
  */
 class Plans
@@ -17,20 +17,20 @@ class Plans
 
     private static function build(string $app): array
     {
-        if ($app !== AppModel::DEFAULT) return self::forApp($app);
-        $p = [
-            'monthly' => ['label' => 'Bulanan', 'price' => Settings::int('plan.monthly.price', 24000), 'original' => Settings::int('plan.monthly.original', 49000), 'days' => max(1, Settings::int('plan.monthly.days', 30))],
-            'yearly' => ['label' => 'Tahunan', 'price' => Settings::int('plan.yearly.price', 249000), 'original' => Settings::int('plan.yearly.original', 549000), 'days' => max(1, Settings::int('plan.yearly.days', 365))],
-        ];
-        if (Settings::bool('plan.lifetime.enabled')) {
-            $p['lifetime'] = ['label' => 'Lifetime', 'price' => Settings::int('plan.lifetime.price', 200000), 'original' => 0, 'days' => null];
-        }
-        return $p;
+        return self::forApp($app);
     }
+
+    /** Paket bawaan Shofee bila kolom `plans` belum terisi (mis. sebelum migrasi data). */
+    private const SHOFEE_DEFAULT = [
+        'monthly' => ['price' => 24000, 'original' => 49000, 'days' => 30],
+        'yearly' => ['price' => 249000, 'original' => 549000, 'days' => 365],
+        'lifetime' => ['enabled' => false, 'price' => 200000],
+    ];
 
     private static function forApp(string $slug): array
     {
         $cfg = (array) (AppCatalog::find($slug)?->plans ?? []);
+        if (!$cfg && $slug === AppModel::DEFAULT) $cfg = self::SHOFEE_DEFAULT;
         $out = [];
         foreach (['monthly' => ['Bulanan', 30], 'yearly' => ['Tahunan', 365]] as $k => [$label, $days]) {
             $x = (array) ($cfg[$k] ?? []);
@@ -44,8 +44,7 @@ class Plans
 
     public static function trialDays(string $app = AppModel::DEFAULT): int
     {
-        if ($app !== AppModel::DEFAULT) return max(0, (int) (AppCatalog::find($app)?->trial_days ?? 3));
-        return max(0, Settings::int('trial_days', 3));
+        return max(0, (int) (AppCatalog::find($app)?->trial_days ?? 3));
     }
 
     public static function find(string $plan, string $app = AppModel::DEFAULT): ?array { return self::all($app)[$plan] ?? null; }

@@ -26,23 +26,25 @@ class AppController extends Controller
 
     private function rules(bool $new): array
     {
+        // harga 0 = paket tidak dijual; bila dijual minimal Rp1.000 (batas Midtrans)
+        $price = ['nullable', 'integer', 'min:0', fn ($a, $v, $fail) => ((int) $v > 0 && (int) $v < 1000) ? $fail('Harga minimal Rp1.000 (atau 0 untuk tidak dijual).') : null];
         return [
             'slug' => $new ? ['required', 'regex:/^[a-z][a-z0-9\-]{1,29}$/', 'unique:apps,slug'] : ['prohibited'],
             'name' => ['required', 'string', 'max:80'], 'tagline' => ['nullable', 'string', 'max:200'],
             'url' => ['nullable', 'string', 'max:255', 'regex:#^(https://[^\s]+|/[A-Za-z0-9._~\-/?=&%\#]*)$#'], 'icon' => ['nullable', 'string', 'max:16'],
             'trial_days' => ['required', 'integer', 'min:0', 'max:60'], 'sort' => ['nullable', 'integer', 'min:0', 'max:999'],
-            'monthly_price' => ['nullable', 'integer', 'min:0'], 'monthly_original' => ['nullable', 'integer', 'min:0'],
-            'yearly_price' => ['nullable', 'integer', 'min:0'], 'yearly_original' => ['nullable', 'integer', 'min:0'],
-            'lifetime_price' => ['nullable', 'integer', 'min:0'],
+            'monthly_price' => $price, 'monthly_original' => ['nullable', 'integer', 'min:0'], 'monthly_days' => ['nullable', 'integer', 'min:1', 'max:3650'],
+            'yearly_price' => $price, 'yearly_original' => ['nullable', 'integer', 'min:0'], 'yearly_days' => ['nullable', 'integer', 'min:1', 'max:3650'],
+            'lifetime_price' => $price,
         ];
     }
 
     private function fill(Request $r, AppModel $app, bool $new): AppModel
     {
         $d = $r->validate($this->rules($new));
-        $plans = $app->slug === AppModel::DEFAULT ? null : [
-            'monthly' => ['price' => (int) ($d['monthly_price'] ?? 0), 'original' => (int) ($d['monthly_original'] ?? 0), 'days' => 30],
-            'yearly' => ['price' => (int) ($d['yearly_price'] ?? 0), 'original' => (int) ($d['yearly_original'] ?? 0), 'days' => 365],
+        $plans = [
+            'monthly' => ['price' => (int) ($d['monthly_price'] ?? 0), 'original' => (int) ($d['monthly_original'] ?? 0), 'days' => (int) ($d['monthly_days'] ?? 30) ?: 30],
+            'yearly' => ['price' => (int) ($d['yearly_price'] ?? 0), 'original' => (int) ($d['yearly_original'] ?? 0), 'days' => (int) ($d['yearly_days'] ?? 365) ?: 365],
             'lifetime' => ['enabled' => $r->boolean('lifetime_enabled'), 'price' => (int) ($d['lifetime_price'] ?? 0)],
         ];
         $app->fill(['name' => $d['name'], 'tagline' => $d['tagline'] ?? null, 'url' => ($d['url'] ?? '') !== '' ? $d['url'] : null, 'icon' => $d['icon'] ?? null, 'trial_days' => (int) $d['trial_days'],

@@ -130,7 +130,7 @@ class RefactorSafetyTest extends TestCase
 
     public function test_migration_backfills_legacy_customers(): void
     {
-        $this->artisan('migrate:rollback', ['--step' => 3, '--force' => true])->assertExitCode(0);   // 000600 (url) + 000500 (index) + 000400 (apps & subscriptions)
+        $this->artisan('migrate:rollback', ['--step' => 4, '--force' => true])->assertExitCode(0);   // 000700 (harga) + 000600 (url) + 000500 (index) + 000400 (apps & subscriptions)
         foreach ([['t', ['trial_ends_at' => now()->addDays(2)]], ['m', ['paid_until' => now()->addDays(9), 'paid_plan' => 'yearly']], ['l', ['lifetime' => true]], ['e', ['trial_ends_at' => now()->subDay()]]] as [$n, $legacy]) {
             Customer::query()->create($legacy + ['google_sub' => "s$n", 'email' => "$n@test.id", 'trial_ends_at' => now()->subYear()]);
         }

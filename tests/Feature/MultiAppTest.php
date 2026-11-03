@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\App as AppModel;
+use App\Services\Plans;
 use App\Models\Customer;
 use App\Services\Midtrans;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -78,6 +79,16 @@ class MultiAppTest extends TestCase
         $this->post('/admin/aplikasi/kasirku', $base + ['url' => ''])->assertRedirect();
         $this->assertNull(AppModel::query()->where('slug', 'kasirku')->value('url'));
         $this->get('/admin/aplikasi/kasirku')->assertOk()->assertSee('URL aplikasi');
+    }
+
+    public function test_each_app_has_its_own_prices(): void
+    {
+        $this->app2();
+        $this->assertSame(24000, Plans::all('shofee')['monthly']['price']);       // Shofee dari migrasi
+        $this->assertSame(15000, Plans::all('kasirku')['monthly']['price']);
+        $this->assertArrayNotHasKey('yearly', Plans::all('kasirku'));            // harga 0 = tidak dijual
+        $this->assertSame(3, Plans::trialDays('shofee'));
+        $this->assertSame(5, Plans::trialDays('kasirku'));
     }
 
     public function test_payment_extends_only_the_ordered_app(): void
