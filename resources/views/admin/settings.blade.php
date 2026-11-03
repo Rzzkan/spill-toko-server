@@ -31,6 +31,14 @@
         <div class="flex flex-wrap items-center gap-2"><span class="w-28 text-gray-500">Finish URL</span><code id="fin" class="break-all rounded-lg bg-gray-100 px-3 py-2 dark:bg-white/10 dark:text-gray-200">{{ $finish }}</code><x-admin.btn tone="outline" size="sm" type="button" data-copy-target="#fin">Salin</x-admin.btn></div>
     </div>
 </x-admin.card>
+@elseif ($group === 'affiliate')
+<x-admin.card title="Cara menyiapkan Affiliate Shopee" class="mb-6">
+    <ol class="list-decimal space-y-1.5 pl-5 text-sm text-gray-600 dark:text-gray-400">
+        <li>Ajukan akses di <b>Shopee Affiliate → Open API</b> (akun affiliate Anda). Setelah disetujui akan terbit <b>App ID</b> dan <b>Secret</b>.</li>
+        <li>Isi keduanya di bawah, nyalakan <b>Aktifkan data Affiliate</b>, simpan, lalu klik <b>Tes Affiliate</b>. Pesan tes menampilkan contoh data mentah.</li>
+        <li>Tab <b>Affiliate</b> di extension akan menampilkan komisi per produk (Xtra, Shopee, total) setelah ini aktif. Data video & live tidak tersedia di Open API.</li>
+    </ol>
+</x-admin.card>
 @elseif ($group === 'prompt')
 <div class="mb-6 rounded-xl border border-gray-200 p-4 text-sm text-gray-600 dark:border-gray-800 dark:text-gray-400">Prompt bawaan sudah terisi. Ubah sesuai kebutuhan; mengosongkan kolom mengembalikan ke bawaan. <b>Jangan ubah nama kunci JSON</b> di skema keluaran (ringkasan, skor, label, temuan, peluang, risiko, rekomendasi, kata_kunci, saran_judul) karena dipakai tampilan extension. Hasil cache lama otomatis tidak terpakai saat prompt berubah.</div>
 @endif
@@ -55,7 +63,7 @@
 
 <form method="POST" action="{{ route('admin.settings.update', $group) }}"
     x-data="{
-        res: {}, busy: { google: false, midtrans: false, ai: false, models: false }, models: [],
+        res: {}, busy: { google: false, midtrans: false, affiliate: false, ai: false, models: false }, models: [],
         async run(what) {
             this.busy[what] = true; this.res[what] = null;
             try {
@@ -109,10 +117,11 @@
 
         <div class="mt-8 flex flex-wrap items-center gap-3 border-t border-gray-100 pt-6 dark:border-gray-800">
             <x-admin.btn>Simpan pengaturan</x-admin.btn>
-            @if (in_array($group, ['google', 'midtrans', 'ai']))
+            @if (in_array($group, ['google', 'midtrans', 'affiliate', 'ai']))
                 <span class="text-xs text-gray-500">Tes memakai nilai yang <b>sudah tersimpan</b>:</span>
                 @if ($group === 'google')<x-admin.btn tone="outline" type="button" @click="run('google')" x-bind:disabled="busy.google === true"><span x-text="busy.google ? 'Menguji…' : 'Tes Google'"></span></x-admin.btn>@endif
                 @if ($group === 'midtrans')<x-admin.btn tone="outline" type="button" @click="run('midtrans')" x-bind:disabled="busy.midtrans === true"><span x-text="busy.midtrans ? 'Menguji…' : 'Tes Midtrans'"></span></x-admin.btn>@endif
+                @if ($group === 'affiliate')<x-admin.btn tone="outline" type="button" @click="run('affiliate')" x-bind:disabled="busy.affiliate === true"><span x-text="busy.affiliate ? 'Menguji…' : 'Tes Affiliate'"></span></x-admin.btn>@endif
                 @if ($group === 'ai')
                     <x-admin.btn tone="outline" type="button" @click="run('ai')" x-bind:disabled="busy.ai === true"><span x-text="busy.ai ? 'Menguji…' : 'Tes koneksi kenari.id'"></span></x-admin.btn>
                     <x-admin.btn tone="outline" type="button" @click="run('models')" x-bind:disabled="busy.models === true"><span x-text="busy.models ? 'Memuat…' : 'Muat daftar model'"></span></x-admin.btn>

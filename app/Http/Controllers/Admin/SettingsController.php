@@ -9,6 +9,7 @@ use App\Services\AiPrompts;
 use App\Services\License;
 use App\Services\Midtrans;
 use App\Services\Settings;
+use App\Services\ShopeeAffiliate;
 use App\Support\SettingDefs;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -94,6 +95,7 @@ class SettingsController extends Controller
         try {
             $res = match ($what) {
                 'midtrans' => Midtrans::test(),
+                'affiliate' => ShopeeAffiliate::test(),
                 'ai' => Ai::test(),
                 'models' => (function () { [$ok, $d] = Ai::fetchModels(); return [$ok, $ok ? count($d) . ' model ditemukan' : $d, $ok ? $d : null]; })(),
                 'google' => $this->testGoogle(),

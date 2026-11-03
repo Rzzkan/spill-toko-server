@@ -84,6 +84,36 @@ class ApiTest extends TestCase
         $this->postJson('/api/index.php?r=snap', ['items' => []])->assertStatus(401);
     }
 
+    public function test_affiliate_disabled_then_enabled_with_signature_and_cache(): void
+    {
+        [$token] = $this->login();
+        $h = ['Authorization' => "Bearer $token"];
+        $this->postJson('/api/index.php?r=affiliate', ['key' => '1.2'], $h)->assertOk()->assertJsonPath('enabled', false);
+        Settings::set('affiliate.enabled', '1'); Settings::set('affiliate.app_id', 'APP1'); Settings::set('affiliate.secret', 'SEC1');
+        Http::fake(['*open-api.affiliate*' => Http::response(['data' => ['productOfferV2' => ['nodes' => [['itemId' => '2', 'productName' => 'X', 'shopId' => '1', 'shopName' => 'S', 'priceMin' => '245000', 'priceMax' => '245000',
+            'sales' => 1650, 'commissionRate' => '0.085', 'sellerCommissionRate' => '0.07', 'shopeeCommissionRate' => '0.015', 'ratingStar' => '4.8']]]]])]);
+        $r = $this->postJson('/api/index.php?r=affiliate', ['key' => '1.2'], $h)->assertOk()->assertJsonPath('enabled', true)->assertJsonPath('found', true);
+        $this->assertEquals([8.5, 7.0, 1.5, 20825.0], [$r->json('data.rate_total'), $r->json('data.rate_seller'), $r->json('data.rate_shopee'), $r->json('data.commission')]);
+        Http::assertSent(function ($req) {
+            $b = $req->body();
+            $ts = preg_match('/Timestamp=(\d+)/', $req->header('Authorization')[0], $m) ? $m[1] : '';
+            return str_starts_with($req->header('Authorization')[0], 'SHA256 Credential=APP1, Timestamp=') && str_contains($req->header('Authorization')[0], 'Signature=' . hash('sha256', 'APP1' . $ts . $b . 'SEC1'));
+        });
+        $this->postJson('/api/index.php?r=affiliate', ['key' => '1.2'], $h)->assertOk();   // dari cache
+        Http::assertSentCount(1);
+        $this->postJson('/api/index.php?r=affiliate', ['key' => 'bad'], $h)->assertStatus(400);
+    }
+
+    public function test_affiliate_falls_back_to_minimal_fields_on_schema_error(): void
+    {
+        [$token] = $this->login();
+        Settings::set('affiliate.enabled', '1'); Settings::set('affiliate.app_id', 'A'); Settings::set('affiliate.secret', 'S');
+        Http::fake(['*open-api.affiliate*' => Http::sequence()->push(['errors' => [['message' => 'Cannot query field "commission" on type "ProductOfferV2"']]])
+            ->push(['data' => ['productOfferV2' => ['nodes' => [['itemId' => '5', 'commissionRate' => '0.1', 'priceMin' => '1000']]]]])]);
+        $this->postJson('/api/index.php?r=affiliate', ['key' => '9.5'], ['Authorization' => "Bearer $token"])->assertOk()->assertJsonPath('data.rate_total', 10)->assertJsonPath('data.commission', 100);
+        Http::assertSentCount(2);
+    }
+
     public function test_checkout_then_webhook_is_idempotent_and_verifies(): void
     {
         [$token] = $this->login();

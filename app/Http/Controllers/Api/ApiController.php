@@ -38,11 +38,11 @@ class ApiController extends Controller
         $route = trim((string) $r->query('r', ''), '/');
         $map = [
             'GET plans' => 'plans', 'POST auth' => 'auth', 'GET me' => 'me', 'POST checkout' => 'checkout',
-            'GET orders' => 'orders', 'POST snap' => 'snap', 'POST ai/analyze' => 'analyze', 'POST midtrans/notify' => 'notify',
+            'GET orders' => 'orders', 'POST snap' => 'snap', 'POST affiliate' => 'affiliate', 'POST ai/analyze' => 'analyze', 'POST midtrans/notify' => 'notify',
         ];
         $m = $map[$r->method() . ' ' . $route] ?? null;
         if (!$m) throw new ApiException('Endpoint tidak ditemukan', 404);
-        if (in_array($m, ['me', 'checkout', 'orders', 'analyze', 'snap'], true)) {
+        if (in_array($m, ['me', 'checkout', 'orders', 'analyze', 'snap', 'affiliate'], true)) {
             return app(\App\Http\Middleware\CustomerAuth::class)->handle($r, fn ($req) => $this->$m($req));
         }
         return $this->$m($r);
@@ -144,6 +144,17 @@ class ApiController extends Controller
                 ->each(function ($row) use (&$last) { $last[$row->item_key] = ['s' => (int) $row->sold, 'm' => $row->m30 !== null ? (int) $row->m30 : null, 'd' => substr((string) $row->day, 0, 10)]; });
         }
         return $this->out(['prev' => (object) $prev, 'last' => (object) $last]);
+    }
+
+    /** Komisi affiliate per produk (Open API Shopee, kredensial dari admin). */
+    public function affiliate(Request $r): JsonResponse
+    {
+        if (!$this->cust($r)->access()['access']) throw new ApiException('Akses berakhir', 402);
+        if (!\App\Services\ShopeeAffiliate::configured()) return $this->out(['enabled' => false]);
+        $key = (string) $r->input('key', '');
+        if (!preg_match('/^(\d{1,12})\.(\d{1,14})$/', $key, $m)) throw new ApiException('Produk tidak valid', 400);
+        $d = \App\Services\ShopeeAffiliate::product($m[1], $m[2]);
+        return $this->out(['enabled' => true, 'found' => $d !== null, 'data' => $d]);
     }
 
     public function analyze(Request $r): JsonResponse

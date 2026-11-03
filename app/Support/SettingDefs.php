@@ -9,6 +9,7 @@ class SettingDefs
         'langganan' => 'Langganan',
         'google' => 'Google Login',
         'midtrans' => 'Midtrans',
+        'affiliate' => 'Affiliate Shopee',
         'ai' => 'AI (kenari.id)',
         'prompt' => 'Prompt AI',
         'ekstensi' => 'Extension',
@@ -36,6 +37,12 @@ class SettingDefs
             // ---- google ----
             'google.client_id' => ['group' => 'google', 'label' => 'OAuth Client ID', 'type' => 'text', 'default' => '', 'help' => 'Dari Google Cloud Console → APIs & Services → Credentials → OAuth client ID (tipe Web application). Berakhiran .apps.googleusercontent.com.'],
 
+            // ---- affiliate shopee (Open API resmi) ----
+            'affiliate.enabled'     => ['group' => 'affiliate', 'label' => 'Aktifkan data Affiliate', 'type' => 'bool', 'default' => '0', 'help' => 'Bila aktif dan kredensial terisi, tab Affiliate di extension menampilkan komisi produk.'],
+            'affiliate.app_id'      => ['group' => 'affiliate', 'label' => 'App ID', 'type' => 'text', 'default' => '', 'help' => 'Dari Shopee Affiliate → Open API (setelah pengajuan disetujui).'],
+            'affiliate.secret'      => ['group' => 'affiliate', 'label' => 'Secret', 'type' => 'secret', 'default' => '', 'help' => 'Disimpan terenkripsi. Dipakai hanya untuk menandatangani permintaan dari server ini.'],
+            'affiliate.endpoint'    => ['group' => 'affiliate', 'label' => 'Endpoint GraphQL', 'type' => 'url', 'default' => 'https://open-api.affiliate.shopee.co.id/graphql', 'help' => 'Bawaan untuk Indonesia. Ubah hanya bila Shopee memberi alamat lain.'],
+            'affiliate.cache_hours' => ['group' => 'affiliate', 'label' => 'Simpan hasil (jam)', 'type' => 'number', 'default' => '12', 'min' => 1, 'help' => 'Hasil per produk disimpan agar tidak menghabiskan batas permintaan Shopee.'],
             // ---- midtrans ----
             'midtrans.production' => ['group' => 'midtrans', 'label' => 'Mode Production', 'type' => 'bool', 'default' => '0', 'help' => 'Matikan = Sandbox (uji coba). Server Key harus sesuai mode.'],
             'midtrans.server_key' => ['group' => 'midtrans', 'label' => 'Server Key', 'type' => 'secret', 'default' => '', 'help' => 'Sandbox: SB-Mid-server-… · Production: Mid-server-… (Midtrans → Settings → Access Keys).'],

@@ -15,6 +15,7 @@ Route::middleware(CustomerAuth::class)->group(function () {
     Route::get('/me', [ApiController::class, 'me']);
     Route::post('/checkout', [ApiController::class, 'checkout']);
     Route::get('/orders', [ApiController::class, 'orders']);
+    Route::post('/affiliate', [ApiController::class, 'affiliate'])->middleware('throttle:60,1');
     Route::post('/snap', [ApiController::class, 'snap']);
     Route::post('/ai/analyze', [ApiController::class, 'analyze']);
 });
