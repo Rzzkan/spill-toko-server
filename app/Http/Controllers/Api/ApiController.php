@@ -59,6 +59,10 @@ class ApiController extends Controller
         $did = trim((string) $r->input('device_id', ''));
         if (!preg_match('/^[A-Za-z0-9\-]{16,64}$/', $did)) throw new ApiException('Versi extension terlalu lama. Perbarui extension lalu masuk lagi.', 400);
         $c = Customer::fromGoogle($g);
+        if (!\Illuminate\Support\Facades\Schema::hasTable('customer_devices')) { // migrasi belum dijalankan: jangan 500
+            $token = Jwt::sign(['sub' => $c->id, 'dev' => 0, 'iat' => time(), 'exp' => time() + 60 * 86400]);
+            return $this->out(['token' => $token, 'license' => License::make($c), 'plans' => $this->plansPublic(), 'ai' => Ai::info($c)]);
+        }
         $hash = CustomerDevice::hash($did);
         $dev = $c->devices()->where('device_hash', $hash)->first();
         if (!$dev) {

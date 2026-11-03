@@ -17,6 +17,7 @@ class CustomerAuth
         $claims = Jwt::verify((string) $request->bearerToken());
         $customer = $claims ? Customer::query()->find((int) ($claims['sub'] ?? 0)) : null;
         if (!$customer) throw new ApiException('Sesi tidak valid, silakan login ulang', 401);
+        if (!\Illuminate\Support\Facades\Schema::hasTable('customer_devices')) { $request->attributes->set('customer', $customer); return $next($request); }
         // token harus terikat ke browser yang masih terdaftar (dicabut lewat halaman Akun -> sesi berakhir)
         $dev = $customer ? CustomerDevice::query()->where('customer_id', $customer->id)->find((int) ($claims['dev'] ?? 0)) : null;
         if (!$dev) throw new ApiException('Browser ini sudah dilepas dari akun atau sesi lama. Silakan masuk ulang.', 401);

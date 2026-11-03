@@ -46,7 +46,7 @@ class PortalController extends Controller
             'c' => $c, 'a' => $c->access(), 'plans' => Plans::all(), 'trialDays' => Plans::trialDays(),
             'orders' => Order::query()->where('customer_id', $c->id)->latest('id')->limit(15)->get(),
             'ai' => Ai::info($c), 'canPay' => Midtrans::configured(),
-            'devices' => $c->devices()->orderByDesc('last_seen_at')->get(), 'maxDevices' => max(1, (int) config('spill.max_devices', 2)),
+            'devices' => \Illuminate\Support\Facades\Schema::hasTable('customer_devices') ? $c->devices()->orderByDesc('last_seen_at')->get() : collect(), 'maxDevices' => max(1, (int) config('spill.max_devices', 2)),
         ]);
     }
 

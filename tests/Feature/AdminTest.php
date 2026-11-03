@@ -43,10 +43,22 @@ class AdminTest extends TestCase
         $c = Customer::query()->create(['google_sub' => 's', 'email' => 'c@test.id', 'name' => 'C', 'trial_ends_at' => now()->addDays(3)]);
         $this->actingAs($this->admin());
         foreach (['/admin', '/admin/pengguna', "/admin/pengguna/{$c->id}", '/admin/order', '/admin/pemakaian-ai', '/admin/profil',
-            '/admin/pengaturan/langganan', '/admin/pengaturan/google', '/admin/pengaturan/midtrans', '/admin/pengaturan/ai', '/admin/pengaturan/prompt', '/admin/pengaturan/ekstensi'] as $u) {
+            '/admin/pengaturan/langganan', '/admin/pengaturan/google', '/admin/pengaturan/midtrans', '/admin/pengaturan/affiliate', '/admin/pengaturan/ai', '/admin/pengaturan/prompt', '/admin/pengaturan/ekstensi'] as $u) {
             $this->get($u)->assertOk();
         }
         $this->get('/admin/pengaturan/zzz')->assertNotFound();
+    }
+
+    public function test_affiliate_settings_page_menu_save_and_test(): void
+    {
+        $this->actingAs($this->admin());
+        $this->get('/admin/pengaturan/midtrans')->assertOk()->assertSee('Affiliate Shopee')->assertSee('/admin/pengaturan/affiliate', false);
+        $this->get('/admin/pengaturan/affiliate')->assertOk()->assertSee('Cara menyiapkan Affiliate Shopee')->assertSee('Tes Affiliate')->assertSee('App ID');
+        $this->post('/admin/pengaturan/affiliate', ['s' => ['affiliate__enabled' => '1', 'affiliate__app_id' => 'APP9', 'affiliate__secret' => 'SEC-RAHASIA']])->assertRedirect();
+        $this->assertTrue(\App\Services\ShopeeAffiliate::configured());
+        $this->assertNotSame('SEC-RAHASIA', \App\Models\Setting::query()->where('key', 'affiliate.secret')->value('value'));   // terenkripsi
+        \Illuminate\Support\Facades\Http::fake(['*open-api.affiliate*' => \Illuminate\Support\Facades\Http::response(['data' => ['productOfferV2' => ['nodes' => [['itemId' => '1']]]]])]);
+        $this->postJson('/admin/pengaturan-tes/affiliate')->assertOk()->assertJsonPath('ok', true);
     }
 
     public function test_settings_are_saved_secrets_encrypted_and_blank_keeps(): void
