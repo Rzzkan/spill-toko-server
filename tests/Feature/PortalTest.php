@@ -35,7 +35,8 @@ class PortalTest extends TestCase
     {
         $this->webLogin()->assertOk()->assertJsonPath('redirect', url('/akun'));
         $this->assertSame(1, Customer::count());
-        $this->get('/akun')->assertOk()->assertSee('Trial')->assertSee('web@user.test')->assertSee('Pilih Bulanan');
+        $this->get('/akun')->assertOk()->assertSee('Trial')->assertSee('web@user.test')->assertSee('Shofee');
+        $this->get('/akun/aplikasi/shofee')->assertOk()->assertSee('Pilih Bulanan');
     }
 
     public function test_revoke_device_from_portal(): void
@@ -71,10 +72,11 @@ class PortalTest extends TestCase
     public function test_lifetime_user_sees_lifetime_and_cannot_rebuy(): void
     {
         $this->webLogin()->assertOk();
-        Customer::query()->update(['lifetime' => true]);
+        Customer::first()->subscription('shofee', true)->update(['lifetime' => true]);
         Settings::set('midtrans.server_key', 'SB-Mid-server-1');
-        $this->get('/akun')->assertOk()->assertSee('Selamanya')->assertSee('Anda memiliki akses Lifetime');
-        $this->post('/akun/bayar', ['plan' => 'lifetime'])->assertSessionHas('error');
+        $this->get('/akun')->assertOk()->assertSee('Selamanya');
+        $this->get('/akun/aplikasi/shofee')->assertOk()->assertSee('Anda memiliki akses Lifetime');
+        $this->post('/akun/aplikasi/shofee/bayar', ['plan' => 'lifetime'])->assertSessionHas('error');
         $this->assertSame(0, Order::count());
     }
 
@@ -112,9 +114,9 @@ class PortalTest extends TestCase
         $c = Customer::first();
         $o = Order::query()->create(['order_id' => 'ST-Y', 'customer_id' => $c->id, 'plan' => 'yearly', 'amount' => 249000, 'status' => 'pending']);
         \App\Services\Midtrans::markPaid('ST-Y', 'qris', '{}');
-        $c = $c->fresh();
-        $this->assertSame('yearly', $c->paid_plan);
-        $this->assertTrue($c->paid_until->greaterThan(now()->addDays(364)));
+        $s = $c->subscription('shofee');
+        $this->assertSame('yearly', $s->paid_plan);
+        $this->assertTrue($s->paid_until->greaterThan(now()->addDays(364)));
         $this->get('/akun')->assertSee('Tahunan');
     }
 
@@ -125,7 +127,7 @@ class PortalTest extends TestCase
         $this->get('/')->assertSee('7x/hari', false)->assertSee('55x/hari', false)->assertSee('tanpa batas/hari', false);
         $this->getJson('/api/index.php?r=plans')->assertJsonPath('plans.monthly.ai_limit', 55)->assertJsonPath('plans.yearly.ai_limit', null);
         $this->webLogin()->assertOk();
-        $this->get('/akun')->assertOk()->assertSee('55 analisis/hari', false);
+        $this->get('/akun/aplikasi/shofee')->assertOk()->assertSee('55 analisis/hari', false);
     }
 
     public function test_landing_has_no_raw_blade_directives(): void

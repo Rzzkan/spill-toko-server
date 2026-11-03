@@ -30,27 +30,44 @@ class Customer extends Model
     public function aiLogs(): HasMany { return $this->hasMany(AiLog::class); }
     public function devices(): HasMany { return $this->hasMany(CustomerDevice::class); }
 
-    /** @return array{plan:string,access:bool,until:?int} until = unix timestamp */
-    public function access(): array
+    public function subscriptions(): HasMany { return $this->hasMany(Subscription::class); }
+
+    /**
+     * Langganan untuk satu aplikasi. Data Shofee lama (kolom di tabel customers) otomatis dipindahkan bila belum ada barisnya.
+     * Aplikasi lain: baris dibuat (dengan trial) hanya bila $create = true, yaitu saat pengguna mulai memakai aplikasi itu.
+     */
+    public function subscription(string $app = App::DEFAULT, bool $create = false): ?Subscription
     {
-        $now = time();
-        $paid = $this->paid_until?->getTimestamp() ?? 0;
-        $trial = $this->trial_ends_at?->getTimestamp() ?? 0;
-        if ($this->lifetime) return ['plan' => 'lifetime', 'access' => true, 'until' => null];
-        if ($paid > $now) return ['plan' => 'monthly', 'access' => true, 'until' => $paid, 'tier' => $this->paid_plan ?: 'monthly'];
-        if ($trial > $now) return ['plan' => 'trial', 'access' => true, 'until' => $trial];
-        return ['plan' => 'expired', 'access' => false, 'until' => max($paid, $trial) ?: null];
+        $s = $this->subscriptions()->where('app', $app)->first();
+        if ($s) return $s;
+        if ($app === App::DEFAULT) {
+            return $this->subscriptions()->create(['app' => $app, 'trial_ends_at' => $this->trial_ends_at, 'paid_until' => $this->paid_until,
+                'paid_plan' => $this->paid_plan, 'lifetime' => (bool) $this->lifetime]);
+        }
+        if (!$create) return null;
+        return $this->subscriptions()->create(['app' => $app, 'trial_ends_at' => now()->addDays(\App\Services\Plans::trialDays($app)), 'lifetime' => false]);
     }
 
-    public function scopeStatus($q, ?string $status)
+    /** @return array{plan:string,access:bool,until:?int} until = unix timestamp; plan 'none' = belum pernah memakai aplikasi */
+    public function access(string $app = App::DEFAULT): array
     {
+        $s = $this->subscription($app);
+        return $s ? $s->access() : ['plan' => 'none', 'access' => false, 'until' => null];
+    }
+
+    public function scopeStatus($q, ?string $status, string $app = App::DEFAULT)
+    {
+        if (!in_array($status, ['lifetime', 'monthly', 'trial', 'expired'], true)) return $q;
         $now = now();
-        return match ($status) {
-            'lifetime' => $q->where('lifetime', true),
-            'monthly' => $q->where('lifetime', false)->where('paid_until', '>', $now),
-            'trial' => $q->where('lifetime', false)->where(fn ($w) => $w->whereNull('paid_until')->orWhere('paid_until', '<=', $now))->where('trial_ends_at', '>', $now),
-            'expired' => $q->where('lifetime', false)->where(fn ($w) => $w->whereNull('paid_until')->orWhere('paid_until', '<=', $now))->where('trial_ends_at', '<=', $now),
-            default => $q,
-        };
+        return $q->whereHas('subscriptions', function ($s) use ($status, $app, $now) {
+            $s->where('app', $app);
+            $unpaid = fn ($w) => $w->whereNull('paid_until')->orWhere('paid_until', '<=', $now);
+            match ($status) {
+                'lifetime' => $s->where('lifetime', true),
+                'monthly' => $s->where('lifetime', false)->where('paid_until', '>', $now),
+                'trial' => $s->where('lifetime', false)->where($unpaid)->where('trial_ends_at', '>', $now),
+                'expired' => $s->where('lifetime', false)->where($unpaid)->where(fn ($w) => $w->whereNull('trial_ends_at')->orWhere('trial_ends_at', '<=', $now)),
+            };
+        });
     }
 }

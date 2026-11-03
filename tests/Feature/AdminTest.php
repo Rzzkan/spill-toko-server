@@ -122,7 +122,7 @@ class AdminTest extends TestCase
         $this->post("/admin/pengguna/{$c->id}", ['action' => 'add_days', 'days' => 10]);
         $this->assertSame('monthly', $c->fresh()->access()['plan']);
         $this->post("/admin/pengguna/{$c->id}", ['action' => 'lifetime']);
-        $this->assertTrue($c->fresh()->lifetime);
+        $this->assertTrue($c->fresh()->subscription('shofee')->lifetime);
         $this->post("/admin/pengguna/{$c->id}", ['action' => 'revoke']);
         $this->assertSame('expired', $c->fresh()->access()['plan']);
         $this->assertDatabaseCount('admin_logs', 3);

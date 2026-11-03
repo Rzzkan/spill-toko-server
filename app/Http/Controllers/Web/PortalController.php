@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web;
 
 use App\Exceptions\ApiException;
 use App\Http\Controllers\Controller;
+use App\Models\App as AppModel;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Services\Ai;
@@ -42,25 +43,47 @@ class PortalController extends Controller
     public function account(Request $r)
     {
         $c = $r->attributes->get('customer');
+        $apps = AppModel::listActive()->map(function (AppModel $app) use ($c) {
+            $sub = $c->subscription($app->slug);   // null = belum pernah memakai aplikasi ini
+            $a = $sub ? $sub->access() : ['plan' => 'none', 'access' => false, 'until' => null];
+            return ['app' => $app, 'a' => $a, 'sub' => $sub];
+        });
         return view('portal.account', [
-            'c' => $c, 'a' => $c->access(), 'plans' => Plans::all(), 'trialDays' => Plans::trialDays(),
+            'c' => $c, 'apps' => $apps, 'plansByApp' => $apps->mapWithKeys(fn ($x) => [$x['app']->slug => Plans::all($x['app']->slug)])->all(),
             'orders' => Order::query()->where('customer_id', $c->id)->latest('id')->limit(15)->get(),
-            'ai' => Ai::info($c), 'canPay' => Midtrans::configured(),
+            'appNames' => AppModel::query()->pluck('name', 'slug')->all(),
             'devices' => \Illuminate\Support\Facades\Schema::hasTable('customer_devices') ? $c->devices()->orderByDesc('last_seen_at')->get() : collect(), 'maxDevices' => max(1, (int) config('spill.max_devices', 2)),
         ]);
     }
 
-    /** Buat order + transaksi Midtrans lalu arahkan ke halaman bayar. Galat -> kembali dengan pesan. */
-    private function checkout(Customer $c, string $plan, string $errorTo)
+    /** Rincian langganan satu aplikasi + pilihan paket. */
+    public function app(Request $r, string $slug)
     {
-        $p = Plans::find($plan);
+        $app = AppModel::slugOk($slug) ? AppModel::bySlug($slug) : null;
+        if (!$app || !$app->active) abort(404);
+        $c = $r->attributes->get('customer');
+        $sub = $c->subscription($slug);
+        $a = $sub ? $sub->access() : ['plan' => 'none', 'access' => false, 'until' => null];
+        return view('portal.app', [
+            'c' => $c, 'appRow' => $app, 'a' => $a, 'sub' => $sub, 'plans' => Plans::all($slug), 'trialDays' => Plans::trialDays($slug),
+            'ai' => Ai::info($c), 'canPay' => Midtrans::configured(),
+            'orders' => Order::query()->where('customer_id', $c->id)->where('app', $slug)->latest('id')->limit(10)->get(),
+        ]);
+    }
+
+    /** Buat order + transaksi Midtrans lalu arahkan ke halaman bayar. Galat -> kembali dengan pesan. */
+    private function checkout(Customer $c, string $plan, string $errorTo, string $slug = AppModel::DEFAULT)
+    {
+        $app = AppModel::slugOk($slug) ? AppModel::bySlug($slug) : null;
+        if (!$app || !$app->active) return redirect($errorTo)->with('error', 'Aplikasi tidak dikenal.');
+        $p = Plans::find($plan, $slug);
         if (!$p) return redirect($errorTo)->with('error', 'Paket tidak dikenal.');
-        if ($plan === 'lifetime' && $c->lifetime) return redirect($errorTo)->with('error', 'Akun ini sudah Lifetime.');
-        if ($c->lifetime) return redirect($errorTo)->with('error', 'Akun Anda sudah Lifetime, tidak perlu berlangganan.');
-        $order = Order::query()->create(['order_id' => 'ST-' . time() . '-' . Str::lower(Str::random(8)), 'customer_id' => $c->id,
+        $sub = $c->subscription($slug, true);
+        if ($sub->lifetime) return redirect($errorTo)->with('error', 'Akun Anda sudah Lifetime untuk ' . $app->name . ', tidak perlu berlangganan.');
+        $order = Order::query()->create(['order_id' => 'ST-' . time() . '-' . Str::lower(Str::random(8)), 'customer_id' => $c->id, 'app' => $slug,
             'plan' => $plan, 'amount' => $p['price'], 'status' => 'pending']);
         try {
-            $t = Midtrans::createTransaction($order, $c->email, (string) $c->name, $p['label']);
+            $t = Midtrans::createTransaction($order, $c->email, (string) $c->name, $p['label'], $app->name);
         } catch (ApiException $e) {
             $order->update(['status' => 'failed']);
             return redirect($errorTo)->with('error', $e->getMessage());
@@ -69,24 +92,26 @@ class PortalController extends Controller
         return redirect()->away($t['redirect_url']);
     }
 
-    public function pay(Request $r)
+    public function pay(Request $r, string $app = AppModel::DEFAULT)
     {
-        return $this->checkout($r->attributes->get('customer'), (string) $r->input('plan'), route('portal.account'));
+        return $this->checkout($r->attributes->get('customer'), (string) $r->input('plan'), route('portal.app', $app), $app);
     }
 
-    /** Tombol harga di landing page: /beli/{plan} -> (login Google bila belum) -> langsung ke Midtrans. */
-    public function buy(Request $r, string $plan)
+    /** Tombol harga di landing page: /beli/{plan} (Shofee) atau /beli/{app}/{plan} -> (login Google bila belum) -> langsung ke Midtrans. */
+    public function buy(Request $r, string $plan, string $app = AppModel::DEFAULT)
     {
-        if (!Plans::find($plan)) return redirect('/#harga');
+        if (!AppModel::slugOk($app) || !Plans::find($plan, $app)) return redirect('/#harga');
         $r->session()->put('buy_plan', $plan);
+        $r->session()->put('buy_app', $app);
         return $r->session()->has('customer_id') ? redirect()->route('portal.buy.go') : redirect()->route('portal.login');
     }
 
     public function buyGo(Request $r)
     {
         $plan = (string) $r->session()->pull('buy_plan', '');
+        $app = (string) $r->session()->pull('buy_app', AppModel::DEFAULT);
         if ($plan === '') return redirect()->route('portal.account');
-        return $this->checkout($r->attributes->get('customer'), $plan, route('portal.account'));
+        return $this->checkout($r->attributes->get('customer'), $plan, route('portal.app', $app), $app);
     }
 
     /** Lepas satu browser dari akun: token extension di browser itu langsung tidak berlaku. */

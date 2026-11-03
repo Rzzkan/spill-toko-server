@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Exceptions\ApiException;
 use App\Http\Controllers\Controller;
+use App\Models\App as AppModel;
 use App\Models\Customer;
 use App\Models\CustomerDevice;
 use App\Models\Order;
@@ -27,9 +28,18 @@ class ApiController extends Controller
 
     private function cust(Request $r): Customer { return $r->attributes->get('customer'); }
 
-    private function plansPublic(): array
+    /** Aplikasi yang diminta (header X-App / parameter app). Tanpa keterangan = Shofee, agar extension lama tetap jalan. */
+    private function app(Request $r): string
     {
-        return collect(Plans::all())->map(fn ($p, $k) => ['label' => $p['label'], 'price' => $p['price'], 'original' => $p['original'] ?? 0, 'days' => $p['days'], 'ai_limit' => Ai::quota($k)])->all();
+        $slug = strtolower(trim((string) ($r->header('X-App') ?: $r->input('app', $r->query('app', AppModel::DEFAULT)))));
+        $row = AppModel::slugOk($slug) ? AppModel::bySlug($slug) : null;
+        if (!$row || !$row->active) throw new ApiException('Aplikasi tidak dikenal', 404);
+        return $slug;
+    }
+
+    private function plansPublic(string $app = AppModel::DEFAULT): array
+    {
+        return collect(Plans::all($app))->map(fn ($p, $k) => ['label' => $p['label'], 'price' => $p['price'], 'original' => $p['original'] ?? 0, 'days' => $p['days'], 'ai_limit' => $app === AppModel::DEFAULT ? Ai::quota($k) : null])->all();
     }
 
     /** Dukungan gaya lama: /api/index.php?r=plans */
@@ -48,9 +58,10 @@ class ApiController extends Controller
         return $this->$m($r);
     }
 
-    public function plans(): JsonResponse
+    public function plans(Request $r): JsonResponse
     {
-        return $this->out(['plans' => $this->plansPublic(), 'trial_days' => Plans::trialDays()]);
+        $app = $this->app($r);
+        return $this->out(['plans' => $this->plansPublic($app), 'trial_days' => Plans::trialDays($app)]);
     }
 
     public function auth(Request $r): JsonResponse
@@ -58,10 +69,12 @@ class ApiController extends Controller
         $g = GoogleAuth::verify((string) $r->input('id_token', ''), (string) $r->input('nonce', ''));
         $did = trim((string) $r->input('device_id', ''));
         if (!preg_match('/^[A-Za-z0-9\-]{16,64}$/', $did)) throw new ApiException('Versi extension terlalu lama. Perbarui extension lalu masuk lagi.', 400);
+        $app = $this->app($r);
         $c = Customer::fromGoogle($g);
+        $c->subscription($app, true);   // pengguna mulai memakai aplikasi ini -> trial aplikasi dimulai
         if (!\Illuminate\Support\Facades\Schema::hasTable('customer_devices')) { // migrasi belum dijalankan: jangan 500
             $token = Jwt::sign(['sub' => $c->id, 'dev' => 0, 'iat' => time(), 'exp' => time() + 60 * 86400]);
-            return $this->out(['token' => $token, 'license' => License::make($c), 'plans' => $this->plansPublic(), 'ai' => Ai::info($c)]);
+            return $this->out(['token' => $token, 'license' => License::make($c, $app), 'plans' => $this->plansPublic($app), 'ai' => Ai::info($c)]);
         }
         $hash = CustomerDevice::hash($did);
         $dev = $c->devices()->where('device_hash', $hash)->first();
@@ -74,26 +87,29 @@ class ApiController extends Controller
         }
         $dev->fill(['label' => CustomerDevice::labelFrom((string) $r->input('device_name', ''), (string) $r->userAgent()), 'ip' => $r->ip(), 'last_seen_at' => now()])->save();
         $token = Jwt::sign(['sub' => $c->id, 'dev' => $dev->id, 'iat' => time(), 'exp' => time() + 60 * 86400]);
-        return $this->out(['token' => $token, 'license' => License::make($c), 'plans' => $this->plansPublic(), 'ai' => Ai::info($c)]);
+        return $this->out(['token' => $token, 'license' => License::make($c, $app), 'plans' => $this->plansPublic($app), 'ai' => Ai::info($c)]);
     }
 
     public function me(Request $r): JsonResponse
     {
         $c = $this->cust($r);
-        return $this->out(['license' => License::make($c), 'plans' => $this->plansPublic(), 'ai' => Ai::info($c)]);
+        $app = $this->app($r);
+        return $this->out(['license' => License::make($c, $app), 'plans' => $this->plansPublic($app), 'ai' => Ai::info($c)]);
     }
 
     public function checkout(Request $r): JsonResponse
     {
         $c = $this->cust($r);
+        $app = $this->app($r);
         $plan = (string) $r->input('plan', '');
-        $p = Plans::find($plan);
+        $p = Plans::find($plan, $app);
         if (!$p) throw new ApiException('Paket tidak dikenal', 400);
-        if ($plan === 'lifetime' && $c->lifetime) throw new ApiException('Akun ini sudah Lifetime', 409);
-        $order = Order::query()->create(['order_id' => 'ST-' . time() . '-' . Str::lower(Str::random(8)), 'customer_id' => $c->id,
+        $sub = $c->subscription($app, true);
+        if ($plan === 'lifetime' && $sub->lifetime) throw new ApiException('Akun ini sudah Lifetime', 409);
+        $order = Order::query()->create(['order_id' => 'ST-' . time() . '-' . Str::lower(Str::random(8)), 'customer_id' => $c->id, 'app' => $app,
             'plan' => $plan, 'amount' => $p['price'], 'status' => 'pending']);
         try {
-            $t = Midtrans::createTransaction($order, $c->email, (string) $c->name, $p['label']);
+            $t = Midtrans::createTransaction($order, $c->email, (string) $c->name, $p['label'], (string) (AppModel::bySlug($app)?->name ?: $app));
         } catch (ApiException $e) {
             $order->update(['status' => 'failed']);
             throw $e;
@@ -104,7 +120,7 @@ class ApiController extends Controller
 
     public function orders(Request $r): JsonResponse
     {
-        $rows = Order::query()->where('customer_id', $this->cust($r)->id)->latest('id')->limit(20)->get()
+        $rows = Order::query()->where('customer_id', $this->cust($r)->id)->where('app', $this->app($r))->latest('id')->limit(20)->get()
             ->map(fn ($o) => ['order_id' => $o->order_id, 'plan' => $o->plan, 'amount' => $o->amount, 'status' => $o->status,
                 'created_at' => $o->created_at?->utc()->format('Y-m-d H:i:s'), 'paid_at' => $o->paid_at?->utc()->format('Y-m-d H:i:s')]);
         return $this->out(['orders' => $rows]);
@@ -116,7 +132,7 @@ class ApiController extends Controller
      */
     public function snap(Request $r): JsonResponse
     {
-        if (!$this->cust($r)->access()['access']) throw new ApiException('Akses berakhir', 402);
+        if (!$this->cust($r)->access($this->app($r))['access']) throw new ApiException('Akses berakhir', 402);
         $rows = array_slice((array) $r->input('items', []), 0, 150);
         $today = now('UTC')->toDateString();
         $keys = [];
@@ -153,7 +169,7 @@ class ApiController extends Controller
     /** Komisi affiliate per produk (Open API Shopee, kredensial dari admin). */
     public function affiliate(Request $r): JsonResponse
     {
-        if (!$this->cust($r)->access()['access']) throw new ApiException('Akses berakhir', 402);
+        if (!$this->cust($r)->access($this->app($r))['access']) throw new ApiException('Akses berakhir', 402);
         if (!\App\Services\ShopeeAffiliate::configured()) return $this->out(['enabled' => false]);
         $key = (string) $r->input('key', '');
         if (!preg_match('/^(\d{1,12})\.(\d{1,14})$/', $key, $m)) throw new ApiException('Produk tidak valid', 400);

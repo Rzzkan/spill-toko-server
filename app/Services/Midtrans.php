@@ -30,13 +30,13 @@ class Midtrans
     }
 
     /** @return array{redirect_url:string, token:?string} */
-    public static function createTransaction(Order $order, string $email, string $name, string $label): array
+    public static function createTransaction(Order $order, string $email, string $name, string $label, string $appName = 'Shofee'): array
     {
         if (!self::configured()) throw new ApiException('Pembayaran belum dikonfigurasi admin', 503);
         try {
             $r = self::http()->post(self::snapUrl(), [
                 'transaction_details' => ['order_id' => $order->order_id, 'gross_amount' => $order->amount],
-                'item_details' => [['id' => $order->plan, 'price' => $order->amount, 'quantity' => 1, 'name' => 'Shofee - ' . $label]],
+                'item_details' => [['id' => $order->plan, 'price' => $order->amount, 'quantity' => 1, 'name' => $appName . ' - ' . $label]],
                 'customer_details' => ['email' => $email, 'first_name' => $name ?: 'Pelanggan'],
                 'callbacks' => ['finish' => url('/thanks') . '?order=' . $order->order_id],
                 'expiry' => ['unit' => 'hours', 'duration' => 24],
@@ -88,12 +88,12 @@ class Midtrans
             if (!$o || $o->status === 'paid') return;
             $o->update(['status' => 'paid', 'paid_at' => now(), 'payment_type' => $paymentType, 'raw_notification' => $raw]);
             $c = $o->customer()->lockForUpdate()->first();
+            $sub = $c->subscription($o->app ?: 'shofee', true);
             if ($o->plan === 'lifetime') {
-                $c->update(['lifetime' => true]);
+                $sub->update(['lifetime' => true]);
             } else {
-                $days = (int) (Plans::find($o->plan)['days'] ?? ['monthly' => 30, 'yearly' => 365][$o->plan] ?? 30);
-                $base = max(time(), $c->paid_until?->getTimestamp() ?? 0);
-                $c->update(['paid_until' => \Illuminate\Support\Carbon::createFromTimestampUTC($base + $days * 86400), 'paid_plan' => $o->plan]);
+                $days = (int) (Plans::find($o->plan, $o->app ?: 'shofee')['days'] ?? ['monthly' => 30, 'yearly' => 365][$o->plan] ?? 30);
+                $sub->extend($days, $o->plan);
             }
         });
     }

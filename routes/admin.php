@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Admin\{AiUsageController, AuthController, CustomerController, DashboardController, OrderController, ProfileController, SettingsController};
+use App\Http\Controllers\Admin\{AiUsageController, AppController, AuthController, CustomerController, DashboardController, OrderController, ProfileController, SettingsController};
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('admin')->name('admin.')->group(function () {
@@ -16,6 +16,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/pengguna', [CustomerController::class, 'index'])->name('customers');
         Route::get('/pengguna/{customer}', [CustomerController::class, 'show'])->name('customers.show');
         Route::post('/pengguna/{customer}', [CustomerController::class, 'update'])->name('customers.update');
+
+        Route::get('/aplikasi', [AppController::class, 'index'])->name('apps');
+        Route::get('/aplikasi/baru', [AppController::class, 'create'])->name('apps.create');
+        Route::post('/aplikasi', [AppController::class, 'store'])->name('apps.store');
+        Route::get('/aplikasi/{app:slug}', [AppController::class, 'edit'])->name('apps.edit');
+        Route::post('/aplikasi/{app:slug}', [AppController::class, 'update'])->name('apps.update');
 
         Route::get('/order', [OrderController::class, 'index'])->name('orders');
 

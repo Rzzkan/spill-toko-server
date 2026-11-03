@@ -20,6 +20,7 @@ class Fmt
             'lifetime' => ['Lifetime', 'brand'],
             'monthly' => [($access['tier'] ?? 'monthly') === 'yearly' ? 'Tahunan' : 'Bulanan', 'success'],
             'trial' => ['Trial', 'warning'],
+            'none' => ['Belum dipakai', 'gray'],
             default => ['Berakhir', 'error'],
         };
     }

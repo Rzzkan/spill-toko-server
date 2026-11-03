@@ -10,6 +10,7 @@ class MenuHelper
             ['title' => 'Menu', 'items' => [
                 ['icon' => 'dashboard', 'name' => 'Dashboard', 'path' => '/admin', 'exact' => true],
                 ['icon' => 'user-profile', 'name' => 'Pengguna', 'path' => '/admin/pengguna'],
+                ['icon' => 'layout', 'name' => 'Aplikasi', 'path' => '/admin/aplikasi'],
                 ['icon' => 'ecommerce', 'name' => 'Order', 'path' => '/admin/order'],
                 ['icon' => 'ai-assistant', 'name' => 'Pemakaian AI', 'path' => '/admin/pemakaian-ai'],
             ]],

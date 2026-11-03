@@ -131,10 +131,10 @@ class ApiTest extends TestCase
             ? ['order_id' => 'ST-2', 'status_code' => '200', 'gross_amount' => '1.00', 'transaction_status' => 'settlement']
             : ['order_id' => $oid, 'status_code' => '200', 'gross_amount' => '24000.00', 'transaction_status' => 'settlement', 'payment_type' => 'qris'])]);
         $this->postJson('/api/index.php?r=midtrans/notify', $note)->assertOk();
-        $until = Customer::first()->paid_until;
+        $until = Customer::first()->subscription('shofee')->paid_until;
         $this->assertNotNull($until);
         $this->postJson('/api/index.php?r=midtrans/notify', $note)->assertOk();   // kirim ulang -> tidak menambah hari lagi
-        $this->assertEquals($until->getTimestamp(), Customer::first()->fresh()->paid_until->getTimestamp());
+        $this->assertEquals($until->getTimestamp(), Customer::first()->subscription('shofee')->fresh()->paid_until->getTimestamp());
         $this->assertSame('paid', Order::first()->status);
 
         // jumlah di Midtrans tidak cocok -> ditolak
@@ -187,7 +187,7 @@ class ApiTest extends TestCase
     public function test_expired_user_cannot_use_ai(): void
     {
         [$token] = $this->login();
-        Customer::query()->update(['trial_ends_at' => now()->subDay()]);
+        \App\Models\Subscription::query()->update(['trial_ends_at' => now()->subDay()]);
         Settings::set('ai.api_key', 'kn-test');
         $this->postJson('/api/index.php?r=ai/analyze', ['kind' => 'product', 'data' => ['a' => 1]], ['Authorization' => "Bearer $token"])->assertStatus(402);
     }

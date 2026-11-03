@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Exceptions\ApiException;
+use App\Models\App as AppModel;
 use App\Models\Customer;
 
 /**
@@ -36,16 +37,17 @@ class License
         return self::publicKey();
     }
 
-    public static function make(Customer $c): array
+    public static function make(Customer $c, string $app = AppModel::DEFAULT): array
     {
-        $a = $c->access();
+        $a = $c->access($app);
+        $sub = $c->subscription($app);
         $iat = time();
         $exp = $iat + max(1, Settings::int('license_ttl_hours', 72)) * 3600;
         if ($a['access'] && $a['until'] !== null) $exp = min($exp, $a['until']);
         $payload = json_encode([
-            'uid' => $c->id, 'email' => $c->email, 'name' => $c->name, 'picture' => $c->picture,
+            'uid' => $c->id, 'app' => $app, 'email' => $c->email, 'name' => $c->name, 'picture' => $c->picture,
             'plan' => $a['plan'], 'access' => $a['access'], 'until' => $a['until'],
-            'trial_end' => $c->trial_ends_at?->getTimestamp(), 'paid_until' => $c->paid_until?->getTimestamp(),
+            'trial_end' => $sub?->trial_ends_at?->getTimestamp(), 'paid_until' => $sub?->paid_until?->getTimestamp(),
             'iat' => $iat, 'exp' => $exp,
         ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         try {

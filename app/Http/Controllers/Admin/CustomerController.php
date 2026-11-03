@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AdminLog;
+use App\Models\App as AppModel;
 use App\Models\Customer;
 use Illuminate\Http\Request;
 
@@ -11,21 +12,30 @@ class CustomerController extends Controller
 {
     public function index(Request $r)
     {
+        $app = $this->appSlug($r);
         $q = Customer::query()->withCount('orders');
         if ($s = trim((string) $r->query('q'))) {
             $q->where(fn ($w) => $w->where('email', 'like', "%$s%")->orWhere('name', 'like', "%$s%"));
         }
-        if (in_array($st = (string) $r->query('status'), ['trial', 'monthly', 'lifetime', 'expired'], true)) $q->status($st);
+        if (in_array($st = (string) $r->query('status'), ['trial', 'monthly', 'lifetime', 'expired'], true)) $q->status($st, $app);
         return view('admin.customers.index', [
             'customers' => $q->latest('id')->paginate(20)->withQueryString(),
-            'counts' => ['' => Customer::count()] + collect(['trial', 'monthly', 'lifetime', 'expired'])->mapWithKeys(fn ($s) => [$s => Customer::status($s)->count()])->all(),
+            'app' => $app, 'apps' => AppModel::listAll(),
+            'counts' => ['' => Customer::count()] + collect(['trial', 'monthly', 'lifetime', 'expired'])->mapWithKeys(fn ($s) => [$s => Customer::status($s, $app)->count()])->all(),
         ]);
+    }
+
+    private function appSlug(Request $r): string
+    {
+        $a = (string) ($r->query('app') ?: $r->input('app'));
+        return $a !== '' && AppModel::query()->where('slug', $a)->exists() ? $a : AppModel::DEFAULT;
     }
 
     public function show(Customer $customer)
     {
         return view('admin.customers.show', [
             'c' => $customer,
+            'apps' => AppModel::listAll(),
             'orders' => $customer->orders()->latest('id')->limit(30)->get(),
             'logs' => AdminLog::query()->where('customer_id', $customer->id)->with('admin')->latest('id')->limit(20)->get(),
             'aiLogs' => $customer->aiLogs()->latest('created_at')->limit(15)->get(),
@@ -36,27 +46,29 @@ class CustomerController extends Controller
     {
         $act = (string) $r->input('action');
         $days = max(1, min(3650, (int) $r->input('days', 30)));
+        $slug = $this->appSlug($r);
+        $name = AppModel::query()->where('slug', $slug)->value('name') ?: $slug;
+        $sub = $customer->subscription($slug, true);
         switch ($act) {
             case 'add_days':       // perpanjang langganan bulanan
-                $base = $customer->paid_until && $customer->paid_until->isFuture() ? $customer->paid_until : now();
-                $customer->update(['paid_until' => $base->copy()->addDays($days)]);
-                $note = "Tambah $days hari langganan";
+                $sub->extend($days, 'monthly');
+                $note = "[$name] Tambah $days hari langganan";
                 break;
-            case 'add_trial':      // perpanjang trial dari sekarang
-                $customer->update(['trial_ends_at' => now()->addDays($days)]);
-                $note = "Trial diatur $days hari dari sekarang";
+            case 'add_trial':      // atur trial dari sekarang
+                $sub->update(['trial_ends_at' => now()->addDays($days)]);
+                $note = "[$name] Trial diatur $days hari dari sekarang";
                 break;
             case 'lifetime':
-                $customer->update(['lifetime' => true]);
-                $note = 'Diberi Lifetime';
+                $sub->update(['lifetime' => true]);
+                $note = "[$name] Diberi Lifetime";
                 break;
             case 'unlifetime':
-                $customer->update(['lifetime' => false]);
-                $note = 'Lifetime dicabut';
+                $sub->update(['lifetime' => false]);
+                $note = "[$name] Lifetime dicabut";
                 break;
             case 'revoke':
-                $customer->update(['lifetime' => false, 'paid_until' => null, 'trial_ends_at' => now()]);
-                $note = 'Akses dicabut';
+                $sub->update(['lifetime' => false, 'paid_until' => null, 'trial_ends_at' => now()]);
+                $note = "[$name] Akses dicabut";
                 break;
             default:
                 return back()->with('error', 'Aksi tidak dikenal.');
