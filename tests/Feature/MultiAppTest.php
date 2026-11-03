@@ -53,6 +53,33 @@ class MultiAppTest extends TestCase
         $this->get('/privasi')->assertOk()->assertDontSee('mailto:');
     }
 
+    public function test_app_url_setting_drives_landing_button(): void
+    {
+        $k = $this->app2();
+        $this->assertSame(url('/akun/aplikasi/kasirku'), $k->landingUrl());              // bawaan
+        $k->update(['url' => '/kasirku']);
+        $this->assertSame(url('/kasirku'), $k->landingUrl());                           // path relatif
+        $k->update(['url' => 'https://kasirku.example.id/']);
+        $this->assertSame('https://kasirku.example.id/', $k->landingUrl());             // alamat penuh
+        $shofee = AppModel::query()->where('slug', 'shofee')->first();
+        $this->assertSame(url('/shofee'), $shofee->landingUrl());                       // diisi migrasi
+        $this->get('/')->assertOk()->assertSee('href="https://kasirku.example.id/"', false);
+    }
+
+    public function test_admin_can_set_app_url_and_bad_values_are_rejected(): void
+    {
+        $this->app2();
+        $this->actingAs(\App\Models\User::query()->create(['name' => 'Adm', 'username' => 'adm', 'email' => 'adm@test.id', 'password' => 'rahasia123']));
+        $base = ['name' => 'KasirKu', 'trial_days' => 5, 'sort' => 2, 'active' => 1, 'monthly_price' => 15000];
+        $this->post('/admin/aplikasi/kasirku', $base + ['url' => 'https://temanseller.com/kasirku'])->assertRedirect();
+        $this->assertSame('https://temanseller.com/kasirku', AppModel::query()->where('slug', 'kasirku')->value('url'));
+        $this->post('/admin/aplikasi/kasirku', $base + ['url' => 'javascript:alert(1)'])->assertSessionHasErrors('url');
+        $this->post('/admin/aplikasi/kasirku', $base + ['url' => 'http://tidak-aman.test'])->assertSessionHasErrors('url');
+        $this->post('/admin/aplikasi/kasirku', $base + ['url' => ''])->assertRedirect();
+        $this->assertNull(AppModel::query()->where('slug', 'kasirku')->value('url'));
+        $this->get('/admin/aplikasi/kasirku')->assertOk()->assertSee('URL aplikasi');
+    }
+
     public function test_payment_extends_only_the_ordered_app(): void
     {
         $this->app2();

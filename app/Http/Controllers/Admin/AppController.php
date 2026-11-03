@@ -28,7 +28,8 @@ class AppController extends Controller
     {
         return [
             'slug' => $new ? ['required', 'regex:/^[a-z][a-z0-9\-]{1,29}$/', 'unique:apps,slug'] : ['prohibited'],
-            'name' => ['required', 'string', 'max:80'], 'tagline' => ['nullable', 'string', 'max:200'], 'icon' => ['nullable', 'string', 'max:16'],
+            'name' => ['required', 'string', 'max:80'], 'tagline' => ['nullable', 'string', 'max:200'],
+            'url' => ['nullable', 'string', 'max:255', 'regex:#^(https://[^\s]+|/[A-Za-z0-9._~\-/?=&%\#]*)$#'], 'icon' => ['nullable', 'string', 'max:16'],
             'trial_days' => ['required', 'integer', 'min:0', 'max:60'], 'sort' => ['nullable', 'integer', 'min:0', 'max:999'],
             'monthly_price' => ['nullable', 'integer', 'min:0'], 'monthly_original' => ['nullable', 'integer', 'min:0'],
             'yearly_price' => ['nullable', 'integer', 'min:0'], 'yearly_original' => ['nullable', 'integer', 'min:0'],
@@ -44,7 +45,7 @@ class AppController extends Controller
             'yearly' => ['price' => (int) ($d['yearly_price'] ?? 0), 'original' => (int) ($d['yearly_original'] ?? 0), 'days' => 365],
             'lifetime' => ['enabled' => $r->boolean('lifetime_enabled'), 'price' => (int) ($d['lifetime_price'] ?? 0)],
         ];
-        $app->fill(['name' => $d['name'], 'tagline' => $d['tagline'] ?? null, 'icon' => $d['icon'] ?? null, 'trial_days' => (int) $d['trial_days'],
+        $app->fill(['name' => $d['name'], 'tagline' => $d['tagline'] ?? null, 'url' => ($d['url'] ?? '') !== '' ? $d['url'] : null, 'icon' => $d['icon'] ?? null, 'trial_days' => (int) $d['trial_days'],
             'sort' => (int) ($d['sort'] ?? 0), 'active' => $r->boolean('active'), 'plans' => $plans]);
         return $app;
     }

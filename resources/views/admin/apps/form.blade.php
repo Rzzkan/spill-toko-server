@@ -10,6 +10,7 @@
                 <div><div class="mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">Kode</div><div class="h-11 rounded-lg border border-gray-200 px-4 py-3 font-mono text-sm dark:border-gray-800 dark:text-white/90">{{ $app->slug }}</div></div>@endif
             <x-admin.input label="Nama aplikasi" name="name" :value="$app->name" />
             <x-admin.input label="Deskripsi singkat" name="tagline" :value="$app->tagline" class="sm:col-span-2" />
+            <x-admin.input label="URL aplikasi (tujuan tombol di landing)" name="url" :value="$app->url" class="sm:col-span-2" placeholder="{{ $isMain ? 'https://temanseller.com/shofee' : 'https://temanseller.com/kasirku' }}" help="Alamat penuh (https://…) atau path seperti /shofee. Dipakai tombol \"Lihat detail\" di landing TemanSeller. Kosong = halaman bawaan." />
             <x-admin.input label="Ikon (emoji)" name="icon" :value="$app->icon" />
             <x-admin.input label="Urutan tampil" name="sort" type="number" :value="$app->sort" />
             <x-admin.input label="Trial (hari)" name="trial_days" type="number" :value="$app->trial_days" help="{{ $isMain ? 'Untuk Shofee, nilai ini diabaikan; trial diatur di Pengaturan → Langganan.' : '' }}" />

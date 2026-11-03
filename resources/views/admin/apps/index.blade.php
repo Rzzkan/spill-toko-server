@@ -12,7 +12,7 @@
                 @php $pl = \App\Services\Plans::all($a->slug); @endphp
                 <tr class="text-gray-700 dark:text-gray-300">
                     <td class="py-3 pr-4"><div class="flex items-center gap-3"><x-app-icon :app="$a" size="size-10" />
-                        <span><span class="block font-medium text-gray-800 dark:text-white/90">{{ $a->name }}</span><span class="text-xs text-gray-500">{{ $a->tagline }}</span></span></div></td>
+                        <span><span class="block font-medium text-gray-800 dark:text-white/90">{{ $a->name }}</span><span class="text-xs text-gray-500">{{ $a->tagline }}</span>@if ($a->url)<span class="block text-xs text-brand-500">{{ $a->url }}</span>@endif</span></div></td>
                     <td class="py-3 pr-4 font-mono text-xs">{{ $a->slug }}</td>
                     <td class="py-3 pr-4">{{ \App\Services\Plans::trialDays($a->slug) }} hari</td>
                     <td class="py-3 pr-4 text-xs">@forelse ($pl as $k => $p){{ $p['label'] }} {{ Fmt::rp($p['price']) }}@if (!$loop->last) · @endif @empty <span class="text-gray-400">belum ada</span> @endforelse</td>

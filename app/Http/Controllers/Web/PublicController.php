@@ -31,7 +31,7 @@ class PublicController extends Controller
     public function hub()
     {
         $apps = AppCatalog::active()->map(fn (AppModel $a) => AppCatalog::summary($a) + [
-            'url' => $a->slug === AppModel::DEFAULT ? self::shofeeUrl() : url('/akun/aplikasi/' . $a->slug)]);
+            'url' => $a->landingUrl()]);
         return view('public.hub', ['apps' => $apps]);
     }
 
