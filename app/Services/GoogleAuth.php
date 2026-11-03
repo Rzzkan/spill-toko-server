@@ -15,7 +15,7 @@ class GoogleAuth
         if ($clientId === '') throw new ApiException('Login Google belum dikonfigurasi admin', 503);
 
         try {
-            $r = Http::acceptJson()->timeout(15)->get(config('spill.google_tokeninfo_url'), ['id_token' => $idToken]);
+            $r = Http::acceptJson()->timeout(15)->get(config('temanseller.google_tokeninfo_url'), ['id_token' => $idToken]);
         } catch (\Throwable) {
             throw new ApiException('Tidak bisa menghubungi Google, coba lagi', 502);
         }

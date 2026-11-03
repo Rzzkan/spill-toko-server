@@ -22,7 +22,7 @@ class Ai
 
     private static function dayStart(): \Illuminate\Support\Carbon
     {
-        return now(config('spill.display_timezone'))->startOfDay()->utc();   // 00:00 WIB
+        return now(config('temanseller.display_timezone'))->startOfDay()->utc();   // 00:00 WIB
     }
 
     /** Kuota analisis AI per hari untuk satu jenis paket (trial|monthly|yearly|lifetime). null = tanpa batas. */
@@ -273,7 +273,7 @@ class Ai
             self::log($c, $kind, false, $m, $r['tin'], $r['tout'], $r['ms'], 'error', $r['err']);
             $last = $r;
         }
-        logger()->error('[spilltoko-ai] gagal: ' . ($last['err'] ?? '?'));
+        logger()->error('[temanseller-ai] gagal: ' . ($last['err'] ?? '?'));
         // pesan teknis (saldo/key) hanya untuk admin (Pemakaian AI → log); pengguna dapat pesan umum
         throw new ApiException(in_array($last['status'] ?? 0, [401, 402, 403], true)
             ? 'Layanan AI sedang bermasalah, hubungi admin.' : 'AI gagal menjawab, coba lagi sebentar lagi.', 502);

@@ -13,7 +13,7 @@ class AiUsageController extends Controller
 {
     public function index()
     {
-        $tz = config('spill.display_timezone');
+        $tz = config('temanseller.display_timezone');
         $days = 30;
         $since = now($tz)->subDays($days - 1)->startOfDay()->utc();
         [$labels, $fresh] = DashboardController::dayBuckets($days);

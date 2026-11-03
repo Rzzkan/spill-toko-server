@@ -143,4 +143,14 @@ class RefactorSafetyTest extends TestCase
         $this->assertSame('expired', $by('e')['plan']);
         $this->assertSame('shofee', \App\Models\App::first()->slug);
     }
+
+    public function test_commands_use_new_names_and_keep_old_aliases(): void
+    {
+        $all = \Illuminate\Support\Facades\Artisan::all();
+        foreach (['install', 'admin', 'doctor'] as $n) {
+            $this->assertArrayHasKey("temanseller:$n", $all);
+            $this->assertArrayHasKey("spill:$n", $all);   // alias nama lama
+        }
+        $this->assertSame('1', (string) (int) (config('temanseller.max_devices') >= 1));
+    }
 }

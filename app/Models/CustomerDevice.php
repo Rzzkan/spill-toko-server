@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-/** Satu browser (instalasi extension) yang terikat ke akun. Maksimal config('spill.max_devices') per akun. */
+/** Satu browser (instalasi extension) yang terikat ke akun. Maksimal config('temanseller.max_devices') per akun. */
 class CustomerDevice extends Model
 {
     protected $fillable = ['customer_id', 'device_hash', 'label', 'ip', 'last_seen_at'];

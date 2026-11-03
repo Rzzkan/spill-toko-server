@@ -152,7 +152,7 @@
             <div class="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
                 @include('admin.partials.flash')
                 @yield('content')
-                <p class="mt-8 text-center text-xs text-gray-400">{{ config('app.name') }} · versi {{ config('spill.version') }}</p>
+                <p class="mt-8 text-center text-xs text-gray-400">{{ config('app.name') }} · versi {{ config('temanseller.version') }}</p>
             </div>
         </div>
 

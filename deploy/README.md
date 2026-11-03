@@ -39,7 +39,7 @@ node tools/build.mjs --api https://spill.delova.id/api/index.php --client-id XXX
 |---|---|
 | Update kode | `cd ~/spill-toko-server && git pull --ff-only && sudo bash deploy/update.sh` |
 | Cek kesehatan | `APP_URL=https://spill.delova.id bash /var/www/spilltoko/deploy/check.sh` |
-| Reset kata sandi admin | `cd /var/www/spilltoko && sudo -u www-data php artisan spill:admin EMAIL --password='baru-12345'` |
+| Reset kata sandi admin | `cd /var/www/spilltoko && sudo -u www-data php artisan temanseller:admin EMAIL --password='baru-12345'` |
 | Cadangan manual | `sudo /var/www/spilltoko/deploy/backup.sh` → `/var/backups/spilltoko/` (14 hari) |
 | Restore | `gunzip -c /var/backups/spilltoko/spilltoko-TANGGAL.sql.gz \| mysql spilltoko` |
 | Log aplikasi | `tail -f /var/www/spilltoko/storage/logs/laravel-*.log` · `/var/log/nginx/error.log` |
@@ -50,7 +50,7 @@ node tools/build.mjs --api https://spill.delova.id/api/index.php --client-id XXX
 Syarat: PHP 8.2+ (`pdo_mysql`, `curl`, `mbstring`, `xml`, `sodium`), MySQL/MariaDB, HTTPS, SSH + Composer.
 1. Upload repo di luar document root; arahkan document root/subdomain ke folder `public/`.
 2. `composer install --no-dev -o`, `cp .env.example .env`, isi `DB_*` + `APP_URL`, `php artisan key:generate`.
-3. `php artisan spill:install --admin=EMAIL` lalu `php artisan config:cache route:cache view:cache`.
+3. `php artisan temanseller:install --admin=EMAIL` lalu `php artisan config:cache route:cache view:cache`.
 4. Izin tulis untuk `storage/` dan `bootstrap/cache/`. Cron: `* * * * * php /path/artisan schedule:run`.
 5. `public/.htaccess` bawaan Laravel sudah meneruskan header `Authorization`.
 

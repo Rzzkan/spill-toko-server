@@ -11,7 +11,7 @@ class Fmt
 
     public static function dt(?CarbonInterface $t, bool $time = true): string
     {
-        return $t ? $t->copy()->setTimezone(config('spill.display_timezone'))->format($time ? 'd M Y H:i' : 'd M Y') : '—';
+        return $t ? $t->copy()->setTimezone(config('temanseller.display_timezone'))->format($time ? 'd M Y H:i' : 'd M Y') : '—';
     }
 
     public static function status(array $access): array

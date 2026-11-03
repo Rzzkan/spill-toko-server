@@ -16,7 +16,7 @@ class PublicController extends Controller
     /** URL landing Shofee: subdomain bila diatur lewat SHOFEE_URL, kalau belum ada pakai /shofee. */
     public static function shofeeUrl(): string
     {
-        return rtrim((string) config('spill.shofee_url'), '/') ?: url('/shofee');
+        return rtrim((string) config('temanseller.shofee_url'), '/') ?: url('/shofee');
     }
 
     public function home(Request $r)
@@ -45,6 +45,6 @@ class PublicController extends Controller
 
     public function privacy()
     {
-        return view('public.privasi', ['email' => (string) config('spill.contact_email')]);
+        return view('public.privasi', ['email' => (string) config('temanseller.contact_email')]);
     }
 }

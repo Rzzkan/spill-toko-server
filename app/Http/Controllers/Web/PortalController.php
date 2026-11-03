@@ -53,7 +53,7 @@ class PortalController extends Controller
             'c' => $c, 'apps' => $apps, 'plansByApp' => $apps->mapWithKeys(fn ($x) => [$x['app']->slug => Plans::all($x['app']->slug)])->all(),
             'orders' => Order::query()->where('customer_id', $c->id)->latest('id')->limit(15)->get(),
             'appNames' => AppCatalog::names(),
-            'devices' => \Illuminate\Support\Facades\Schema::hasTable('customer_devices') ? $c->devices()->orderByDesc('last_seen_at')->get() : collect(), 'maxDevices' => max(1, (int) config('spill.max_devices', 2)),
+            'devices' => \Illuminate\Support\Facades\Schema::hasTable('customer_devices') ? $c->devices()->orderByDesc('last_seen_at')->get() : collect(), 'maxDevices' => max(1, (int) config('temanseller.max_devices', 2)),
         ]);
     }
 

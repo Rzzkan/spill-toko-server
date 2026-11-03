@@ -6,9 +6,10 @@ use App\Services\License;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 
-class SpillInstall extends Command
+class TemanSellerInstall extends Command
 {
-    protected $signature = 'spill:install {--admin= : Email admin pertama}';
+    protected $signature = 'temanseller:install {--admin= : Email admin pertama}';
+    protected $aliases = ['spill:install'];   // nama lama tetap bisa dipakai
     protected $description = 'Migrasi database, buat kunci lisensi/JWT, dan (opsional) admin pertama';
 
     public function handle(): int
@@ -18,7 +19,7 @@ class SpillInstall extends Command
         $pub = License::publicKey();   // membuat kunci lisensi & JWT bila belum ada
         $this->info('Kunci lisensi siap.');
         $this->line("LICENSE_PUBKEY = $pub");
-        if ($email = $this->option('admin')) $this->call('spill:admin', ['email' => $email]);
+        if ($email = $this->option('admin')) $this->call('temanseller:admin', ['email' => $email]);
         $this->newLine();
         $this->line('Selesai. Buka /admin lalu isi Pengaturan → Google, Midtrans, AI (kenari.id).');
         return self::SUCCESS;

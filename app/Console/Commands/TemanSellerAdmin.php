@@ -6,9 +6,10 @@ use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 
-class SpillAdmin extends Command
+class TemanSellerAdmin extends Command
 {
-    protected $signature = 'spill:admin {email : Email admin} {--name=Admin : Nama} {--username= : Username login (default: bagian email sebelum @)} {--password= : Kata sandi (kosong = dibuat acak)}';
+    protected $signature = 'temanseller:admin {email : Email admin} {--name=Admin : Nama} {--username= : Username login (default: bagian email sebelum @)} {--password= : Kata sandi (kosong = dibuat acak)}';
+    protected $aliases = ['spill:admin'];   // nama lama tetap bisa dipakai
     protected $description = 'Buat admin baru atau setel ulang kata sandi admin yang ada';
 
     public function handle(): int

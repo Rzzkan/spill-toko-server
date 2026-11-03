@@ -16,7 +16,7 @@ class DashboardController extends Controller
     /** Hitung per-hari (WIB) untuk $days hari terakhir dari koleksi nilai tanggal. @return array{0:array,1:array} labels, buckets */
     public static function dayBuckets(int $days): array
     {
-        $tz = config('spill.display_timezone');
+        $tz = config('temanseller.display_timezone');
         $labels = [];
         $keys = [];
         for ($i = $days - 1; $i >= 0; $i--) {
@@ -29,7 +29,7 @@ class DashboardController extends Controller
 
     public function index()
     {
-        $tz = config('spill.display_timezone');
+        $tz = config('temanseller.display_timezone');
         $days = 30;
         $since = now($tz)->subDays($days - 1)->startOfDay()->utc();
 

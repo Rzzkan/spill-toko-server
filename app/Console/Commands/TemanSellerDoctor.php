@@ -8,9 +8,10 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-class SpillDoctor extends Command
+class TemanSellerDoctor extends Command
 {
-    protected $signature = 'spill:doctor';
+    protected $signature = 'temanseller:doctor';
+    protected $aliases = ['spill:doctor'];   // nama lama tetap bisa dipakai
     protected $description = 'Periksa kesiapan server (PHP, ekstensi, DB, tabel, izin folder, kunci)';
 
     public function handle(): int

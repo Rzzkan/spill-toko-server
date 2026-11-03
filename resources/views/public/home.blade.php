@@ -344,7 +344,7 @@
     <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-8 text-sm text-slate-500 sm:flex-row">
         <x-brand name="shofee" size="size-7" class="font-semibold text-slate-700" />
         <div class="flex gap-5"><a href="#fitur" class="hover:text-[#ee4d2d]">Fitur</a><a href="#harga" class="hover:text-[#ee4d2d]">Harga</a><a href="#faq" class="hover:text-[#ee4d2d]">FAQ</a><a href="{{ $main }}/login" class="hover:text-[#ee4d2d]">Akun</a><a href="{{ $hubUrl }}" class="hover:text-[#ee4d2d]">Aplikasi lain</a><a href="{{ url('/privasi') }}" class="hover:text-[#ee4d2d]">Privasi</a></div>
-        <div>© {{ date('Y') }} <a href="{{ $hubUrl }}" class="hover:text-[#ee4d2d]">TemanSeller</a>. Bukan produk resmi Shopee. <span class="text-xs text-slate-400">v{{ config('spill.version') }}</span></div>
+        <div>© {{ date('Y') }} <a href="{{ $hubUrl }}" class="hover:text-[#ee4d2d]">TemanSeller</a>. Bukan produk resmi Shopee. <span class="text-xs text-slate-400">v{{ config('temanseller.version') }}</span></div>
     </div>
 </footer>
 </body>

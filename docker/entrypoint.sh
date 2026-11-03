@@ -16,7 +16,7 @@ done
 
 php artisan migrate --force
 if [ ! -f storage/.installed ]; then
-  php artisan spill:install ${ADMIN_EMAIL:+--admin="$ADMIN_EMAIL"} && touch storage/.installed
+  php artisan temanseller:install ${ADMIN_EMAIL:+--admin="$ADMIN_EMAIL"} && touch storage/.installed
 fi
 php artisan config:cache
 php artisan route:cache || true

@@ -81,7 +81,7 @@ class ApiController extends Controller
         $hash = CustomerDevice::hash($did);
         $dev = $c->devices()->where('device_hash', $hash)->first();
         if (!$dev) {
-            $max = max(1, (int) config('spill.max_devices', 2));
+            $max = max(1, (int) config('temanseller.max_devices', 2));
             if ($c->devices()->count() >= $max) {
                 throw new ApiException("Maaf, akun ini hanya bisa digunakan di maksimal $max browser dan kedua slot sudah terpakai. Untuk memakai browser ini, buka " . url('/login') . ' → masuk → bagian "Browser terhubung" → klik "Lepas" pada browser yang tidak dipakai, lalu masuk lagi di extension.', 403);
             }

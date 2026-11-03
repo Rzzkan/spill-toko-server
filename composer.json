@@ -1,6 +1,6 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "delova/spill-toko-server",
+    "name": "delova/temanseller-server",
     "type": "project",
     "description": "TemanSeller - server langganan & analisis AI (Laravel + TailAdmin)",
     "keywords": [

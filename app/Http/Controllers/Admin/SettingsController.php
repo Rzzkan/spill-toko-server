@@ -114,7 +114,7 @@ class SettingsController extends Controller
         if ($id === '') return [false, 'Client ID belum diisi.'];
         if (!preg_match('/^[\w\-]+\.apps\.googleusercontent\.com$/', $id)) return [false, 'Format Client ID tidak valid.'];
         try {
-            $r = Http::acceptJson()->timeout(10)->get(config('spill.google_tokeninfo_url'), ['id_token' => 'tes']);
+            $r = Http::acceptJson()->timeout(10)->get(config('temanseller.google_tokeninfo_url'), ['id_token' => 'tes']);
         } catch (\Throwable) { return [false, 'Server tidak bisa menghubungi Google.']; }
         return $r->status() === 400 ? [true, 'Format Client ID benar & server bisa menjangkau Google ✓ (login sebenarnya diuji dari extension).'] : [false, 'Respons Google tak terduga (HTTP ' . $r->status() . ')'];
     }

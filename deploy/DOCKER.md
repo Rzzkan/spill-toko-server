@@ -54,7 +54,7 @@ sudo certbot --nginx -d temanseller.com -d www.temanseller.com
 
 ## 6. Ambil LICENSE_PUBKEY & masuk admin
 ```bash
-docker compose exec app php artisan spill:install | grep LICENSE_PUBKEY
+docker compose exec app php artisan temanseller:install | grep LICENSE_PUBKEY
 ```
 Buka `https://temanseller.com/admin` -> Pengaturan (Google, Midtrans, AI, Affiliate). Isi `LICENSE_PUBKEY` ke `src/config.js` extension.
 

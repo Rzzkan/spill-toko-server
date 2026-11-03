@@ -92,7 +92,7 @@ php artisan migrate --force --no-interaction
 php artisan db:seed --force --no-interaction   # admin awal: username rzzkan
 PUBKEY="$(php artisan tinker --execute='echo App\Services\License::publicKey();' 2>/dev/null | tail -1)"
 if [ ${#ADMIN_ARGS[@]} -gt 0 ] && [ -n "${ADMIN_PASS:-}" ]; then
-  php artisan spill:admin "$ADMIN_EMAIL" --name=Admin --password="$ADMIN_PASS" >/dev/null
+  php artisan temanseller:admin "$ADMIN_EMAIL" --name=Admin --password="$ADMIN_PASS" >/dev/null
 fi
 
 say "Cache & izin"

@@ -17,7 +17,7 @@ Dashboard (statistik + grafik) · Pengguna (cari/filter, tambah hari, Lifetime, 
 composer install
 cp .env.example .env && php artisan key:generate
 # isi DB_* di .env, lalu:
-php artisan spill:install                                     # migrasi + seed + kunci lisensi; admin awal: rzzkan
+php artisan temanseller:install                                     # migrasi + seed + kunci lisensi; admin awal: rzzkan
 php artisan serve                                     # http://127.0.0.1:8000/admin
 ```
 Aset front-end sudah di-build ke `public/build` (tidak perlu Node di server). Untuk mengubah tampilan: `npm install && npm run build`.
@@ -33,8 +33,8 @@ vendor/bin/phpunit      # 22 tes: API, webhook, AI (cache/kuota/fallback), admin
 ## Perintah
 | Perintah | Fungsi |
 |---|---|
-| `php artisan spill:install --admin=EMAIL` | Migrasi, buat kunci lisensi/JWT, admin pertama |
-| `php artisan spill:admin EMAIL [--password=…]` | Buat admin / reset kata sandi |
+| `php artisan temanseller:install --admin=EMAIL` | Migrasi, buat kunci lisensi/JWT, admin pertama |
+| `php artisan temanseller:admin EMAIL [--password=…]` | Buat admin / reset kata sandi |
 | `php artisan schedule:run` (cron tiap menit) | Bersihkan log AI >90 hari & cache AI >30 hari |
 
 ## Penting

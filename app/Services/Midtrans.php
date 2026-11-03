@@ -14,13 +14,13 @@ class Midtrans
 
     public static function snapUrl(): string
     {
-        return config('spill.midtrans_snap_url') ?: (Settings::bool('midtrans.production')
+        return config('temanseller.midtrans_snap_url') ?: (Settings::bool('midtrans.production')
             ? 'https://app.midtrans.com/snap/v1/transactions' : 'https://app.sandbox.midtrans.com/snap/v1/transactions');
     }
 
     public static function apiUrl(): string
     {
-        return rtrim(config('spill.midtrans_api_url') ?: (Settings::bool('midtrans.production')
+        return rtrim(config('temanseller.midtrans_api_url') ?: (Settings::bool('midtrans.production')
             ? 'https://api.midtrans.com' : 'https://api.sandbox.midtrans.com'), '/');
     }
 
@@ -72,7 +72,7 @@ class Midtrans
     {
         if (!self::configured()) return [false, 'Server Key belum diisi.'];
         try {
-            $r = self::http()->get(self::apiUrl() . '/v2/spilltoko-test-' . time() . '/status');
+            $r = self::http()->get(self::apiUrl() . '/v2/temanseller-test-' . time() . '/status');
         } catch (\Throwable $e) { return [false, 'Tidak bisa menghubungi Midtrans.']; }
         $code = (int) ($r->json('status_code') ?? $r->status());
         if ($code === 401 || $r->status() === 401) return [false, 'Server Key ditolak (salah, atau tidak sesuai mode ' . (Settings::bool('midtrans.production') ? 'Production' : 'Sandbox') . ').'];
