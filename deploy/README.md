@@ -1,4 +1,4 @@
-# Deploy Spill Toko (Laravel) ke VPS Ubuntu/Debian
+# Deploy TemanSeller (Laravel) ke VPS Ubuntu/Debian
 
 Memasang backend di **subdomain baru** pada VPS yang sama dengan situs lain (mis. `spill.delova.id`). Skrip hanya **menambah** satu vhost nginx — situs lain tidak diubah. Hasil uji: nginx + PHP-FPM 8.3 + MariaDB, 9 pemeriksaan lulus.
 

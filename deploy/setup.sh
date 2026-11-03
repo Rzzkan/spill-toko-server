@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Penyiapan Spill Toko (Laravel + TailAdmin) di VPS Ubuntu/Debian: nginx + PHP-FPM + MariaDB + SSL Let's Encrypt.
+# Penyiapan TemanSeller (Laravel + TailAdmin) di VPS Ubuntu/Debian: nginx + PHP-FPM + MariaDB + SSL Let's Encrypt.
 # Aman dijalankan ulang (idempoten): tidak mengubah situs lain, tidak mengganti APP_KEY / kunci lisensi yang sudah ada.
 #
 # Pemakaian (sebagai root):

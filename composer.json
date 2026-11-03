@@ -2,7 +2,7 @@
     "$schema": "https://getcomposer.org/schema.json",
     "name": "delova/spill-toko-server",
     "type": "project",
-    "description": "Spill Toko - server langganan & analisis AI (Laravel + TailAdmin)",
+    "description": "TemanSeller - server langganan & analisis AI (Laravel + TailAdmin)",
     "keywords": [
         "laravel",
         "framework"

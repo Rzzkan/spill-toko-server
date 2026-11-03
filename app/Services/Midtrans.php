@@ -36,7 +36,7 @@ class Midtrans
         try {
             $r = self::http()->post(self::snapUrl(), [
                 'transaction_details' => ['order_id' => $order->order_id, 'gross_amount' => $order->amount],
-                'item_details' => [['id' => $order->plan, 'price' => $order->amount, 'quantity' => 1, 'name' => 'Spill Toko - ' . $label]],
+                'item_details' => [['id' => $order->plan, 'price' => $order->amount, 'quantity' => 1, 'name' => 'Shofee - ' . $label]],
                 'customer_details' => ['email' => $email, 'first_name' => $name ?: 'Pelanggan'],
                 'callbacks' => ['finish' => url('/thanks') . '?order=' . $order->order_id],
                 'expiry' => ['unit' => 'hours', 'duration' => 24],

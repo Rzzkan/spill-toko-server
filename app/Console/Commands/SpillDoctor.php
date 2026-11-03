@@ -20,7 +20,7 @@ class SpillDoctor extends Command
             try { $r = $fn(); $ok = $r === true || is_string($r); $this->line(($ok ? '  [OK]   ' : '  [GAGAL] ') . $name . (is_string($r) ? " — $r" : '')); if (!$ok) $bad++; }
             catch (\Throwable $e) { $bad++; $this->line("  [GAGAL] $name — " . $e->getMessage()); }
         };
-        $this->info('Spill Toko — pemeriksaan server');
+        $this->info('TemanSeller — pemeriksaan server');
         $chk('PHP >= 8.2', fn () => version_compare(PHP_VERSION, '8.2.0', '>=') ? PHP_VERSION : false);
         foreach (['openssl', 'mbstring', 'pdo_mysql', 'curl', 'json', 'fileinfo', 'ctype', 'tokenizer', 'xml'] as $e) $chk("ekstensi $e", fn () => extension_loaded($e));
         $chk('APP_KEY terisi', fn () => (bool) config('app.key'));

@@ -69,7 +69,7 @@
                 <div class="space-y-3 p-4">
                     <div class="flex items-center gap-3"><div class="size-11 rounded-full bg-orange-100"></div><div><div class="h-3 w-32 rounded bg-slate-200"></div><div class="mt-1.5 h-2.5 w-20 rounded bg-slate-100"></div></div></div>
                     <div class="rounded-xl border border-orange-200 bg-[#fff8f5] p-3.5">
-                        <div class="mb-3 flex items-center justify-between"><span class="text-sm font-bold text-[#ee4d2d]">Spill Data</span>
+                        <div class="mb-3 flex items-center justify-between"><span class="text-sm font-bold text-[#ee4d2d]">Shofee Data</span>
                             <div class="flex gap-1 text-[11px] font-medium"><span class="rounded-md bg-[#ee4d2d] px-2 py-1 text-white">Ringkasan</span><span class="rounded-md bg-white px-2 py-1 text-slate-500">Omset</span><span class="rounded-md bg-white px-2 py-1 text-slate-500">Volume</span><span class="rounded-md bg-violet-100 px-2 py-1 text-violet-700">✨ AI</span></div></div>
                         <div class="grid grid-cols-3 gap-2 text-center">
                             <div class="rounded-lg bg-white p-2.5"><div class="text-[10px] uppercase text-slate-400">Est. omzet</div><div class="text-base font-bold text-slate-800">Rp128 jt</div></div>
@@ -185,7 +185,7 @@
             <div class="rounded-3xl border border-orange-100 bg-gradient-to-b from-orange-50 to-white p-7">
                 <div class="grid size-12 place-items-center rounded-2xl bg-[#ee4d2d] text-2xl text-white">📊</div>
                 <h3 class="mt-5 text-xl font-bold text-slate-900">Kartu data langsung di Shopee</h3>
-                <p class="mt-2 text-sm text-slate-600">Kartu <b>Spill Data</b> muncul otomatis di halaman yang Anda buka:</p>
+                <p class="mt-2 text-sm text-slate-600">Kartu <b>Shofee Data</b> muncul otomatis di halaman yang Anda buka:</p>
                 <ul class="mt-4 space-y-2.5 text-sm text-slate-700">
                     <li><b>Halaman toko</b> — Ringkasan, Omset, Volume, Informasi Umum, Produk Andalan</li>
                     <li><b>Hasil pencarian/kategori</b> — Ringkasan, Market Size, Volume</li>
@@ -230,7 +230,7 @@
         <div class="mx-auto max-w-2xl text-center"><span class="text-sm font-bold uppercase tracking-wider text-orange-400">Cara kerja</span>
             <h2 class="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">Mulai riset dalam 3 langkah</h2></div>
         <div class="mt-12 grid gap-6 md:grid-cols-3">
-            @foreach ([['1', 'Pasang & masuk dengan Google', 'Pasang extension, login pakai akun Google. Trial ' . $trial . ' hari aktif otomatis.'], ['2', 'Buka halaman Shopee', 'Buka produk, toko kompetitor, atau cari kata kunci. Kartu Spill Data muncul sendiri.'], ['3', 'Scan, baca AI, ambil keputusan', 'Klik Analisa untuk data lengkap, baca rekomendasi AI, lalu ekspor ke CSV atau Sheets.']] as [$n, $t, $d])
+            @foreach ([['1', 'Pasang & masuk dengan Google', 'Pasang extension, login pakai akun Google. Trial ' . $trial . ' hari aktif otomatis.'], ['2', 'Buka halaman Shopee', 'Buka produk, toko kompetitor, atau cari kata kunci. Kartu Shofee Data muncul sendiri.'], ['3', 'Scan, baca AI, ambil keputusan', 'Klik Analisa untuk data lengkap, baca rekomendasi AI, lalu ekspor ke CSV atau Sheets.']] as [$n, $t, $d])
                 <div class="rounded-2xl border border-white/10 bg-white/5 p-7"><div class="grid size-10 place-items-center rounded-full bg-[#ee4d2d] text-lg font-extrabold">{{ $n }}</div><h3 class="mt-5 text-lg font-bold">{{ $t }}</h3><p class="mt-2 text-sm leading-relaxed text-slate-300">{{ $d }}</p></div>
             @endforeach
         </div>

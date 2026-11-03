@@ -1,4 +1,4 @@
-# Vhost Spill Toko (Laravel, dibuat setup.sh). Hanya menambah situs baru; situs lain di VPS tidak disentuh.
+# Vhost TemanSeller (Laravel, dibuat setup.sh). Hanya menambah situs baru; situs lain di VPS tidak disentuh.
 server {
     listen 80;
     __LISTEN6__
