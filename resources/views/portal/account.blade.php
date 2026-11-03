@@ -21,7 +21,7 @@
         @endphp
         <div class="flex flex-col rounded-2xl border border-gray-200 bg-white p-5 shadow-theme-sm">
             <div class="flex items-start justify-between gap-3">
-                <div class="flex items-center gap-3"><span class="grid size-11 place-items-center rounded-xl bg-brand-50 text-xl">{{ $app->icon ?: '📦' }}</span>
+                <div class="flex items-center gap-3"><x-app-icon :app="$app" size="size-12" />
                     <div><div class="font-semibold">{{ $app->name }}</div>@if ($app->tagline)<div class="text-xs text-gray-500">{{ $app->tagline }}</div>@endif</div></div>
                 <x-admin.badge :tone="$tone">{{ $label }}</x-admin.badge>
             </div>

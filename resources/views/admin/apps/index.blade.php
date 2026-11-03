@@ -13,7 +13,7 @@
             @foreach ($apps as $a)
                 @php $pl = \App\Services\Plans::all($a->slug); @endphp
                 <tr class="text-gray-700 dark:text-gray-300">
-                    <td class="py-3 pr-4"><div class="flex items-center gap-3"><span class="grid size-9 place-items-center rounded-lg bg-brand-50 text-lg dark:bg-white/10">{{ $a->icon ?: '📦' }}</span>
+                    <td class="py-3 pr-4"><div class="flex items-center gap-3"><x-app-icon :app="$a" size="size-10" />
                         <span><span class="block font-medium text-gray-800 dark:text-white/90">{{ $a->name }}</span><span class="text-xs text-gray-500">{{ $a->tagline }}</span></span></div></td>
                     <td class="py-3 pr-4 font-mono text-xs">{{ $a->slug }}</td>
                     <td class="py-3 pr-4">{{ \App\Services\Plans::trialDays($a->slug) }} hari</td>

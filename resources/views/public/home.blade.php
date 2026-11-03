@@ -13,6 +13,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="{{ asset('img/brand/shofee.ico') }}"><link rel="apple-touch-icon" href="{{ asset('img/brand/shofee-180.png') }}">
     <title>Shofee — Riset Produk & Kompetitor Shopee dengan Analisis AI</title>
     <meta name="description" content="Extension Chrome untuk riset produk, toko kompetitor, dan kata kunci Shopee langsung di halaman Shopee. Estimasi omzet, tren penjualan, dan rekomendasi AI. Coba gratis {{ $trial }} hari.">
     <meta property="og:title" content="Shofee — Riset Shopee + Analisis AI">
@@ -30,7 +31,7 @@
 {{-- NAV --}}
 <header class="sticky top-0 z-50 border-b border-orange-100/70 bg-white/85 backdrop-blur">
     <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5">
-        <a href="{{ url('/') }}" class="flex items-center gap-2.5 text-lg font-bold"><span class="grid size-9 place-items-center rounded-xl bg-[#ee4d2d] text-white shadow-sm">🛍️</span>Shofee</a>
+        <a href="{{ url('/') }}" class="flex items-center gap-2.5 text-lg font-bold"><img src="{{ asset('img/brand/shofee-180.png') }}" alt="Shofee" class="size-9 rounded-xl object-contain">Shofee</a>
         <nav class="hidden items-center gap-7 text-sm font-medium text-slate-600 md:flex">
             <a href="#fitur" class="hover:text-[#ee4d2d]">Fitur</a><a href="#pratinjau" class="hover:text-[#ee4d2d]">Pratinjau</a><a href="#cara" class="hover:text-[#ee4d2d]">Cara Kerja</a><a href="#harga" class="hover:text-[#ee4d2d]">Harga</a><a href="#faq" class="hover:text-[#ee4d2d]">FAQ</a>
         </nav>
@@ -340,7 +341,7 @@
 
 <footer class="border-t border-slate-100 bg-white">
     <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-8 text-sm text-slate-500 sm:flex-row">
-        <div class="flex items-center gap-2 font-semibold text-slate-700"><span class="grid size-7 place-items-center rounded-lg bg-[#ee4d2d] text-sm text-white">🛍️</span>Shofee</div>
+        <div class="flex items-center gap-2 font-semibold text-slate-700"><img src="{{ asset('img/brand/shofee-180.png') }}" alt="Shofee" class="size-7 rounded-xl object-contain">Shofee</div>
         <div class="flex gap-5"><a href="#fitur" class="hover:text-[#ee4d2d]">Fitur</a><a href="#harga" class="hover:text-[#ee4d2d]">Harga</a><a href="#faq" class="hover:text-[#ee4d2d]">FAQ</a><a href="{{ url('/login') }}" class="hover:text-[#ee4d2d]">Akun</a><a href="{{ $hubUrl }}" class="hover:text-[#ee4d2d]">Aplikasi lain</a></div>
         <div>© {{ date('Y') }} <a href="{{ $hubUrl }}" class="hover:text-[#ee4d2d]">TemanSeller</a>. Bukan produk resmi Shopee. <span class="text-xs text-slate-400">v{{ config('spill.version') }}</span></div>
     </div>

@@ -13,7 +13,7 @@
     $isLifetime = $a['plan'] === 'lifetime';
 @endphp
 <div class="flex items-center gap-3">
-    <span class="grid size-12 place-items-center rounded-xl bg-brand-50 text-2xl">{{ $appRow->icon ?: '📦' }}</span>
+    <x-app-icon :app="$appRow" size="size-14" />
     <div><h1 class="text-xl font-semibold">{{ $appRow->name }}</h1>@if ($appRow->tagline)<p class="text-sm text-gray-500">{{ $appRow->tagline }}</p>@endif</div>
 </div>
 

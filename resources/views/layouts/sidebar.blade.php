@@ -14,7 +14,7 @@
     @mouseleave="$store.sidebar.setHovered(false)">
     <div class="py-8 flex items-center gap-2" :class="(!$store.sidebar.isExpanded && !$store.sidebar.isHovered && !$store.sidebar.isMobileOpen) ? 'justify-center' : 'justify-between'">
         <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2.5">
-            <span class="grid size-9 shrink-0 place-items-center rounded-xl bg-brand-500 text-lg text-white">🛍️</span>
+            <img src="{{ asset('img/brand/temanseller-180.png') }}" alt="TemanSeller" class="size-10 shrink-0 object-contain">
             <span x-show="$store.sidebar.isExpanded || $store.sidebar.isHovered || $store.sidebar.isMobileOpen" class="text-xl font-semibold text-gray-800 dark:text-white/90">{{ config('app.name') }}</span>
         </a>
     </div>

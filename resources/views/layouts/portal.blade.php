@@ -5,13 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="robots" content="noindex">
+    <link rel="icon" href="{{ asset('favicon.ico') }}"><link rel="apple-touch-icon" href="{{ asset('img/brand/temanseller-180.png') }}">
     <title>{{ ($title ?? 'Akun') . ' · ' . config('app.name') }}</title>
     @vite(['resources/css/app.css'])
 </head>
 <body class="min-h-screen bg-gray-50 text-gray-800">
 <header class="border-b border-gray-200 bg-white">
     <div class="mx-auto flex max-w-4xl items-center justify-between px-4 py-4">
-        <a href="{{ url('/') }}" class="flex items-center gap-2.5 text-lg font-semibold"><span class="grid size-9 place-items-center rounded-xl bg-brand-500 text-white">🛍️</span>{{ config('app.name') }}</a>
+        <a href="{{ url('/') }}" class="flex items-center gap-2.5 text-lg font-semibold"><img src="{{ asset('img/brand/temanseller-180.png') }}" alt="" class="size-12 object-contain">{{ config('app.name') }}</a>
         @yield('nav')
     </div>
 </header>
