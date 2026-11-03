@@ -104,7 +104,7 @@ class PortalTest extends TestCase
 
     public function test_landing_page_shows_prices_and_buy_links(): void
     {
-        $this->get('/')->assertOk()->assertSee('Rp24.000', false)->assertSee('Rp49.000', false)->assertSee('Rp249.000', false)->assertSee('Rp549.000', false)
+        $this->get('/shofee')->assertOk()->assertSee('Rp24.000', false)->assertSee('Rp49.000', false)->assertSee('Rp249.000', false)->assertSee('Rp549.000', false)
             ->assertSee('img/preview/toko-analisa-ai.jpg', false)->assertSee('/beli/monthly', false)->assertSee('/beli/yearly', false)->assertSee('3 hari', false);
     }
 
@@ -124,7 +124,7 @@ class PortalTest extends TestCase
     {
         Settings::set('ai.enabled', '1'); Settings::set('ai.api_key', 'kn-x', true);
         Settings::set('ai.quota.trial', '7'); Settings::set('ai.quota.monthly', '55'); Settings::set('ai.quota.yearly', '0');
-        $this->get('/')->assertSee('7x/hari', false)->assertSee('55x/hari', false)->assertSee('tanpa batas/hari', false);
+        $this->get('/shofee')->assertSee('7x/hari', false)->assertSee('55x/hari', false)->assertSee('tanpa batas/hari', false);
         $this->getJson('/api/index.php?r=plans')->assertJsonPath('plans.monthly.ai_limit', 55)->assertJsonPath('plans.yearly.ai_limit', null);
         $this->webLogin()->assertOk();
         $this->get('/akun/aplikasi/shofee')->assertOk()->assertSee('55 analisis/hari', false);
@@ -134,7 +134,7 @@ class PortalTest extends TestCase
     {
         foreach ([false, true] as $aiOn) {
             if ($aiOn) { Settings::set('ai.enabled', '1'); Settings::set('ai.api_key', 'kn-x', true); }
-            $html = $this->get('/')->assertOk()->getContent();
+            $html = $this->get('/')->assertOk()->getContent() . $this->get('/shofee')->assertOk()->getContent();
             $this->assertDoesNotMatchRegularExpression('/@(if|endif|else|foreach|endforeach|php)\b|\{\{|\{!!/', $html);
         }
     }

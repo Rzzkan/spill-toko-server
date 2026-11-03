@@ -13,9 +13,9 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ config('app.name') }} — Riset Produk & Kompetitor Shopee dengan Analisis AI</title>
+    <title>Shofee — Riset Produk & Kompetitor Shopee dengan Analisis AI</title>
     <meta name="description" content="Extension Chrome untuk riset produk, toko kompetitor, dan kata kunci Shopee langsung di halaman Shopee. Estimasi omzet, tren penjualan, dan rekomendasi AI. Coba gratis {{ $trial }} hari.">
-    <meta property="og:title" content="{{ config('app.name') }} — Riset Shopee + Analisis AI">
+    <meta property="og:title" content="Shofee — Riset Shopee + Analisis AI">
     <meta property="og:description" content="Lihat estimasi omzet kompetitor, produk andalan, dan peluang pasar langsung di Shopee. Coba gratis {{ $trial }} hari.">
     @vite(['resources/css/app.css'])
     <style>
@@ -30,7 +30,7 @@
 {{-- NAV --}}
 <header class="sticky top-0 z-50 border-b border-orange-100/70 bg-white/85 backdrop-blur">
     <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5">
-        <a href="{{ url('/') }}" class="flex items-center gap-2.5 text-lg font-bold"><span class="grid size-9 place-items-center rounded-xl bg-[#ee4d2d] text-white shadow-sm">🛍️</span>{{ config('app.name') }}</a>
+        <a href="{{ url('/') }}" class="flex items-center gap-2.5 text-lg font-bold"><span class="grid size-9 place-items-center rounded-xl bg-[#ee4d2d] text-white shadow-sm">🛍️</span>Shofee</a>
         <nav class="hidden items-center gap-7 text-sm font-medium text-slate-600 md:flex">
             <a href="#fitur" class="hover:text-[#ee4d2d]">Fitur</a><a href="#pratinjau" class="hover:text-[#ee4d2d]">Pratinjau</a><a href="#cara" class="hover:text-[#ee4d2d]">Cara Kerja</a><a href="#harga" class="hover:text-[#ee4d2d]">Harga</a><a href="#faq" class="hover:text-[#ee4d2d]">FAQ</a>
         </nav>
@@ -47,7 +47,7 @@
         <div>
             <span class="inline-flex items-center gap-2 rounded-full border border-orange-200 bg-white px-3 py-1 text-xs font-semibold text-[#ee4d2d]">✨ Chrome Extension + Analisis AI untuk Seller Shopee</span>
             <h1 class="mt-5 text-4xl font-extrabold leading-[1.1] tracking-tight text-slate-900 sm:text-5xl">Intip omzet kompetitor &amp; temukan produk laris — <span class="text-[#ee4d2d]">langsung di halaman Shopee.</span></h1>
-            <p class="mt-5 max-w-xl text-lg text-slate-600">Buka produk, toko, atau hasil pencarian di Shopee — {{ config('app.name') }} otomatis menampilkan estimasi omzet, tren penjualan, produk andalan, dan rekomendasi aksi dari AI. Tanpa pindah tab, tanpa rekap manual.</p>
+            <p class="mt-5 max-w-xl text-lg text-slate-600">Buka produk, toko, atau hasil pencarian di Shopee — Shofee otomatis menampilkan estimasi omzet, tren penjualan, produk andalan, dan rekomendasi aksi dari AI. Tanpa pindah tab, tanpa rekap manual.</p>
             <div class="mt-8 flex flex-wrap items-center gap-3">
                 <a href="{{ $cta }}" class="rounded-xl bg-[#ee4d2d] px-6 py-3.5 text-base font-semibold text-white shadow-lg shadow-orange-200 hover:bg-[#d7401f]">Coba Gratis {{ $trial }} Hari →</a>
                 <a href="#fitur" class="rounded-xl border border-slate-200 bg-white px-6 py-3.5 text-base font-semibold text-slate-700 hover:border-[#ee4d2d] hover:text-[#ee4d2d]">Lihat Fitur</a>
@@ -133,7 +133,7 @@
                 <div class="flex items-center gap-2 border-b border-slate-100 bg-slate-50 px-4 py-2.5"><span class="size-2.5 rounded-full bg-red-300"></span><span class="size-2.5 rounded-full bg-amber-300"></span><span class="size-2.5 rounded-full bg-green-300"></span><span class="ml-3 text-xs text-slate-400">Tampilan extension · data contoh</span></div>
                 <a id="shot-link" href="{{ asset('img/preview/' . $shots[0][0] . '.jpg') }}" target="_blank" rel="noopener" class="block bg-slate-100">
                     @foreach ($shots as $i => [$f, $t, $d])
-                        <img src="{{ asset('img/preview/' . $f . '.jpg') }}" alt="{{ config('app.name') }}: {{ $t }}" loading="{{ $i === 0 ? 'eager' : 'lazy' }}" class="shot-img w-full {{ $i === 0 ? '' : 'hidden' }}" data-i="{{ $i }}">
+                        <img src="{{ asset('img/preview/' . $f . '.jpg') }}" alt="Shofee: {{ $t }}" loading="{{ $i === 0 ? 'eager' : 'lazy' }}" class="shot-img w-full {{ $i === 0 ? '' : 'hidden' }}" data-i="{{ $i }}">
                     @endforeach
                 </a>
             </div>
@@ -241,7 +241,7 @@
 <section class="py-20">
     <div class="mx-auto max-w-6xl px-4">
         <div class="mx-auto max-w-2xl text-center"><span class="text-sm font-bold uppercase tracking-wider text-[#ee4d2d]">Keunggulan</span>
-            <h2 class="mt-2 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">Kenapa seller memilih {{ config('app.name') }}</h2></div>
+            <h2 class="mt-2 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">Kenapa seller memilih Shofee</h2></div>
         <div class="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             @foreach ([['🔐', 'Tanpa akses akun toko', 'Membaca tampilan halaman Shopee yang Anda buka. Tidak perlu kata sandi Seller Centre atau API Shopee.'], ['🏠', 'Data riset tersimpan lokal', 'Koleksi dan riwayat scan disimpan di browser Anda. Hanya saat memakai Analisa AI, ringkasan data halaman dikirim untuk dianalisis.'], ['⚡', 'Hemat waktu riset', 'Dari berjam-jam rekap manual menjadi beberapa klik, lengkap dengan ekspor siap pakai.'], ['🤖', 'AI yang bicara dengan angka', 'Rekomendasi bersumber dari data halaman yang Anda scan, bukan jawaban generik.'], ['💸', 'Harga bersahabat untuk UMKM', 'Mulai ' . Fmt::rp($m['price']) . ' per bulan. Berhenti kapan saja, tanpa kontrak.'], ['🔄', 'Terus diperbarui', 'Tampilan Shopee berubah? Parser diperbarui agar kolom data tetap terbaca.']] as [$i, $t, $d])
                 <div class="flex gap-4 rounded-2xl border border-slate-200 bg-white p-6"><div class="text-3xl">{{ $i }}</div><div><h3 class="font-bold text-slate-900">{{ $t }}</h3><p class="mt-1.5 text-sm leading-relaxed text-slate-600">{{ $d }}</p></div></div>
@@ -340,9 +340,9 @@
 
 <footer class="border-t border-slate-100 bg-white">
     <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-8 text-sm text-slate-500 sm:flex-row">
-        <div class="flex items-center gap-2 font-semibold text-slate-700"><span class="grid size-7 place-items-center rounded-lg bg-[#ee4d2d] text-sm text-white">🛍️</span>{{ config('app.name') }}</div>
-        <div class="flex gap-5"><a href="#fitur" class="hover:text-[#ee4d2d]">Fitur</a><a href="#harga" class="hover:text-[#ee4d2d]">Harga</a><a href="#faq" class="hover:text-[#ee4d2d]">FAQ</a><a href="{{ url('/login') }}" class="hover:text-[#ee4d2d]">Akun</a></div>
-        <div>© {{ date('Y') }} {{ config('app.name') }}. Bukan produk resmi Shopee. <span class="text-xs text-slate-400">v{{ config('spill.version') }}</span></div>
+        <div class="flex items-center gap-2 font-semibold text-slate-700"><span class="grid size-7 place-items-center rounded-lg bg-[#ee4d2d] text-sm text-white">🛍️</span>Shofee</div>
+        <div class="flex gap-5"><a href="#fitur" class="hover:text-[#ee4d2d]">Fitur</a><a href="#harga" class="hover:text-[#ee4d2d]">Harga</a><a href="#faq" class="hover:text-[#ee4d2d]">FAQ</a><a href="{{ url('/login') }}" class="hover:text-[#ee4d2d]">Akun</a><a href="{{ $hubUrl }}" class="hover:text-[#ee4d2d]">Aplikasi lain</a></div>
+        <div>© {{ date('Y') }} <a href="{{ $hubUrl }}" class="hover:text-[#ee4d2d]">TemanSeller</a>. Bukan produk resmi Shopee. <span class="text-xs text-slate-400">v{{ config('spill.version') }}</span></div>
     </div>
 </footer>
 </body>

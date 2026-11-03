@@ -10,5 +10,7 @@ return [
     'version' => is_file(base_path('VERSION')) ? trim((string) file_get_contents(base_path('VERSION'))) : 'dev',
     // batas browser (instalasi extension) per akun
     'max_devices' => (int) env('SPILL_MAX_DEVICES', 2),
+    // alamat landing Shofee, mis. https://shofee.temanseller.com (kosong = pakai /shofee di domain utama)
+    'shofee_url' => env('SHOFEE_URL', ''),
     'display_timezone' => 'Asia/Jakarta',
 ];

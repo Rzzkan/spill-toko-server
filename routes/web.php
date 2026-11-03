@@ -7,9 +7,8 @@ use App\Services\Settings;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', fn () => view('public.home', [
-    'trial' => Plans::trialDays(), 'plans' => Plans::all(), 'aiq' => \App\Services\Ai::quotas(), 'aiOn' => \App\Services\Ai::on(), 'store' => Settings::get('app.chrome_store_url', ''),
-]));
+Route::get('/', [\App\Http\Controllers\Web\PublicController::class, 'home'])->name('home');
+Route::get('/shofee', [\App\Http\Controllers\Web\PublicController::class, 'shofee'])->name('shofee');
 Route::get('/thanks', fn (Request $r) => view('public.thanks', ['order' => preg_replace('/[^A-Za-z0-9\-]/', '', (string) $r->query('order'))]));
 
 // Portal pengguna: masuk dengan Google, status langganan, perpanjang
