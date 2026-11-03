@@ -44,6 +44,15 @@ class MultiAppTest extends TestCase
         $this->assertEqualsWithDelta(30, ($d->access('shofee')['until'] - time()) / 86400, 0.01);
     }
 
+    public function test_privacy_policy_is_public(): void
+    {
+        config(['spill.contact_email' => 'halo@temanseller.test']);
+        $this->get('/privasi')->assertOk()->assertSee('Kebijakan Privasi')->assertSee('halo@temanseller.test')->assertSee('Midtrans');
+        $this->get('/privacy')->assertRedirect('/privasi');
+        config(['spill.contact_email' => '']);
+        $this->get('/privasi')->assertOk()->assertDontSee('mailto:');
+    }
+
     public function test_payment_extends_only_the_ordered_app(): void
     {
         $this->app2();

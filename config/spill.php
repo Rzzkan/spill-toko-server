@@ -12,5 +12,7 @@ return [
     'max_devices' => (int) env('SPILL_MAX_DEVICES', 2),
     // alamat landing Shofee, mis. https://shofee.temanseller.com (kosong = pakai /shofee di domain utama)
     'shofee_url' => env('SHOFEE_URL', ''),
+    // email kontak yang tampil di kebijakan privasi (kosong = tidak ditampilkan)
+    'contact_email' => env('CONTACT_EMAIL', ''),
     'display_timezone' => 'Asia/Jakarta',
 ];

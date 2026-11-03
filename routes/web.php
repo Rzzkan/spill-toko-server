@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [\App\Http\Controllers\Web\PublicController::class, 'home'])->name('home');
 Route::get('/shofee', [\App\Http\Controllers\Web\PublicController::class, 'shofee'])->name('shofee');
+Route::get('/privasi', [\App\Http\Controllers\Web\PublicController::class, 'privacy'])->name('privacy');
+Route::redirect('/privacy', '/privasi', 301);
 Route::get('/thanks', fn (Request $r) => view('public.thanks', ['order' => preg_replace('/[^A-Za-z0-9\-]/', '', (string) $r->query('order'))]));
 
 // Portal pengguna: masuk dengan Google, status langganan, perpanjang

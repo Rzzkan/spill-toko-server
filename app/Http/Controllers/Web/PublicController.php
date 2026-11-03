@@ -42,4 +42,9 @@ class PublicController extends Controller
             'hubUrl' => str_starts_with(strtolower(request()->getHost()), 'shofee.') ? preg_replace('#^(https?://)shofee\.#i', '$1', url('/')) : url('/'),
         ]);
     }
+
+    public function privacy()
+    {
+        return view('public.privasi', ['email' => (string) config('spill.contact_email')]);
+    }
 }
