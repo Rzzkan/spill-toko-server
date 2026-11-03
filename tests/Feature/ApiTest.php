@@ -78,6 +78,9 @@ class ApiTest extends TestCase
         $this->assertArrayNotHasKey('9.9', $r->json('prev'));
         $this->assertSame(1, \App\Models\ItemSnapshot::where('item_key', '1.2')->where('day', now('UTC')->toDateString())->count());
         $this->assertSame(0, \App\Models\ItemSnapshot::where('item_key', 'bad')->count());
+        $w = $this->postJson('/api/index.php?r=snap', ['items' => [], 'want' => ['1.2', 'x', '5.5']], $h)->assertOk();
+        $this->assertSame(1000, $w->json('last')['1.2']['s']);
+        $this->assertArrayNotHasKey('5.5', $w->json('last'));
         $this->postJson('/api/index.php?r=snap', ['items' => []])->assertStatus(401);
     }
 

@@ -135,7 +135,15 @@ class ApiController extends Controller
                 if (!isset($prev[$row->item_key]) || $age < $prev[$row->item_key]['_a']) $prev[$row->item_key] = ['m' => $row->m30, 's' => $row->sold, 'd' => substr((string) $row->day, 0, 10), '_a' => $age];
             });
         foreach ($prev as &$p) unset($p['_a']);
-        return $this->out(['prev' => (object) $prev]);
+        unset($p);
+        // total terjual pasti terbaru (maks 14 hari) untuk produk yang diminta extension
+        $want = array_values(array_filter(array_slice((array) $r->input('want', []), 0, 150), fn ($k) => is_string($k) && preg_match('/^\d{1,12}\.\d{1,14}$/', $k)));
+        $last = [];
+        if ($want) {
+            \App\Models\ItemSnapshot::query()->whereIn('item_key', $want)->where('day', '>=', now('UTC')->subDays(14)->toDateString())->whereNotNull('sold')->orderBy('day')->get()
+                ->each(function ($row) use (&$last) { $last[$row->item_key] = ['s' => (int) $row->sold, 'm' => $row->m30 !== null ? (int) $row->m30 : null, 'd' => substr((string) $row->day, 0, 10)]; });
+        }
+        return $this->out(['prev' => (object) $prev, 'last' => (object) $last]);
     }
 
     public function analyze(Request $r): JsonResponse
