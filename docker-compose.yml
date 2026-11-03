@@ -1,0 +1,36 @@
+services:
+  app:
+    build: .
+    image: temanseller:latest
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DB_HOST: db
+      DB_PORT: "3306"
+    ports:
+      - "127.0.0.1:3300:3000"
+    volumes:
+      - storage:/app/storage
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: ${DB_DATABASE:-temanseller}
+      MARIADB_USER: ${DB_USERNAME:-temanseller}
+      MARIADB_PASSWORD: ${DB_PASSWORD:?isi DB_PASSWORD di .env}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?isi DB_ROOT_PASSWORD di .env}
+    volumes:
+      - dbdata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  storage:
+  dbdata:
