@@ -21,7 +21,11 @@ class PublicController extends Controller
 
     public function home(Request $r)
     {
-        return str_starts_with(strtolower($r->getHost()), 'shofee.') ? $this->shofee() : $this->hub();
+        // subdomain shofee.* hanya jalan pintas: alihkan ke temanseller.com/shofee (tanpa masking)
+        if (str_starts_with(strtolower($r->getHost()), 'shofee.')) {
+            return redirect()->away(rtrim((string) config('app.url'), '/') . '/shofee', 301);
+        }
+        return $this->hub();
     }
 
     public function hub()

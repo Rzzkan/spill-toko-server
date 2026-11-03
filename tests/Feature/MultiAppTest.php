@@ -53,8 +53,8 @@ class MultiAppTest extends TestCase
         $this->app2();
         $this->get('/')->assertOk()->assertSee('TemanSeller')->assertSee('Shofee')->assertSee('KasirKu')->assertSee('Segera hadir')->assertSee('/shofee', false)->assertDontSee('Spill');
         $this->get('/shofee')->assertOk()->assertSee('Rp24.000', false)->assertSee('Shofee')->assertDontSee('Spill Toko');
-        $this->get('http://shofee.localhost/')->assertOk()->assertSee('Rp24.000', false);
         \App\Models\App::query()->where('slug', 'kasirku')->update(['active' => false]);
         $this->get('/')->assertOk()->assertDontSee('KasirKu');
+        $this->get('http://shofee.localhost/')->assertStatus(301)->assertRedirect(rtrim(config('app.url'), '/') . '/shofee');
     }
 }
