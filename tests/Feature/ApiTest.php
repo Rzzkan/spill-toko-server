@@ -57,7 +57,7 @@ class ApiTest extends TestCase
         $this->login('g1', 'a@b.test', 'dev-aaaaaaaaaaaaaaaa');   // browser yang sama: tidak menambah slot
         $this->assertSame(2, \App\Models\CustomerDevice::count());
         Http::fake(['*tokeninfo*' => Http::response(['aud' => 'cid.apps.googleusercontent.com', 'iss' => 'accounts.google.com', 'exp' => time() + 600, 'sub' => 'g1', 'email' => 'a@b.test', 'email_verified' => 'true', 'nonce' => 'n1'])]);
-        $this->postJson('/api/index.php?r=auth', ['id_token' => 'tok', 'nonce' => 'n1', 'device_id' => 'dev-cccccccccccccccc'])->assertStatus(403);
+        $this->postJson('/api/index.php?r=auth', ['id_token' => 'tok', 'nonce' => 'n1', 'device_id' => 'dev-cccccccccccccccc'])->assertStatus(403)->assertJsonPath('error', fn ($e) => str_contains($e, 'maksimal 2 browser') && str_contains($e, 'Lepas'));
         $this->postJson('/api/index.php?r=auth', ['id_token' => 'tok', 'nonce' => 'n1'])->assertStatus(400);   // tanpa device_id
         // cabut browser pertama -> tokennya mati, browser ketiga bisa masuk
         $first = \App\Models\CustomerDevice::query()->orderBy('id')->first();

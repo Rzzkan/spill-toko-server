@@ -64,7 +64,7 @@ class ApiController extends Controller
         if (!$dev) {
             $max = max(1, (int) config('spill.max_devices', 2));
             if ($c->devices()->count() >= $max) {
-                throw new ApiException("Akun ini sudah dipakai di $max browser (batas maksimal). Masuk di " . url('/login') . ' lalu lepas salah satu browser di halaman Akun, setelah itu coba masuk lagi.', 403);
+                throw new ApiException("Maaf, akun ini hanya bisa digunakan di maksimal $max browser dan kedua slot sudah terpakai. Untuk memakai browser ini, buka " . url('/login') . ' → masuk → bagian "Browser terhubung" → klik "Lepas" pada browser yang tidak dipakai, lalu masuk lagi di extension.', 403);
             }
             $dev = new CustomerDevice(['customer_id' => $c->id, 'device_hash' => $hash]);
         }
