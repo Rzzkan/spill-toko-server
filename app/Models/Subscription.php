@@ -52,10 +52,10 @@ class Subscription extends Model
         return ['plan' => 'expired', 'access' => false, 'until' => max($paid, $trial) ?: null];
     }
 
-    /** Tambah masa aktif berbayar (menyambung dari masa aktif yang masih berjalan). */
+    /** Tambah masa aktif berbayar; menyambung dari akhir paket berbayar ATAU sisa trial yang masih berjalan (mana yang lebih lama). */
     public function extend(int $days, string $plan): void
     {
-        $base = max(time(), $this->paid_until?->getTimestamp() ?? 0);
+        $base = max(time(), $this->paid_until?->getTimestamp() ?? 0, $this->trial_ends_at?->getTimestamp() ?? 0);
         $this->update(['paid_until' => Carbon::createFromTimestampUTC($base + $days * 86400), 'paid_plan' => $plan]);
     }
 }

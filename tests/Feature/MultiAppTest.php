@@ -31,6 +31,19 @@ class MultiAppTest extends TestCase
         $this->assertSame('trial', $c->access('shofee')['plan']);   // tidak ikut berubah
     }
 
+    public function test_extend_adds_on_top_of_remaining_trial(): void
+    {
+        $this->app2();
+        $c = Customer::query()->create(['google_sub' => 'm9', 'email' => 'm9@test.id', 'trial_ends_at' => now()->addDays(3)]);
+        $c->subscription('shofee', true)->extend(30, 'monthly');
+        $left = ($c->access('shofee')['until'] - time()) / 86400;
+        $this->assertEqualsWithDelta(33, $left, 0.01);   // 3 hari trial + 30 hari paket
+        // trial sudah habis: hanya 30 hari
+        $d = Customer::query()->create(['google_sub' => 'm8', 'email' => 'm8@test.id', 'trial_ends_at' => now()->subDays(2)]);
+        $d->subscription('shofee', true)->extend(30, 'monthly');
+        $this->assertEqualsWithDelta(30, ($d->access('shofee')['until'] - time()) / 86400, 0.01);
+    }
+
     public function test_payment_extends_only_the_ordered_app(): void
     {
         $this->app2();
