@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\App as AppModel;
 use App\Models\Customer;
 use App\Models\CustomerDevice;
+use App\Models\ItemSnapshot;
 use App\Models\Order;
 use App\Services\Ai;
 use App\Services\GoogleAuth;
@@ -14,6 +15,7 @@ use App\Services\Jwt;
 use App\Services\License;
 use App\Services\Midtrans;
 use App\Services\Plans;
+use App\Support\SnapInput;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -132,44 +134,19 @@ class ApiController extends Controller
      */
     public function snap(Request $r): JsonResponse
     {
-        if (!$this->cust($r)->access($this->app($r))['access']) throw new ApiException('Akses berakhir', 402);
-        $rows = array_slice((array) $r->input('items', []), 0, 150);
-        $today = now('UTC')->toDateString();
-        $keys = [];
-        foreach ($rows as $it) {
-            $k = (string) ($it['k'] ?? '');
-            if (!preg_match('/^\d{1,12}\.\d{1,14}$/', $k)) continue;
-            $m = isset($it['m']) && is_numeric($it['m']) ? max(0, (int) $it['m']) : null;
-            $sold = isset($it['s']) && is_numeric($it['s']) ? max(0, (int) $it['s']) : null;
-            if ($m === null && $sold === null) continue;
-            $keys[] = $k;
-            \App\Models\ItemSnapshot::query()->updateOrCreate(['item_key' => $k, 'day' => $today],
-                ['sold' => $sold, 'm30' => $m, 'price' => isset($it['p']) && is_numeric($it['p']) ? max(0, (int) $it['p']) : null]);
-        }
-        $from = now('UTC')->subDays(45)->toDateString();
-        $to = now('UTC')->subDays(20)->toDateString();
-        $prev = [];
-        \App\Models\ItemSnapshot::query()->whereIn('item_key', $keys)->whereBetween('day', [$from, $to])->whereNotNull('m30')->orderBy('day')->get()
-            ->each(function ($row) use (&$prev) {
-                $age = abs(now('UTC')->startOfDay()->diffInDays(\Illuminate\Support\Carbon::parse($row->day, 'UTC')->startOfDay()) - 30);
-                if (!isset($prev[$row->item_key]) || $age < $prev[$row->item_key]['_a']) $prev[$row->item_key] = ['m' => $row->m30, 's' => $row->sold, 'd' => substr((string) $row->day, 0, 10), '_a' => $age];
-            });
-        foreach ($prev as &$p) unset($p['_a']);
-        unset($p);
-        // total terjual pasti terbaru (maks 14 hari) untuk produk yang diminta extension
-        $want = array_values(array_filter(array_slice((array) $r->input('want', []), 0, 150), fn ($k) => is_string($k) && preg_match('/^\d{1,12}\.\d{1,14}$/', $k)));
-        $last = [];
-        if ($want) {
-            \App\Models\ItemSnapshot::query()->whereIn('item_key', $want)->where('day', '>=', now('UTC')->subDays(14)->toDateString())->whereNotNull('sold')->orderBy('day')->get()
-                ->each(function ($row) use (&$last) { $last[$row->item_key] = ['s' => (int) $row->sold, 'm' => $row->m30 !== null ? (int) $row->m30 : null, 'd' => substr((string) $row->day, 0, 10)]; });
-        }
-        return $this->out(['prev' => (object) $prev, 'last' => (object) $last]);
+        $this->cust($r)->requireAccess($this->app($r));
+        $rows = SnapInput::rows((array) $r->input('items', []));
+        ItemSnapshot::recordToday($rows);
+        return $this->out([
+            'prev' => (object) ItemSnapshot::monthAgo(array_keys($rows)),
+            'last' => (object) ItemSnapshot::latestSold(SnapInput::keys((array) $r->input('want', []))),
+        ]);
     }
 
     /** Komisi affiliate per produk (Open API Shopee, kredensial dari admin). */
     public function affiliate(Request $r): JsonResponse
     {
-        if (!$this->cust($r)->access($this->app($r))['access']) throw new ApiException('Akses berakhir', 402);
+        $this->cust($r)->requireAccess($this->app($r));
         if (!\App\Services\ShopeeAffiliate::configured()) return $this->out(['enabled' => false]);
         $key = (string) $r->input('key', '');
         if (!preg_match('/^(\d{1,12})\.(\d{1,14})$/', $key, $m)) throw new ApiException('Produk tidak valid', 400);

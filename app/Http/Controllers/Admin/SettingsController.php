@@ -84,7 +84,7 @@ class SettingsController extends Controller
         }
         if ($errors) return back()->withInput()->with('error', implode(' ', $errors));
         if ($changed) {
-            AdminLog::query()->create(['user_id' => $r->user()->id, 'action' => 'settings', 'note' => $group . ': ' . implode(', ', $changed)]);   // nama kunci saja, tanpa nilai
+            AdminLog::record('settings', $group . ': ' . implode(', ', $changed));   // nama kunci saja, tanpa nilai
         }
         return redirect()->route('admin.settings', $group)->with('ok', $changed ? 'Pengaturan disimpan.' : 'Tidak ada perubahan.');
     }
@@ -123,7 +123,7 @@ class SettingsController extends Controller
     {
         if (trim((string) $r->input('confirm')) !== 'GANTI KUNCI') return back()->with('error', 'Ketik GANTI KUNCI persis untuk konfirmasi.');
         License::regenerate();
-        AdminLog::query()->create(['user_id' => $r->user()->id, 'action' => 'regenerate_license_key', 'note' => 'Kunci lisensi diganti']);
+        AdminLog::record('regenerate_license_key', 'Kunci lisensi diganti');
         return back()->with('ok', 'Kunci lisensi baru dibuat. Perbarui LICENSE_PUBKEY di extension & rilis ulang.');
     }
 }

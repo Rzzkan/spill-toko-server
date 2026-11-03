@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AiLog;
 use App\Models\Customer;
 use App\Models\Order;
+use App\Models\Subscription;
 use App\Services\Ai;
 use App\Services\Midtrans;
 use App\Services\Settings;
@@ -33,14 +34,12 @@ class DashboardController extends Controller
         $since = now($tz)->subDays($days - 1)->startOfDay()->utc();
 
         [$labels, $signups] = self::dayBuckets($days);
-        foreach (Customer::query()->where('created_at', '>=', $since)->pluck('created_at') as $t) {
-            $k = $t->copy()->setTimezone($tz)->format('Y-m-d');
-            if (isset($signups[$k])) $signups[$k]++;
+        foreach (self::perDay(Customer::query()->where('created_at', '>=', $since), 'created_at', 'COUNT(*)', $tz) as $k => $n) {
+            if (isset($signups[$k])) $signups[$k] = (int) $n;
         }
         [, $revenue] = self::dayBuckets($days);
-        foreach (Order::query()->where('status', 'paid')->where('paid_at', '>=', $since)->get(['amount', 'paid_at']) as $o) {
-            $k = $o->paid_at->copy()->setTimezone($tz)->format('Y-m-d');
-            if (isset($revenue[$k])) $revenue[$k] += $o->amount;
+        foreach (self::perDay(Order::query()->where('status', 'paid')->where('paid_at', '>=', $since), 'paid_at', 'SUM(amount)', $tz) as $k => $n) {
+            if (isset($revenue[$k])) $revenue[$k] = (int) $n;
         }
 
         $monthStart = now($tz)->startOfMonth()->utc();
@@ -48,10 +47,7 @@ class DashboardController extends Controller
         $paid = Order::query()->where('status', 'paid');
         $stats = [
             'customers' => Customer::count(),
-            'trial' => Customer::status('trial')->count(),
-            'monthly' => Customer::status('monthly')->count(),
-            'lifetime' => Customer::status('lifetime')->count(),
-            'expired' => Customer::status('expired')->count(),
+            ...Subscription::statusCounts(),
             'revenue_month' => (int) (clone $paid)->where('paid_at', '>=', $monthStart)->sum('amount'),
             'revenue_total' => (int) (clone $paid)->sum('amount'),
             'pending' => Order::query()->where('status', 'pending')->count(),
@@ -71,7 +67,21 @@ class DashboardController extends Controller
             'signupChart' => ['type' => 'area', 'categories' => $labels, 'series' => [['name' => 'Pengguna baru', 'data' => array_values($signups)]]],
             'revenueChart' => ['type' => 'bar', 'currency' => true, 'categories' => $labels, 'series' => [['name' => 'Pendapatan', 'data' => array_values($revenue)]], 'colors' => ['#12b76a']],
             'latestOrders' => Order::query()->with('customer')->latest('id')->limit(6)->get(),
-            'latestCustomers' => Customer::query()->latest('id')->limit(6)->get(),
+            'latestCustomers' => Customer::query()->with('subscriptions')->latest('id')->limit(6)->get(),
         ]);
+    }
+
+    /**
+     * Agregat per hari (zona waktu tampilan) langsung di database: satu query, bukan menarik semua baris ke PHP.
+     * Zona tampilan dipakai sebagai selisih menit tetap (Asia/Jakarta tanpa DST).
+     * @return array<string,int|string> 'Y-m-d' => nilai agregat
+     */
+    private static function perDay($query, string $col, string $agg, string $tz): array
+    {
+        $min = (int) now($tz)->getOffset() / 60;
+        $day = $query->getConnection()->getDriverName() === 'sqlite'
+            ? "strftime('%Y-%m-%d', $col, '" . ($min >= 0 ? '+' : '-') . abs($min) . " minutes')"
+            : "DATE_FORMAT(DATE_ADD($col, INTERVAL $min MINUTE), '%Y-%m-%d')";
+        return $query->selectRaw("$day AS d, $agg AS n")->groupBy('d')->pluck('n', 'd')->all();
     }
 }

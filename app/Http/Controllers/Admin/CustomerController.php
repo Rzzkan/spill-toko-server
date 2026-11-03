@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\AdminLog;
 use App\Models\App as AppModel;
 use App\Models\Customer;
+use App\Models\Subscription;
+use App\Services\AppCatalog;
 use Illuminate\Http\Request;
 
 class CustomerController extends Controller
@@ -13,7 +15,7 @@ class CustomerController extends Controller
     public function index(Request $r)
     {
         $app = $this->appSlug($r);
-        $q = Customer::query()->withCount('orders');
+        $q = Customer::query()->withCount('orders')->with('subscriptions');
         if ($s = trim((string) $r->query('q'))) {
             $q->where(fn ($w) => $w->where('email', 'like', "%$s%")->orWhere('name', 'like', "%$s%"));
         }
@@ -21,18 +23,19 @@ class CustomerController extends Controller
         return view('admin.customers.index', [
             'customers' => $q->latest('id')->paginate(20)->withQueryString(),
             'app' => $app, 'apps' => AppModel::listAll(),
-            'counts' => ['' => Customer::count()] + collect(['trial', 'monthly', 'lifetime', 'expired'])->mapWithKeys(fn ($s) => [$s => Customer::status($s, $app)->count()])->all(),
+            'counts' => ['' => Customer::count()] + Subscription::statusCounts($app),
         ]);
     }
 
     private function appSlug(Request $r): string
     {
         $a = (string) ($r->query('app') ?: $r->input('app'));
-        return $a !== '' && AppModel::query()->where('slug', $a)->exists() ? $a : AppModel::DEFAULT;
+        return $a !== '' && AppCatalog::find($a) ? $a : AppModel::DEFAULT;
     }
 
     public function show(Customer $customer)
     {
+        $customer->load('subscriptions');
         return view('admin.customers.show', [
             'c' => $customer,
             'apps' => AppModel::listAll(),
@@ -47,7 +50,7 @@ class CustomerController extends Controller
         $act = (string) $r->input('action');
         $days = max(1, min(3650, (int) $r->input('days', 30)));
         $slug = $this->appSlug($r);
-        $name = AppModel::query()->where('slug', $slug)->value('name') ?: $slug;
+        $name = AppCatalog::find($slug)?->name ?: $slug;
         $sub = $customer->subscription($slug, true);
         switch ($act) {
             case 'add_days':       // perpanjang langganan bulanan
@@ -73,7 +76,7 @@ class CustomerController extends Controller
             default:
                 return back()->with('error', 'Aksi tidak dikenal.');
         }
-        AdminLog::query()->create(['user_id' => $r->user()->id, 'customer_id' => $customer->id, 'action' => $act, 'note' => $note]);
+        AdminLog::record($act, $note, $customer->id);
         return back()->with('ok', $note . '.');
     }
 }

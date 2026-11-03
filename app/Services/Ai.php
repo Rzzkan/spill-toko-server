@@ -211,7 +211,7 @@ class Ai
     public static function analyze(Customer $c, array $in): array
     {
         @set_time_limit(200);
-        if (!$c->access()['access']) throw new ApiException('Langganan berakhir. Perpanjang untuk memakai analisis AI.', 402);
+        $c->requireAccess(message: 'Langganan berakhir. Perpanjang untuk memakai analisis AI.');
         if (!self::on()) throw new ApiException('Analisis AI belum diaktifkan oleh admin.', 503);
 
         $kind = (string) ($in['kind'] ?? '');

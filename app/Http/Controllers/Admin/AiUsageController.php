@@ -53,7 +53,7 @@ class AiUsageController extends Controller
     public function clearCache(Request $r)
     {
         $n = AiCache::query()->delete();
-        AdminLog::query()->create(['user_id' => $r->user()->id, 'action' => 'ai_cache_clear', 'note' => "$n baris cache dihapus"]);
+        AdminLog::record('ai_cache_clear', "$n baris cache dihapus");
         return back()->with('ok', "Cache AI dikosongkan ($n entri).");
     }
 }

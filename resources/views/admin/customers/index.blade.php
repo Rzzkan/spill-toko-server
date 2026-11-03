@@ -19,12 +19,8 @@
             <x-admin.btn size="sm">Cari</x-admin.btn>
         </form>
     </div>
-    <div class="overflow-x-auto">
-        <table class="w-full text-left text-sm">
-            <thead><tr class="border-b border-gray-100 text-xs uppercase text-gray-500 dark:border-gray-800">
-                <th class="py-3 pr-4">Pengguna</th><th class="py-3 pr-4">Status ({{ $apps->firstWhere('slug', $app)?->name }})</th><th class="py-3 pr-4">Berlaku s/d</th><th class="py-3 pr-4">Order</th><th class="py-3 pr-4">Daftar</th><th class="py-3 pr-4">Login terakhir</th></tr></thead>
-            <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
-            @forelse ($customers as $c)
+    <x-admin.table :cols="['Pengguna', 'Status (' . $apps->firstWhere('slug', $app)?->name . ')', 'Berlaku s/d', 'Order', 'Daftar', 'Login terakhir']" :empty="$customers->isEmpty() ? 'Tidak ada pengguna.' : null">
+            @foreach ($customers as $c)
                 @php $a = $c->access($app); [$lbl, $tone] = Fmt::status($a); @endphp
                 <tr class="text-gray-700 dark:text-gray-300">
                     <td class="py-3 pr-4"><a href="{{ route('admin.customers.show', $c) }}" class="flex items-center gap-3">
@@ -36,10 +32,8 @@
                     <td class="py-3 pr-4 whitespace-nowrap">{{ Fmt::dt($c->created_at, false) }}</td>
                     <td class="py-3 pr-4 whitespace-nowrap">{{ Fmt::dt($c->last_login_at) }}</td>
                 </tr>
-            @empty <tr><td colspan="6" class="py-10 text-center text-gray-500">Tidak ada pengguna.</td></tr> @endforelse
-            </tbody>
-        </table>
-    </div>
+            @endforeach
+    </x-admin.table>
     <div class="mt-5">{{ $customers->links() }}</div>
 </x-admin.card>
 @endsection

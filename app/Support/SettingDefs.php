@@ -17,6 +17,12 @@ class SettingDefs
 
     public static function all(): array
     {
+        static $memo = null;
+        return $memo ??= self::build();
+    }
+
+    private static function build(): array
+    {
         return [
             // ---- langganan ----
             'trial_days'          => ['group' => 'langganan', 'label' => 'Lama trial (hari)', 'type' => 'number', 'default' => '3', 'help' => 'Berlaku untuk akun baru. Isi 0 untuk tanpa trial.'],

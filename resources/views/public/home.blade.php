@@ -31,7 +31,7 @@
 {{-- NAV --}}
 <header class="sticky top-0 z-50 border-b border-orange-100/70 bg-white/85 backdrop-blur">
     <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5">
-        <a href="{{ url('/') }}" class="flex items-center gap-2.5 text-lg font-bold"><img src="{{ asset('img/brand/shofee-180.png') }}" alt="Shofee" class="size-9 rounded-xl object-contain">Shofee</a>
+        <x-brand name="shofee" :href="url('/')" size="size-9" class="text-lg" />
         <nav class="hidden items-center gap-7 text-sm font-medium text-slate-600 md:flex">
             <a href="#fitur" class="hover:text-[#ee4d2d]">Fitur</a><a href="#pratinjau" class="hover:text-[#ee4d2d]">Pratinjau</a><a href="#cara" class="hover:text-[#ee4d2d]">Cara Kerja</a><a href="#harga" class="hover:text-[#ee4d2d]">Harga</a><a href="#faq" class="hover:text-[#ee4d2d]">FAQ</a>
         </nav>
@@ -341,7 +341,7 @@
 
 <footer class="border-t border-slate-100 bg-white">
     <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-8 text-sm text-slate-500 sm:flex-row">
-        <div class="flex items-center gap-2 font-semibold text-slate-700"><img src="{{ asset('img/brand/shofee-180.png') }}" alt="Shofee" class="size-7 rounded-xl object-contain">Shofee</div>
+        <x-brand name="shofee" size="size-7" class="font-semibold text-slate-700" />
         <div class="flex gap-5"><a href="#fitur" class="hover:text-[#ee4d2d]">Fitur</a><a href="#harga" class="hover:text-[#ee4d2d]">Harga</a><a href="#faq" class="hover:text-[#ee4d2d]">FAQ</a><a href="{{ url('/login') }}" class="hover:text-[#ee4d2d]">Akun</a><a href="{{ $hubUrl }}" class="hover:text-[#ee4d2d]">Aplikasi lain</a></div>
         <div>© {{ date('Y') }} <a href="{{ $hubUrl }}" class="hover:text-[#ee4d2d]">TemanSeller</a>. Bukan produk resmi Shopee. <span class="text-xs text-slate-400">v{{ config('spill.version') }}</span></div>
     </div>

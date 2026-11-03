@@ -17,7 +17,12 @@ class Settings
     /** @var array<string,?string>|null */
     private static ?array $cache = null;
 
-    public static function flush(): void { self::$cache = null; }
+    private static int $version = 0;
+
+    /** Naik setiap kali pengaturan berubah; dipakai untuk membatalkan cache turunan (mis. paket & harga). */
+    public static function version(): int { return self::$version; }
+
+    public static function flush(): void { self::$cache = null; self::$version++; }
 
     private static function load(): array
     {
@@ -59,12 +64,12 @@ class Settings
         $secret ??= (SettingDefs::all()[$key]['type'] ?? '') === 'secret';
         $stored = ($secret && $value !== null && $value !== '') ? Crypt::encryptString($value) : $value;
         Setting::query()->updateOrCreate(['key' => $key], ['value' => $stored, 'is_secret' => $secret]);
-        self::$cache = null;
+        self::flush();
     }
 
     public static function forget(string $key): void
     {
         Setting::query()->where('key', $key)->delete();
-        self::$cache = null;
+        self::flush();
     }
 }

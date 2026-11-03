@@ -3,7 +3,7 @@
 <div class="relative z-1 flex min-h-screen items-center justify-center bg-white p-6 sm:p-0 dark:bg-gray-900">
     <div class="w-full max-w-md">
         <div class="mb-8 text-center">
-            <img src="{{ asset('img/brand/temanseller-180.png') }}" alt="TemanSeller" class="mx-auto mb-4 size-20 object-contain">
+            <x-brand size="size-20" text="" class="mx-auto mb-4 justify-center" />
             <h1 class="text-title-sm font-semibold text-gray-800 dark:text-white/90">{{ config('app.name') }}</h1>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Masuk ke panel admin</p>
         </div>

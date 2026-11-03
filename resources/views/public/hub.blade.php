@@ -32,7 +32,7 @@
 
 <header class="sticky top-0 z-50 border-b border-orange-100/70 bg-white/85 backdrop-blur">
     <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5">
-        <a href="{{ url('/') }}" class="flex items-center gap-2.5 text-lg font-bold"><img src="{{ asset('img/brand/temanseller-180.png') }}" alt="TemanSeller" class="size-12 object-contain">TemanSeller</a>
+        <x-brand :href="url('/')" size="size-12" class="text-lg" />
         <nav class="hidden items-center gap-7 text-sm font-medium text-slate-600 md:flex">
             <a href="#aplikasi" class="hover:text-[#ee4d2d]">Aplikasi</a><a href="#kenapa" class="hover:text-[#ee4d2d]">Kenapa TemanSeller</a><a href="#cara" class="hover:text-[#ee4d2d]">Cara mulai</a><a href="#faq" class="hover:text-[#ee4d2d]">FAQ</a>
         </nav>
@@ -154,7 +154,7 @@
 
 <footer class="border-t border-slate-100 bg-white">
     <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-8 text-sm text-slate-500 sm:flex-row">
-        <div class="flex items-center gap-2 font-semibold text-slate-700"><img src="{{ asset('img/brand/temanseller-180.png') }}" alt="TemanSeller" class="size-10 object-contain">TemanSeller</div>
+        <x-brand size="size-10" class="font-semibold text-slate-700" />
         <div class="flex flex-wrap justify-center gap-5"><a href="#aplikasi" class="hover:text-[#ee4d2d]">Aplikasi</a><a href="#faq" class="hover:text-[#ee4d2d]">FAQ</a><a href="{{ $cta }}" class="hover:text-[#ee4d2d]">Akun</a>@foreach ($apps as $x)<a href="{{ $x['url'] }}" class="hover:text-[#ee4d2d]">{{ $x['app']->name }}</a>@endforeach</div>
         <div>© {{ date('Y') }} TemanSeller. <span class="text-xs text-slate-400">v{{ config('spill.version') }}</span></div>
     </div>

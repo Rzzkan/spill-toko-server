@@ -12,6 +12,11 @@ class Plans
 {
     public static function all(string $app = AppModel::DEFAULT): array
     {
+        return AppCatalog::plans($app, fn () => self::build($app));
+    }
+
+    private static function build(string $app): array
+    {
         if ($app !== AppModel::DEFAULT) return self::forApp($app);
         $p = [
             'monthly' => ['label' => 'Bulanan', 'price' => Settings::int('plan.monthly.price', 24000), 'original' => Settings::int('plan.monthly.original', 49000), 'days' => max(1, Settings::int('plan.monthly.days', 30))],
@@ -25,7 +30,7 @@ class Plans
 
     private static function forApp(string $slug): array
     {
-        $cfg = (array) (AppModel::bySlug($slug)?->plans ?? []);
+        $cfg = (array) (AppCatalog::find($slug)?->plans ?? []);
         $out = [];
         foreach (['monthly' => ['Bulanan', 30], 'yearly' => ['Tahunan', 365]] as $k => [$label, $days]) {
             $x = (array) ($cfg[$k] ?? []);
@@ -39,7 +44,7 @@ class Plans
 
     public static function trialDays(string $app = AppModel::DEFAULT): int
     {
-        if ($app !== AppModel::DEFAULT) return max(0, (int) (AppModel::bySlug($app)?->trial_days ?? 3));
+        if ($app !== AppModel::DEFAULT) return max(0, (int) (AppCatalog::find($app)?->trial_days ?? 3));
         return max(0, Settings::int('trial_days', 3));
     }
 

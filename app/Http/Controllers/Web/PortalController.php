@@ -8,6 +8,7 @@ use App\Models\App as AppModel;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Services\Ai;
+use App\Services\AppCatalog;
 use App\Services\GoogleAuth;
 use App\Services\Midtrans;
 use App\Services\Plans;
@@ -45,13 +46,13 @@ class PortalController extends Controller
         $c = $r->attributes->get('customer');
         $apps = AppModel::listActive()->map(function (AppModel $app) use ($c) {
             $sub = $c->subscription($app->slug);   // null = belum pernah memakai aplikasi ini
-            $a = $sub ? $sub->access() : ['plan' => 'none', 'access' => false, 'until' => null];
+            $a = $sub?->access() ?? \App\Models\Subscription::none();
             return ['app' => $app, 'a' => $a, 'sub' => $sub];
         });
         return view('portal.account', [
             'c' => $c, 'apps' => $apps, 'plansByApp' => $apps->mapWithKeys(fn ($x) => [$x['app']->slug => Plans::all($x['app']->slug)])->all(),
             'orders' => Order::query()->where('customer_id', $c->id)->latest('id')->limit(15)->get(),
-            'appNames' => AppModel::query()->pluck('name', 'slug')->all(),
+            'appNames' => AppCatalog::names(),
             'devices' => \Illuminate\Support\Facades\Schema::hasTable('customer_devices') ? $c->devices()->orderByDesc('last_seen_at')->get() : collect(), 'maxDevices' => max(1, (int) config('spill.max_devices', 2)),
         ]);
     }
@@ -63,7 +64,7 @@ class PortalController extends Controller
         if (!$app || !$app->active) abort(404);
         $c = $r->attributes->get('customer');
         $sub = $c->subscription($slug);
-        $a = $sub ? $sub->access() : ['plan' => 'none', 'access' => false, 'until' => null];
+        $a = $sub?->access() ?? \App\Models\Subscription::none();
         return view('portal.app', [
             'c' => $c, 'appRow' => $app, 'a' => $a, 'sub' => $sub, 'plans' => Plans::all($slug), 'trialDays' => Plans::trialDays($slug),
             'ai' => Ai::info($c), 'canPay' => Midtrans::configured(),

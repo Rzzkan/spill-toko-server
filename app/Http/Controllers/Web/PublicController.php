@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use App\Models\App as AppModel;
 use App\Services\Ai;
+use App\Services\AppCatalog;
 use App\Services\Plans;
 use App\Services\Settings;
 use Illuminate\Http\Request;
@@ -25,12 +26,8 @@ class PublicController extends Controller
 
     public function hub()
     {
-        $apps = AppModel::listActive()->map(function (AppModel $a) {
-            $per = array_map(fn ($p) => (int) $p['price'] / max(1, $p['days'] / 30), array_filter(Plans::all($a->slug), fn ($p) => !empty($p['days']) && (int) $p['price'] > 0));
-            $from = $per ? min($per) : null;
-            return ['app' => $a, 'trial' => Plans::trialDays($a->slug), 'from' => $from ? (int) round($from) : null,
-                'url' => $a->slug === AppModel::DEFAULT ? self::shofeeUrl() : url('/akun/aplikasi/' . $a->slug)];
-        });
+        $apps = AppCatalog::active()->map(fn (AppModel $a) => AppCatalog::summary($a) + [
+            'url' => $a->slug === AppModel::DEFAULT ? self::shofeeUrl() : url('/akun/aplikasi/' . $a->slug)]);
         return view('public.hub', ['apps' => $apps]);
     }
 

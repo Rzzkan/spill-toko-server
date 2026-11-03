@@ -7,9 +7,7 @@
 <x-admin.card title="Aplikasi TemanSeller" desc="Setiap aplikasi punya trial, paket, dan langganan sendiri. Pengguna melihat semua langganannya di halaman akun.">
     <x-slot:actions><x-admin.btn size="sm" :href="route('admin.apps.create')">+ Aplikasi baru</x-admin.btn></x-slot:actions>
     <div class="overflow-x-auto px-5 pb-5 sm:px-6">
-        <table class="w-full text-left text-sm">
-            <thead><tr class="border-b border-gray-100 text-xs uppercase text-gray-500 dark:border-gray-800"><th class="py-3 pr-4">Aplikasi</th><th class="py-3 pr-4">Kode</th><th class="py-3 pr-4">Trial</th><th class="py-3 pr-4">Paket</th><th class="py-3 pr-4">Pengguna</th><th class="py-3 pr-4">Status</th><th class="py-3"></th></tr></thead>
-            <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+        <x-admin.table :cols="['Aplikasi', 'Kode', 'Trial', 'Paket', 'Pengguna', 'Status', '']">
             @foreach ($apps as $a)
                 @php $pl = \App\Services\Plans::all($a->slug); @endphp
                 <tr class="text-gray-700 dark:text-gray-300">
@@ -23,8 +21,7 @@
                     <td class="py-3 text-right"><a class="text-brand-500" href="{{ route('admin.apps.edit', $a) }}">Ubah</a></td>
                 </tr>
             @endforeach
-            </tbody>
-        </table>
+        </x-admin.table>
     </div>
 </x-admin.card>
 @endsection

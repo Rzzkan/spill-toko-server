@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AdminLog;
 use App\Models\App as AppModel;
 use App\Models\Subscription;
+use App\Services\AppCatalog;
 use Illuminate\Http\Request;
 
 /** Kelola aplikasi TemanSeller (Shofee dan aplikasi lain): nama, trial, paket & harga. */
@@ -13,7 +14,7 @@ class AppController extends Controller
 {
     public function index()
     {
-        $apps = AppModel::query()->orderBy('sort')->orderBy('id')->get();
+        $apps = AppCatalog::all();
         $subs = Subscription::query()->selectRaw('app, count(*) as n')->groupBy('app')->pluck('n', 'app');
         return view('admin.apps.index', ['apps' => $apps, 'subs' => $subs]);
     }
@@ -52,7 +53,7 @@ class AppController extends Controller
     {
         $app = new AppModel(['slug' => (string) $r->input('slug')]);
         $this->fill($r, $app, true)->save();
-        AdminLog::query()->create(['user_id' => $r->user()->id, 'action' => 'app_create', 'note' => 'Aplikasi baru: ' . $app->name]);
+        AdminLog::record('app_create', 'Aplikasi baru: ' . $app->name);
         return redirect()->route('admin.apps')->with('ok', 'Aplikasi ' . $app->name . ' ditambahkan.');
     }
 
@@ -65,7 +66,7 @@ class AppController extends Controller
     {
         if ($app->slug === AppModel::DEFAULT && !$r->boolean('active')) return back()->with('error', 'Aplikasi utama (Shofee) tidak bisa dinonaktifkan.');
         $this->fill($r, $app, false)->save();
-        AdminLog::query()->create(['user_id' => $r->user()->id, 'action' => 'app_update', 'note' => 'Aplikasi diubah: ' . $app->name]);
+        AdminLog::record('app_update', 'Aplikasi diubah: ' . $app->name);
         return redirect()->route('admin.apps')->with('ok', 'Aplikasi ' . $app->name . ' disimpan.');
     }
 }

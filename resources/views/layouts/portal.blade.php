@@ -12,7 +12,7 @@
 <body class="min-h-screen bg-gray-50 text-gray-800">
 <header class="border-b border-gray-200 bg-white">
     <div class="mx-auto flex max-w-4xl items-center justify-between px-4 py-4">
-        <a href="{{ url('/') }}" class="flex items-center gap-2.5 text-lg font-semibold"><img src="{{ asset('img/brand/temanseller-180.png') }}" alt="" class="size-12 object-contain">{{ config('app.name') }}</a>
+        <x-brand :href="url('/')" size="size-12" class="text-lg font-semibold" />
         @yield('nav')
     </div>
 </header>
