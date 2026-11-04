@@ -52,12 +52,12 @@
             <p class="mt-5 max-w-xl text-lg text-slate-600">Buka produk, toko, atau hasil pencarian di Shopee — Shofee otomatis menampilkan estimasi omzet, tren penjualan, produk andalan, dan rekomendasi aksi dari AI. Tanpa pindah tab, tanpa rekap manual.</p>
             <div class="mt-8 flex flex-wrap items-center gap-3">
                 <a href="{{ $cta }}" class="rounded-xl bg-[#ee4d2d] px-6 py-3.5 text-base font-semibold text-white shadow-lg shadow-orange-200 hover:bg-[#d7401f]">Coba Gratis {{ $trial }} Hari →</a>
+                @if ($store)<a href="{{ $store }}" target="_blank" rel="noopener" class="rounded-xl border border-slate-200 bg-white px-6 py-3.5 text-base font-semibold text-slate-700 hover:border-[#ee4d2d] hover:text-[#ee4d2d]">Pasang di Chrome ↗</a>@endif
                 <a href="#fitur" class="rounded-xl border border-slate-200 bg-white px-6 py-3.5 text-base font-semibold text-slate-700 hover:border-[#ee4d2d] hover:text-[#ee4d2d]">Lihat Fitur</a>
             </div>
             <ul class="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-500">
                 <li>✓ Daftar pakai Google</li><li>✓ Tanpa kartu kredit</li><li>✓ Mulai {{ Fmt::rp($m['price']) }}/bulan</li>
             </ul>
-            @if ($store)<a href="{{ $store }}" class="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-slate-700 underline decoration-orange-300 underline-offset-4 hover:text-[#ee4d2d]">Pasang dari Chrome Web Store ↗</a>@endif
         </div>
 
         {{-- Ilustrasi tampilan --}}
@@ -335,6 +335,7 @@
         <p class="mx-auto mt-3 max-w-xl text-orange-50">Daftar dengan Google, coba semua fitur gratis {{ $trial }} hari. Tanpa kartu kredit.</p>
         <div class="mt-7 flex flex-wrap justify-center gap-3">
             <a href="{{ $cta }}" class="rounded-xl bg-white px-7 py-3.5 font-semibold text-[#ee4d2d] shadow hover:bg-orange-50">Coba Gratis {{ $trial }} Hari</a>
+            @if ($store)<a href="{{ $store }}" target="_blank" rel="noopener" class="rounded-xl border border-white/60 px-7 py-3.5 font-semibold text-white hover:bg-white/10">Pasang di Chrome ↗</a>@endif
             <a href="#harga" class="rounded-xl border border-white/60 px-7 py-3.5 font-semibold text-white hover:bg-white/10">Lihat Harga</a>
         </div>
     </div>

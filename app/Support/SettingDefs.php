@@ -26,7 +26,6 @@ class SettingDefs
         return [
             // ---- langganan ----
             'license_ttl_hours'   => ['group' => 'langganan', 'label' => 'Batas offline extension (jam)', 'type' => 'number', 'default' => '72', 'min' => 1, 'help' => 'Extension harus terhubung ke server lagi paling lambat sekian jam.'],
-            'app.chrome_store_url' => ['group' => 'langganan', 'label' => 'Link Chrome Web Store', 'type' => 'url', 'default' => '', 'help' => 'Dipakai tombol "Pasang extension" di halaman depan.'],
 
             // ---- ekstensi ----
             'app.extension_id' => ['group' => 'ekstensi', 'label' => 'ID extension Chrome', 'type' => 'text', 'default' => 'ecngchlgljjgclfjhljppkmmoamdfpjl', 'help' => 'Dipakai untuk menampilkan Redirect URI Google yang benar. Ganti dengan ID dari Chrome Web Store setelah publish.'],

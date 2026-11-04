@@ -94,6 +94,7 @@
                     </div>
                     <div class="mt-5 flex gap-2">
                         <a href="{{ $x['url'] }}" class="flex-1 rounded-xl bg-[#ee4d2d] px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-[#d7401f]">Lihat detail</a>
+                        @if ($a->download_url)<a href="{{ $a->download_url }}" target="_blank" rel="noopener" class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:border-[#ee4d2d] hover:text-[#ee4d2d]">Pasang ↗</a>@endif
                         <a href="{{ $a->slug === 'shofee' ? $cta : url('/akun/aplikasi/' . $a->slug) }}" class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:border-[#ee4d2d] hover:text-[#ee4d2d]">Coba gratis</a>
                     </div>
                 </article>

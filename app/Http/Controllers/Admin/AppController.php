@@ -31,7 +31,7 @@ class AppController extends Controller
         return [
             'slug' => $new ? ['required', 'regex:/^[a-z][a-z0-9\-]{1,29}$/', 'unique:apps,slug'] : ['prohibited'],
             'name' => ['required', 'string', 'max:80'], 'tagline' => ['nullable', 'string', 'max:200'],
-            'url' => ['nullable', 'string', 'max:255', 'regex:#^(https://[^\s]+|/[A-Za-z0-9._~\-/?=&%\#]*)$#'], 'icon' => ['nullable', 'string', 'max:16'],
+            'url' => ['nullable', 'string', 'max:255', 'regex:#^(https://[^\s]+|/[A-Za-z0-9._~\-/?=&%\#]*)$#'], 'download_url' => ['nullable', 'string', 'max:255', 'regex:#^https://[^\s]+$#'], 'icon' => ['nullable', 'string', 'max:16'],
             'trial_days' => ['required', 'integer', 'min:0', 'max:60'], 'sort' => ['nullable', 'integer', 'min:0', 'max:999'],
             'monthly_price' => $price, 'monthly_original' => ['nullable', 'integer', 'min:0'], 'monthly_days' => ['nullable', 'integer', 'min:1', 'max:3650'],
             'yearly_price' => $price, 'yearly_original' => ['nullable', 'integer', 'min:0'], 'yearly_days' => ['nullable', 'integer', 'min:1', 'max:3650'],
@@ -47,7 +47,7 @@ class AppController extends Controller
             'yearly' => ['price' => (int) ($d['yearly_price'] ?? 0), 'original' => (int) ($d['yearly_original'] ?? 0), 'days' => (int) ($d['yearly_days'] ?? 365) ?: 365],
             'lifetime' => ['enabled' => $r->boolean('lifetime_enabled'), 'price' => (int) ($d['lifetime_price'] ?? 0)],
         ];
-        $app->fill(['name' => $d['name'], 'tagline' => $d['tagline'] ?? null, 'url' => ($d['url'] ?? '') !== '' ? $d['url'] : null, 'icon' => $d['icon'] ?? null, 'trial_days' => (int) $d['trial_days'],
+        $app->fill(['name' => $d['name'], 'tagline' => $d['tagline'] ?? null, 'url' => ($d['url'] ?? '') !== '' ? $d['url'] : null, 'download_url' => ($d['download_url'] ?? '') !== '' ? $d['download_url'] : null, 'icon' => $d['icon'] ?? null, 'trial_days' => (int) $d['trial_days'],
             'sort' => (int) ($d['sort'] ?? 0), 'active' => $r->boolean('active'), 'plans' => $plans]);
         return $app;
     }

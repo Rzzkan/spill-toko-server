@@ -11,6 +11,7 @@
             <x-admin.input label="Nama aplikasi" name="name" :value="$app->name" />
             <x-admin.input label="Deskripsi singkat" name="tagline" :value="$app->tagline" class="sm:col-span-2" />
             <x-admin.input label="URL aplikasi (tujuan tombol di landing)" name="url" :value="$app->url" class="sm:col-span-2" placeholder="{{ $isMain ? 'https://temanseller.com/shofee' : 'https://temanseller.com/kasirku' }}" help="Alamat penuh (https://…) atau path seperti /shofee. Dipakai tombol \"Lihat detail\" di landing TemanSeller. Kosong = halaman bawaan." />
+            <x-admin.input label="Link download / pasang" name="download_url" :value="$app->download_url" class="sm:col-span-2" placeholder="https://chromewebstore.google.com/detail/…" help="Alamat https untuk memasang aplikasi (mis. Chrome Web Store). Tampil sebagai tombol \"Pasang\" di landing. Kosong = tombol tidak tampil." />
             <x-admin.input label="Ikon (emoji)" name="icon" :value="$app->icon" />
             <x-admin.input label="Urutan tampil" name="sort" type="number" :value="$app->sort" />
             <x-admin.input label="Trial (hari)" name="trial_days" type="number" :value="$app->trial_days" help="Berlaku untuk pengguna baru aplikasi ini. 0 = tanpa trial." />

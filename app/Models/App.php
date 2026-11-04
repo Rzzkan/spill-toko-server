@@ -11,7 +11,7 @@ class App extends Model
     public const DEFAULT = 'shofee';
 
     protected $table = 'apps';
-    protected $fillable = ['slug', 'name', 'tagline', 'url', 'icon', 'trial_days', 'plans', 'active', 'sort'];
+    protected $fillable = ['slug', 'name', 'tagline', 'url', 'download_url', 'icon', 'trial_days', 'plans', 'active', 'sort'];
 
     protected function casts(): array { return ['plans' => 'array', 'active' => 'boolean', 'trial_days' => 'integer']; }
 

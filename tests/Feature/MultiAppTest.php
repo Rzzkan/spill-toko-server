@@ -91,6 +91,18 @@ class MultiAppTest extends TestCase
         $this->assertSame(5, Plans::trialDays('kasirku'));
     }
 
+    public function test_download_link_for_shofee_is_shown_and_editable(): void
+    {
+        $this->assertStringContainsString('chromewebstore.google.com/detail/nnjdmcbildnombgpnoolgopbekipegpa', (string) AppModel::query()->where('slug', 'shofee')->value('download_url'));
+        $this->get('/shofee')->assertOk()->assertSee('Pasang di Chrome')->assertSee('chromewebstore.google.com', false);
+        $this->get('/')->assertOk()->assertSee('Pasang');
+        $this->actingAs(\App\Models\User::query()->create(['name' => 'Adm', 'username' => 'adm', 'email' => 'adm@test.id', 'password' => 'rahasia123']));
+        $base = ['name' => 'Shofee', 'trial_days' => 3, 'sort' => 1, 'active' => 1, 'monthly_price' => 24000, 'yearly_price' => 249000];
+        $this->post('/admin/aplikasi/shofee', $base + ['download_url' => 'http://tidak-aman.test'])->assertSessionHasErrors('download_url');
+        $this->post('/admin/aplikasi/shofee', $base + ['download_url' => ''])->assertRedirect();
+        $this->get('/shofee')->assertOk()->assertDontSee('Pasang di Chrome');
+    }
+
     public function test_payment_extends_only_the_ordered_app(): void
     {
         $this->app2();

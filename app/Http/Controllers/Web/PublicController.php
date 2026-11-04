@@ -38,7 +38,7 @@ class PublicController extends Controller
     public function shofee()
     {
         return view('public.home', [
-            'trial' => Plans::trialDays(), 'plans' => Plans::all(), 'aiq' => Ai::quotas(), 'aiOn' => Ai::on(), 'store' => Settings::get('app.chrome_store_url', ''),
+            'trial' => Plans::trialDays(), 'plans' => Plans::all(), 'aiq' => Ai::quotas(), 'aiOn' => Ai::on(), 'store' => (string) AppCatalog::find(AppModel::DEFAULT)?->download_url,
             'hubUrl' => str_starts_with(strtolower(request()->getHost()), 'shofee.') ? preg_replace('#^(https?://)shofee\.#i', '$1', url('/')) : url('/'),
         ]);
     }
