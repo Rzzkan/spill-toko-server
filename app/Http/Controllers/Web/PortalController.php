@@ -44,6 +44,7 @@ class PortalController extends Controller
     public function account(Request $r)
     {
         $c = $r->attributes->get('customer');
+        $this->syncPending($c->id);
         $apps = AppModel::listActive()->map(function (AppModel $app) use ($c) {
             $sub = $c->subscription($app->slug);   // null = belum pernah memakai aplikasi ini
             $a = $sub?->access() ?? \App\Models\Subscription::none();
@@ -57,12 +58,21 @@ class PortalController extends Controller
         ]);
     }
 
+    /** Order pending (maks. 3 hari terakhir) dicek ke Midtrans supaya status akurat walau notifikasi belum masuk. */
+    private function syncPending(int $customerId): void
+    {
+        if (!Midtrans::configured()) return;
+        Order::query()->where('customer_id', $customerId)->where('status', 'pending')->where('created_at', '>', now()->subDays(3))->latest('id')->limit(3)->get()
+            ->each(function (Order $o) { try { Midtrans::syncOrder($o); } catch (\Throwable) { /* abaikan; tampilan tetap pending */ } });
+    }
+
     /** Rincian langganan satu aplikasi + pilihan paket. */
     public function app(Request $r, string $slug)
     {
         $app = AppModel::slugOk($slug) ? AppModel::bySlug($slug) : null;
         if (!$app || !$app->active) abort(404);
         $c = $r->attributes->get('customer');
+        $this->syncPending($c->id);
         $sub = $c->subscription($slug);
         $a = $sub?->access() ?? \App\Models\Subscription::none();
         return view('portal.app', [

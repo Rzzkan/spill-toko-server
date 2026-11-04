@@ -103,6 +103,36 @@ class MultiAppTest extends TestCase
         $this->get('/shofee')->assertOk()->assertDontSee('Pasang di Chrome');
     }
 
+    public function test_thanks_page_shows_real_status_not_always_success(): void
+    {
+        \App\Models\Setting::query()->delete();
+        \App\Services\Settings::set('midtrans.server_key', 'SB-Mid-server-x');
+        $c = Customer::query()->create(['google_sub' => 't1', 'email' => 't@test.id', 'trial_ends_at' => now()->addDays(3)]);
+        $mk = fn ($id, $st = 'pending') => \App\Models\Order::query()->create(['order_id' => $id, 'customer_id' => $c->id, 'app' => 'shofee', 'plan' => 'monthly', 'amount' => 24000, 'status' => $st]);
+        $fake = fn ($id, $ts) => \Illuminate\Support\Facades\Http::swap(new \Illuminate\Http\Client\Factory) ?: \Illuminate\Support\Facades\Http::fake(['*' => \Illuminate\Support\Facades\Http::response(['order_id' => $id, 'status_code' => '200', 'transaction_status' => $ts, 'gross_amount' => '24000.00', 'payment_type' => 'qris'])]);
+
+        $mk('ST-1-cancel'); $fake('ST-1-cancel', 'cancel');
+        $this->get('/thanks?order=ST-1-cancel&transaction_status=pending')->assertOk()->assertSee('Pembayaran dibatalkan')->assertDontSee('Terima kasih');
+        $this->assertSame('cancelled', \App\Models\Order::query()->where('order_id', 'ST-1-cancel')->value('status'));
+
+        $mk('ST-2-exp'); $fake('ST-2-exp', 'expire');
+        $this->get('/thanks?order=ST-2-exp')->assertOk()->assertSee('kedaluwarsa');
+
+        $mk('ST-3-pend'); $fake('ST-3-pend', 'pending');
+        $this->get('/thanks?order=ST-3-pend')->assertOk()->assertSee('belum selesai')->assertDontSee('berhasil');
+
+        $mk('ST-4-paid'); $fake('ST-4-paid', 'settlement');
+        $this->get('/thanks?order=ST-4-paid')->assertOk()->assertSee('Pembayaran berhasil');
+        $this->assertSame('paid', \App\Models\Order::query()->where('order_id', 'ST-4-paid')->value('status'));
+
+        \Illuminate\Support\Facades\Http::swap(new \Illuminate\Http\Client\Factory);
+        \Illuminate\Support\Facades\Http::fake(['*' => \Illuminate\Support\Facades\Http::response(['status_code' => '404'], 404)]);   // transaksi belum dibuat di Midtrans
+        $mk('ST-5-none');
+        $this->get('/thanks?order=ST-5-none')->assertOk()->assertSee('belum selesai');
+        $this->get('/thanks?order=ST-ngawur')->assertOk()->assertSee('tidak ditemukan');
+        $this->get('/thanks')->assertOk()->assertSee('tidak ditemukan');
+    }
+
     public function test_payment_extends_only_the_ordered_app(): void
     {
         $this->app2();

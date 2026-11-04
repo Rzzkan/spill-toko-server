@@ -47,4 +47,16 @@ class PublicController extends Controller
     {
         return view('public.privasi', ['email' => (string) config('temanseller.contact_email')]);
     }
+
+    /** Halaman setelah pembayaran: tampilan mengikuti status order yang sebenarnya (dicek ke Midtrans), bukan selalu "berhasil". */
+    public function thanks(Request $r)
+    {
+        $id = preg_replace('/[^A-Za-z0-9\-]/', '', (string) ($r->query('order') ?: $r->query('order_id')));
+        $order = $id !== '' ? \App\Models\Order::query()->where('order_id', $id)->first() : null;
+        $status = $order?->status;
+        if ($order && $order->status === 'pending') {
+            try { $status = \App\Services\Midtrans::syncOrder($order) ?? 'pending'; } catch (\Throwable) { $status = 'pending'; }
+        }
+        return view('public.thanks', ['order' => $id, 'status' => $order ? $status : 'unknown']);
+    }
 }

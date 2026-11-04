@@ -80,6 +80,30 @@ class Midtrans
         return [false, 'Respons tak terduga dari Midtrans (HTTP ' . $r->status() . ').'];
     }
 
+    /**
+     * Cek status order ke Midtrans lalu perbarui order (lunas / dibatalkan / kedaluwarsa / ditolak). Dipakai webhook, halaman /thanks, dan halaman akun.
+     * @return string status order terkini; null bila Midtrans tidak bisa dihubungi atau transaksinya belum dibuat di Midtrans.
+     * @throws \RuntimeException bila nominal tidak cocok
+     */
+    public static function syncOrder(Order $order): ?string
+    {
+        $s = self::status($order->order_id);
+        if (!$s || ($s['order_id'] ?? '') !== $order->order_id || (string) ($s['status_code'] ?? '') === '404') return null;
+        if ((int) round((float) ($s['gross_amount'] ?? 0)) !== (int) $order->amount) {
+            logger()->error("amount mismatch {$order->order_id}");
+            throw new \RuntimeException('amount mismatch');
+        }
+        $ts = (string) ($s['transaction_status'] ?? '');
+        $fraud = (string) ($s['fraud_status'] ?? 'accept');
+        if ($ts === 'settlement' || ($ts === 'capture' && $fraud === 'accept')) {
+            self::markPaid($order->order_id, $s['payment_type'] ?? null, json_encode($s));
+        } elseif (in_array($ts, ['expire', 'cancel', 'deny'], true)) {
+            Order::query()->where('order_id', $order->order_id)->where('status', '<>', 'paid')
+                ->update(['status' => ['expire' => 'expired', 'cancel' => 'cancelled', 'deny' => 'denied'][$ts]]);
+        }
+        return Order::query()->where('order_id', $order->order_id)->value('status');
+    }
+
     /** Aktifkan paket setelah dibayar. Idempoten: notifikasi ganda tidak menambah masa aktif dua kali. */
     public static function markPaid(string $orderId, ?string $paymentType, string $raw): void
     {

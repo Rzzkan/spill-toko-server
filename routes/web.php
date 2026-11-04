@@ -11,7 +11,7 @@ Route::get('/', [\App\Http\Controllers\Web\PublicController::class, 'home'])->na
 Route::get('/shofee', [\App\Http\Controllers\Web\PublicController::class, 'shofee'])->name('shofee');
 Route::get('/privasi', [\App\Http\Controllers\Web\PublicController::class, 'privacy'])->name('privacy');
 Route::redirect('/privacy', '/privasi', 301);
-Route::get('/thanks', fn (Request $r) => view('public.thanks', ['order' => preg_replace('/[^A-Za-z0-9\-]/', '', (string) $r->query('order'))]));
+Route::get('/thanks', [\App\Http\Controllers\Web\PublicController::class, 'thanks'])->middleware('throttle:30,1')->name('thanks');
 
 // Portal pengguna: masuk dengan Google, status langganan, perpanjang
 Route::get('/login', [PortalController::class, 'loginForm'])->name('portal.login');

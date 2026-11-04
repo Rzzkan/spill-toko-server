@@ -168,19 +168,11 @@ class ApiController extends Controller
         $order = Order::query()->where('order_id', $orderId)->first();
         if (!$order) return $this->out(['ok' => true, 'note' => 'unknown order']);
 
-        $s = Midtrans::status($orderId);   // verifikasi ulang ke Midtrans
-        if (!$s || ($s['order_id'] ?? '') !== $orderId || (string) ($s['status_code'] ?? '') === '404') throw new ApiException('status check failed', 502);
-        if ((int) round((float) ($s['gross_amount'] ?? 0)) !== (int) $order->amount) {
-            logger()->error("amount mismatch $orderId");
+        try {
+            // verifikasi ulang ke Midtrans (jangan percaya payload webhook mentah)
+            if (Midtrans::syncOrder($order) === null) throw new ApiException('status check failed', 502);
+        } catch (\RuntimeException) {
             throw new ApiException('amount mismatch', 400);
-        }
-        $ts = (string) ($s['transaction_status'] ?? '');
-        $fraud = (string) ($s['fraud_status'] ?? 'accept');
-        if ($ts === 'settlement' || ($ts === 'capture' && $fraud === 'accept')) {
-            Midtrans::markPaid($orderId, $s['payment_type'] ?? null, json_encode($s));
-        } elseif (in_array($ts, ['expire', 'cancel', 'deny'], true)) {
-            Order::query()->where('order_id', $orderId)->where('status', '<>', 'paid')
-                ->update(['status' => ['expire' => 'expired', 'cancel' => 'cancelled', 'deny' => 'denied'][$ts]]);
         }
         return $this->out(['ok' => true]);
     }
