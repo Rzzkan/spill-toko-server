@@ -33,7 +33,7 @@
     <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5">
         <x-brand :href="$hubUrl" size="size-12" class="text-lg" />
         <nav class="hidden items-center gap-7 text-sm font-medium text-slate-600 md:flex">
-            <a href="{{ $hubUrl }}" class="hover:text-[#ee4d2d]">Beranda</a><a href="{{ route('layanan') }}" class="hover:text-[#ee4d2d]">Semua layanan</a><a href="#paket" class="hover:text-[#ee4d2d]">Paket</a><a href="#portofolio" class="hover:text-[#ee4d2d]">Portofolio</a><a href="#faq" class="hover:text-[#ee4d2d]">FAQ</a>
+            <a href="{{ $hubUrl }}" class="hover:text-[#ee4d2d]">Beranda</a><a href="#paket" class="hover:text-[#ee4d2d]">Paket</a><a href="#portofolio" class="hover:text-[#ee4d2d]">Portofolio</a><a href="#faq" class="hover:text-[#ee4d2d]">FAQ</a>
         </nav>
         <div class="flex items-center gap-2">
             <a href="{{ $login }}" class="hidden rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:text-[#ee4d2d] sm:block">Masuk</a>
@@ -57,6 +57,13 @@
     </div>
 </section>
 
+@if (!empty($soon))
+<section class="pb-2 pt-2"><div class="mx-auto max-w-3xl px-4">@foreach ($soon as $x)
+    <div class="mb-3 flex items-center justify-between gap-3 rounded-2xl border border-dashed border-violet-300 bg-violet-50/60 px-5 py-4">
+        <div><div class="font-bold text-slate-800">🚀 {{ $x }}</div><p class="mt-0.5 text-sm text-slate-500">Layanan ini sedang kami siapkan dan akan tersedia segera.</p></div>
+        <span class="shrink-0 whitespace-nowrap rounded-full bg-violet-100 px-3 py-1 text-xs font-semibold text-violet-700">Segera hadir</span>
+    </div>@endforeach</div></section>
+@endif
 <section id="paket" class="pb-12 pt-4">
     <div class="mx-auto max-w-6xl px-4">
         @if ($types->isEmpty())

@@ -62,7 +62,7 @@ class LayananTest extends TestCase
 
     public function test_hub_links_service_and_labels_shofee_as_chrome_extension(): void
     {
-        $this->get('/')->assertOk()->assertSee('Shofee')->assertSee('Extension Chrome')->assertSee(route('layanan'));
+        $this->get('/')->assertOk()->assertSee('Shofee')->assertSee('Extension Chrome')->assertSee(route('layanan.sosmed'));
     }
 
     public function test_order_flow_creates_pending_subscription_and_shows_in_account(): void
@@ -221,13 +221,13 @@ class LayananTest extends TestCase
 
     public function test_coming_soon_shown_and_configurable_and_single_menu(): void
     {
-        $this->get('/')->assertOk()->assertSee('Kelola Social Media')->assertSee('Segera hadir')->assertSee('Layanan Jasa Live Marketplace')->assertDontSee('Kelola TikTok')->assertDontSee('Threads Tanpa Posting');
-        $this->get('/layanan')->assertOk()->assertSee('Kelola TikTok')->assertSee('Layanan Jasa Live Marketplace')->assertSee('Segera hadir')->assertSee(route('layanan.sosmed'));
+        $this->get('/')->assertOk()->assertSee('Kelola Social Media')->assertSee('Segera hadir')->assertSee('Layanan Jasa Live Marketplace')->assertDontSee('Threads Tanpa Posting');
+        $this->get('/layanan')->assertRedirect('/layanan-kelola-sosmed');
+        $this->get('/layanan-kelola-sosmed')->assertOk()->assertSee('Kelola TikTok')->assertSee('Segera hadir');
         Settings::set('layanan.coming_soon', 'Edit Video, Content Plan');
         $this->assertSame(['Edit Video', 'Content Plan'], \App\Services\Layanan::comingSoon());
-        $this->get('/layanan')->assertSee('Edit Video')->assertDontSee('Kelola TikTok');
-        Settings::set('layanan.coming_soon', ''); Settings::set('layanan.coming_soon_menu', '');
-        $this->get('/layanan')->assertDontSee('Segera hadir');
-        $this->get('/layanan-kelola-sosmed')->assertOk();
+        $this->get('/layanan-kelola-sosmed')->assertSee('Edit Video')->assertDontSee('Kelola TikTok');
+        Settings::set('layanan.coming_soon', '');
+        $this->get('/layanan-kelola-sosmed')->assertDontSee('Segera hadir');
     }
 }

@@ -19,12 +19,6 @@ class Layanan
         return self::splitList((string) Settings::get('layanan.coming_soon_menu', ''));
     }
 
-    /** Gabungan semua layanan segera hadir (untuk halaman /layanan), tanpa duplikat. */
-    public static function comingSoonAll(): array
-    {
-        return array_values(array_unique(array_merge(self::comingSoon(), self::comingSoonMenu())));
-    }
-
     private static function splitList(string $v): array
     {
         return array_values(array_filter(array_map(fn ($x) => mb_substr(trim($x), 0, 40), explode(',', $v))));

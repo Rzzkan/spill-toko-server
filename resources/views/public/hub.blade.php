@@ -208,7 +208,7 @@
 <footer class="border-t border-slate-100 bg-white">
     <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-8 text-sm text-slate-500 sm:flex-row">
         <x-brand size="size-10" class="font-semibold text-slate-700" />
-        <div class="flex flex-wrap justify-center gap-5"><a href="#aplikasi" class="hover:text-[#ee4d2d]">Aplikasi</a>@if ($layananOn)<a href="{{ route('layanan') }}" class="hover:text-[#ee4d2d]">Layanan</a>@endif<a href="#faq" class="hover:text-[#ee4d2d]">FAQ</a><a href="{{ $cta }}" class="hover:text-[#ee4d2d]">Akun</a><a href="{{ url('/privasi') }}" class="hover:text-[#ee4d2d]">Privasi</a>@foreach ($apps as $x)<a href="{{ $x['url'] }}" class="hover:text-[#ee4d2d]">{{ $x['app']->name }}</a>@endforeach</div>
+        <div class="flex flex-wrap justify-center gap-5"><a href="#aplikasi" class="hover:text-[#ee4d2d]">Aplikasi</a>@if ($layananOn)<a href="{{ route('layanan.sosmed') }}" class="hover:text-[#ee4d2d]">Layanan</a>@endif<a href="#faq" class="hover:text-[#ee4d2d]">FAQ</a><a href="{{ $cta }}" class="hover:text-[#ee4d2d]">Akun</a><a href="{{ url('/privasi') }}" class="hover:text-[#ee4d2d]">Privasi</a>@foreach ($apps as $x)<a href="{{ $x['url'] }}" class="hover:text-[#ee4d2d]">{{ $x['app']->name }}</a>@endforeach</div>
         <div>© {{ date('Y') }} TemanSeller. <span class="text-xs text-slate-400">v{{ config('temanseller.version') }}</span></div>
     </div>
 </footer>
