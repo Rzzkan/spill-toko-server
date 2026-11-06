@@ -33,7 +33,7 @@ Saat pertama start, container otomatis: migrasi DB, membuat kunci lisensi + admi
 ```nginx
 server {
     server_name temanseller.com www.temanseller.com;
-    client_max_body_size 10m;
+    client_max_body_size 40m;   # unggahan Marketplace Audit (halaman tersimpan + screenshot)
     location / {
         proxy_pass http://127.0.0.1:3300;
         proxy_set_header Host $host;
