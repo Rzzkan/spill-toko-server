@@ -5,7 +5,8 @@
     $faq = [
         ['Apa itu Marketplace Audit?', 'Alat untuk memeriksa kesehatan toko atau produk Shopee: judul, foto, deskripsi, rating, stok, penawaran, dan reputasi toko. Hasilnya skor, daftar temuan, dan rekomendasi prioritas dari AI.'],
         ['Bagaimana cara mengauditnya?', 'Tidak perlu pasang apa pun. Cukup unggah screenshot halaman produk/toko, atau halaman web yang kamu simpan sebagai PDF (Ctrl+P, Save as PDF). Panduan tertulisnya ada di halaman aplikasi.'],
-        ['Apakah berkas yang saya unggah disimpan?', 'Tidak. Screenshot dan PDF yang kamu unggah hanya dibaca sekali untuk mengambil angka dan teks yang tampil, lalu langsung dibuang. Yang tersimpan hanya data hasil bacaan dan hasil audit, dihapus otomatis setelah ' . \App\Services\Audit::retentionHours() . ' jam.'],
+        ['Bagaimana mengaudit iklan Shopee?', 'Unduh laporan CSV dari Seller Centre (Iklan Shopee, lalu pilih periode dan unduh data), kemudian unggah di aplikasi. Kami hitung ROAS, ACOS, CTR, dan konversi, menandai iklan yang boncos, lalu AI memberi rekomendasi. Nama toko, username, dan ID toko di file tidak dibaca.'],
+        ['Apakah berkas yang saya unggah disimpan?', 'Tidak. Screenshot, PDF, dan CSV iklan yang kamu unggah hanya dibaca sekali untuk mengambil angka dan teks yang tampil, lalu langsung dibuang. Yang tersimpan hanya data hasil bacaan dan hasil audit, dihapus otomatis setelah ' . \App\Services\Audit::retentionHours() . ' jam.'],
         ['Apakah kata sandi atau akun Shopee saya diminta?', 'Tidak pernah. Kami tidak meminta kata sandi, cookie, atau akses ke akun Shopee-mu.'],
         ['Bagaimana cara membayar paket unlimited?', 'Lewat Midtrans: klik Berlangganan, masuk dengan Google, lalu bayar sesuai nominal paket di halaman Midtrans. Paket aktif otomatis setelah pembayaran berhasil dan tidak diperpanjang otomatis.'],
         ['Berapa jatah scan gratis?', $free . ' scan per bulan untuk tiap akun, reset setiap tanggal 1. Mau tanpa batas? Berlangganan unlimited.'],
@@ -50,9 +51,10 @@
 
 <section class="mx-auto max-w-6xl px-4 py-16">
     <h2 class="text-center text-3xl font-bold text-ts-navy">Yang diperiksa</h2>
-    <div class="mt-10 grid gap-5 md:grid-cols-2">
+    <div class="mt-10 grid gap-5 md:grid-cols-3">
         <div class="rounded-2xl border border-slate-200 p-6"><div class="text-2xl">📦</div><h3 class="mt-2 text-lg font-bold">Audit produk</h3><p class="mt-1 text-sm text-slate-600">Judul &amp; kata kunci, jumlah foto/video, kelengkapan deskripsi dan atribut, rating &amp; ulasan, stok, variasi, ongkir, diskon, dan saran judul baru.</p></div>
         <div class="rounded-2xl border border-slate-200 p-6"><div class="text-2xl">🏪</div><h3 class="mt-2 text-lg font-bold">Audit toko</h3><p class="mt-1 text-sm text-slate-600">Rating toko, kecepatan balas chat, pengikut, luas katalog, produk yang belum terjual, kualitas judul, dan badge toko.</p></div>
+        <div class="rounded-2xl border border-slate-200 p-6"><div class="text-2xl">📈</div><h3 class="mt-2 text-lg font-bold">Audit iklan</h3><p class="mt-1 text-sm text-slate-600">Unggah laporan Shopee Ads (CSV): ROAS &amp; ACOS, iklan yang boncos, kata kunci tanpa konversi, dan iklan efisien yang layak ditambah anggaran.</p></div>
     </div>
     <div class="mt-10 grid gap-5 md:grid-cols-3">
         @foreach ([['01', 'Ambil bahan', 'Screenshot halaman produk/toko Shopee, atau simpan halamannya sebagai PDF (Ctrl+P). Ada panduan langkah demi langkah.'], ['02', 'Unggah', 'Kami baca angka dan teksnya, lalu berkasmu langsung dibuang, tidak disimpan.'], ['03', 'Terima hasil audit', 'Skor, pemeriksaan otomatis, dan rekomendasi prioritas dari AI.']] as [$n, $t, $d])

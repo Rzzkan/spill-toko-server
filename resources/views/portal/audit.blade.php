@@ -8,7 +8,7 @@
 <div class="flex flex-wrap items-end justify-between gap-3">
     <div>
         <h1 class="text-xl font-semibold">🩺 Marketplace Audit</h1>
-        <p class="text-sm text-gray-500">Audit toko atau produk Shopee, dibantu AI. Unggah PDF halaman web atau screenshot, kami periksa.</p>
+        <p class="text-sm text-gray-500">Audit toko, produk, dan iklan Shopee, dibantu AI. Unggah PDF halaman web, screenshot, atau laporan iklan (CSV), kami periksa.</p>
     </div>
     <div id="quota" class="rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm">
         @if ($q['unlimited'])
@@ -28,8 +28,10 @@
         <div class="mt-2 flex gap-3">
             <label class="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-300 px-4 py-2.5 text-sm has-[:checked]:border-ts-orange has-[:checked]:bg-ts-cream"><input type="radio" name="kind" value="product" checked class="accent-orange-500"> Produk</label>
             <label class="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-300 px-4 py-2.5 text-sm has-[:checked]:border-ts-orange has-[:checked]:bg-ts-cream"><input type="radio" name="kind" value="shop" class="accent-orange-500"> Toko</label>
+            <label class="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-300 px-4 py-2.5 text-sm has-[:checked]:border-ts-orange has-[:checked]:bg-ts-cream"><input type="radio" name="kind" value="ads" class="accent-orange-500"> Iklan Shopee</label>
         </div>
 
+<div id="webin">
 <div class="mt-5 grid gap-4 md:grid-cols-2">
             <div>
                 <label class="block text-sm font-medium text-gray-700" for="pdfs">2a. PDF halaman web <span class="font-normal text-gray-400">(.pdf, maks 2)</span></label>
@@ -41,6 +43,12 @@
             </div>
         </div>
         <p class="mt-2 text-xs text-gray-500">Cukup salah satu: PDF halaman web atau screenshot. Kalau dua-duanya diunggah, hasilnya biasanya lebih lengkap.</p>
+</div>
+<div id="adsin" class="mt-5 hidden">
+    <label class="block text-sm font-medium text-gray-700" for="csvs">2. Laporan iklan <span class="font-normal text-gray-400">(.csv dari Shopee Ads, maks 5 file)</span></label>
+    <input id="csvs" name="csvs[]" type="file" multiple accept=".csv,text/csv" class="mt-2 block w-full rounded-lg border border-dashed border-gray-300 p-3 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-ts-cream file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-ts-navy">
+    <p class="mt-2 text-xs text-gray-500">Boleh unggah beberapa laporan sekaligus (mis. Semua Data Grup Iklan + Laporan Kata Pencarian). Nama toko, username, dan ID toko di file tidak dibaca ataupun disimpan.</p>
+</div>
 
         <button id="go" type="submit" class="mt-5 rounded-lg bg-ts-orange px-6 py-3 text-sm font-semibold text-ts-navy hover:bg-ts-orange-dark disabled:opacity-50">Mulai audit</button>
         <p id="formerr" class="mt-3 hidden text-sm text-error-600"></p>
@@ -55,6 +63,7 @@
     </div>
 </section>
 
+<div id="tutweb">
 <section class="mt-6 rounded-2xl border border-gray-200 bg-white p-6">
     <h2 class="font-semibold text-ts-navy">Cara mengambil bahan audit</h2>
     <p class="mt-1 text-sm text-gray-500">Pilih salah satu cara. Dua-duanya hanya butuh browser dan HP/laptop yang kamu pakai sehari-hari.</p>
@@ -86,6 +95,23 @@
         <br>Audit tidak berjalan? Coba Cara B, atau unggah ulang setelah halaman termuat penuh.
     </div>
 </section>
+</div>
+<section id="tutads" class="mt-6 hidden rounded-2xl border border-gray-200 bg-white p-6">
+    <h2 class="font-semibold text-ts-navy">Cara mengunduh laporan iklan Shopee</h2>
+    <p class="mt-1 text-sm text-gray-500">Laporan diunduh dari Seller Centre lewat laptop (akun penjual yang punya iklan). Hasilnya file <code>.csv</code>.</p>
+    <div class="mt-4 rounded-xl bg-ts-cream/60 p-5">
+        <div class="text-sm font-semibold text-ts-navy">Jalur menu</div>
+        <p class="mt-1 text-sm text-gray-700"><b>Seller Centre</b> → <b>Iklan Shopee</b> (Marketing Centre → Shopee Ads) → <b>Semua Iklan</b> → pilih <b>periode</b> → tombol <b>Unduh / Ekspor data</b>.</p>
+        <ol class="mt-3 space-y-2 text-sm text-gray-700">
+            <li><b>1.</b> Masuk ke Seller Centre di laptop, buka menu <b>Iklan Shopee</b>.</li>
+            <li><b>2.</b> Pilih periode yang cukup panjang, idealnya <b>14–30 hari</b>, supaya datanya cukup untuk dinilai.</li>
+            <li><b>3.</b> Unduh laporan <b>Semua Data Grup Iklan</b> (ringkasan per iklan) dan/atau <b>Laporan Penempatan Kata Pencarian</b> (per iklan dan kata kunci).</li>
+            <li><b>4.</b> Untuk detail satu produk, buka iklan produknya lalu unduh <b>Data Iklan Produk</b>. Boleh unggah beberapa file sekaligus di kolom 2.</li>
+        </ol>
+        <p class="mt-3 text-xs text-gray-500">Nama menu dan tombol bisa sedikit berbeda tergantung versi Seller Centre-mu. Yang penting file berformat CSV dan berisi kolom Biaya, Omzet Penjualan, dan Jumlah Klik.</p>
+    </div>
+</section>
+
 
 <section id="progress" class="mt-6 hidden rounded-2xl border border-gray-200 bg-white p-6">
     <div class="flex items-center gap-3"><span class="size-3 animate-pulse rounded-full bg-brand-500"></span><div><div id="pstage" class="font-medium">Menunggu…</div><div id="phint" class="text-sm text-gray-500"></div></div></div>
@@ -105,7 +131,7 @@
     <div class="mt-2 divide-y divide-gray-100 rounded-2xl border border-gray-200 bg-white">
         @foreach ($recent as $r)
             <div class="flex items-center justify-between gap-3 px-4 py-3 text-sm" data-hist="{{ $r['id'] }}">
-                <div class="min-w-0"><div class="truncate font-medium">{{ $r['name'] }}</div><div class="text-xs text-gray-500">{{ $r['kind'] === 'product' ? 'Produk' : 'Toko' }} · {{ $r['at'] }} · skor {{ $r['score'] }}</div></div>
+                <div class="min-w-0"><div class="truncate font-medium">{{ $r['name'] }}</div><div class="text-xs text-gray-500">{{ ['product' => 'Produk', 'shop' => 'Toko', 'ads' => 'Iklan'][$r['kind']] ?? 'Audit' }} · {{ $r['at'] }} · skor {{ $r['score'] }}</div></div>
                 <div class="flex shrink-0 gap-3"><button class="text-brand-500" data-open="{{ $r['id'] }}">Buka</button><button class="text-gray-400 hover:text-error-600" data-del="{{ $r['id'] }}">Hapus</button></div>
             </div>
         @endforeach
@@ -164,9 +190,20 @@ async function runAnalyze() {
 }
 function reset() { scan = null; clearTimeout(timer); $('go').disabled = false; show(); }
 
+function toggleKind() { const ads = document.querySelector('input[name=kind]:checked')?.value === 'ads'; $('webin').classList.toggle('hidden', ads); $('adsin').classList.toggle('hidden', !ads); $('tutweb').classList.toggle('hidden', ads); $('tutads').classList.toggle('hidden', !ads); }
+document.querySelectorAll('input[name=kind]').forEach((r) => r.addEventListener('change', toggleKind));
 $('upform')?.addEventListener('submit', async (ev) => {
     ev.preventDefault(); ferr('');
-    const f = ev.target, np = f.pdfs.files.length, ns = f.shots.files.length;
+    const f = ev.target, kind = f.kind.value;
+    if (kind === 'ads') {
+        if (!f.csvs.files.length) return ferr('Unggah minimal satu laporan iklan (.csv). Lihat cara mengunduhnya di bawah.');
+        if (f.csvs.files.length > 5) return ferr('Maksimal 5 file CSV.');
+        $('go').disabled = true; stage('reading');
+        try { const s = await api('POST', '{{ route('audit.upload') }}', new FormData(f)); f.csvs.value = ''; scan = s; setQuota(s.quota); handle(s); }
+        catch (e) { show(); ferr(e.message); $('go').disabled = false; }
+        return;
+    }
+    const np = f.pdfs.files.length, ns = f.shots.files.length;
     if (!np && !ns) return ferr('Unggah minimal satu PDF halaman web atau satu screenshot. Lihat cara di bawah.');
     if (np > 2 || ns > 4) return ferr('Maksimal 2 PDF dan 4 screenshot.');
     $('go').disabled = true; stage('reading');
@@ -190,10 +227,15 @@ function renderResult(r) {
     (r.rules || []).forEach((c) => (groups[c.area] ||= []).push(c));
     let h = '<div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-theme-sm"><div class="flex flex-wrap items-center gap-5">'
         + '<div class="grid size-24 place-items-center rounded-full text-2xl font-bold" style="border:8px solid ' + col + '">' + esc(r.score) + '</div>'
-        + '<div class="min-w-0 flex-1"><div class="text-xs uppercase tracking-wide text-gray-400">' + (r.kind === 'product' ? 'Audit produk' : 'Audit toko') + '</div>'
+        + '<div class="min-w-0 flex-1"><div class="text-xs uppercase tracking-wide text-gray-400">' + (r.kind === 'product' ? 'Audit produk' : r.kind === 'ads' ? 'Audit iklan' : 'Audit toko') + '</div>'
         + '<div class="truncate text-lg font-semibold">' + esc(r.subject?.name) + '</div><div class="text-sm text-gray-500">' + esc(r.subject?.sub) + '</div>'
         + '<span class="mt-2 inline-block rounded-full px-3 py-1 text-xs font-semibold" style="background:' + col + '1a;color:' + col + '">' + esc(r.label) + '</span></div></div>'
         + (r.summary ? '<p class="mt-4 text-sm leading-relaxed text-gray-700">' + esc(r.summary) + '</p>' : '') + '</div>';
+    if (r.metrics) {
+        const m = r.metrics, rp = (n) => 'Rp' + Math.round(n || 0).toLocaleString('id-ID'), num = (n) => Math.round(n || 0).toLocaleString('id-ID');
+        const tiles = [['Biaya iklan', rp(m.cost)], ['Omzet dari iklan', rp(m.gmv)], ['ROAS', (m.roas ?? '-') + 'x'], ['ACOS', (m.acos ?? '-') + '%'], ['Klik', num(m.clicks)], ['CTR', (m.ctr ?? '-') + '%'], ['Konversi', num(m.conv)], ['Rasio konversi', (m.cvr ?? '-') + '%']];
+        h += '<div class="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">' + tiles.map((x) => '<div class="rounded-2xl border border-gray-200 bg-white p-4"><div class="text-xs text-gray-500">' + esc(x[0]) + '</div><div class="mt-1 text-lg font-bold text-gray-800">' + esc(x[1]) + '</div></div>').join('') + '</div>';
+    }
     if (ai?.rekomendasi?.length) {
         h += '<div class="mt-4 rounded-2xl border border-gray-200 bg-white p-6"><h3 class="font-semibold">Rekomendasi prioritas</h3><ol class="mt-3 space-y-3">'
             + ai.rekomendasi.map((x, i) => '<li class="flex gap-3"><span class="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-brand-50 text-xs font-bold text-brand-600">' + (i + 1) + '</span><div class="text-sm"><div class="font-medium text-gray-800">' + esc(x.aksi) + ' <span class="ml-1 rounded bg-gray-100 px-1.5 py-0.5 text-[11px] font-medium text-gray-500">' + esc(x.prioritas) + '</span></div>' + (x.alasan ? '<div class="text-gray-500">' + esc(x.alasan) + '</div>' : '') + '</div></li>').join('') + '</ol></div>';

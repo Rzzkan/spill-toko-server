@@ -60,18 +60,32 @@ class AuditController extends Controller
     {
         $c = $r->attributes->get('customer');
         $v = \Illuminate\Support\Facades\Validator::make($r->all(), [
-            'kind' => 'required|in:product,shop',
+            'kind' => 'required|in:product,shop,ads',
+            'csvs' => 'nullable|array|max:' . Audit::MAX_CSV,
+            'csvs.*' => 'file|extensions:csv,txt|max:5120',
             'url' => 'nullable|string|max:500',
             'pdfs' => 'nullable|array|max:' . Audit::MAX_PAGES,
             'pdfs.*' => 'file|extensions:pdf|max:10240',
             'shots' => 'nullable|array|max:' . Audit::MAX_IMAGES,
             'shots.*' => 'file|extensions:jpg,jpeg,png,webp|max:6144',
         ], [
+            'csvs.*.extensions' => 'Laporan iklan harus berformat .csv.', 'csvs.*.max' => 'Setiap file CSV maksimal 5 MB.',
             'pdfs.*.extensions' => 'Halaman web harus diunggah sebagai file PDF.',
             'shots.*.extensions' => 'Screenshot harus JPG, PNG, atau WEBP.',
             'pdfs.*.max' => 'Setiap PDF maksimal 10 MB.', 'shots.*.max' => 'Setiap screenshot maksimal 6 MB.',
         ]);
         if ($v->fails()) throw new ApiException((string) $v->errors()->first(), 422);
+        if ($r->input('kind') === 'ads') {   // laporan iklan: dibaca langsung, tanpa AI untuk ekstraksi, file tidak disimpan
+            $parsed = [];
+            foreach ((array) $r->file('csvs', []) as $f) {
+                $p = Audit::parseAdsCsv((string) file_get_contents($f->getRealPath()));
+                if (!$p) throw new ApiException('File "' . mb_substr($f->getClientOriginalName(), 0, 60) . '" bukan laporan iklan Shopee Ads yang dikenali. Pastikan diunduh dari menu Iklan Shopee (lihat panduan).', 422);
+                $parsed[] = $p;
+            }
+            if (!$parsed) throw new ApiException('Unggah minimal satu laporan iklan (.csv) dari Shopee Ads.', 422);
+            $scan = Audit::createAds($c, $parsed);
+            return response()->json($this->view($scan, ['quota' => Audit::quota($c)]));
+        }
         $pages = []; $images = [];
         foreach ((array) $r->file('pdfs', []) as $f) {
             $txt = Audit::pdfText((string) file_get_contents($f->getRealPath()));   // hanya dibaca; berkas sementara PHP hilang di akhir request

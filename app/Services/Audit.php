@@ -275,6 +275,172 @@ class Audit
         return null;
     }
 
+
+    // ---------- audit iklan (Shopee Ads) dari laporan CSV ----------
+    public const MAX_CSV = 5;
+
+    private const ADS_COLS = [
+        'Nama Iklan' => 'name', 'Nama Iklan/Produk' => 'name', 'Status' => 'status', 'Jenis Iklan' => 'type', 'Kode Produk' => 'pid', 'Mode Bidding' => 'bidding',
+        'Kata Pencarian/Penempatan' => 'keyword', 'Tipe Pencocokan' => 'match', 'Penempatan Iklan' => 'placement', 'Dilihat' => 'views', 'Jumlah Klik' => 'clicks',
+        'Tambah ke Keranjang' => 'cart', 'Konversi' => 'conv', 'Konversi Langsung' => 'conv_direct', 'Produk Terjual' => 'sold', 'Omzet Penjualan' => 'gmv',
+        'Penjualan Langsung (GMV Langsung)' => 'gmv_direct', 'Biaya' => 'cost', 'Rata-rata Peringkat Iklan' => 'rank', 'Efektifitas Iklan' => 'roas',
+        'Persentase Biaya Iklan terhadap Penjualan dari Iklan (ACOS)' => 'acos',
+    ];
+
+    /** Angka dari ekspor Shopee: "5.74%", "4481.09", "33022983", "1.234.567,5", "-" -> null. */
+    private static function adsNum(?string $v): int|float|null
+    {
+        $s = trim((string) $v);
+        if ($s === '' || $s === '-' || $s === '–') return null;
+        $s = str_replace(['%', 'Rp', 'rp', ' '], '', $s);
+        if (preg_match('/^\d{1,3}(\.\d{3}){2,}(,\d+)?$/', $s) || preg_match('/^\d{1,3}\.\d{3}(,\d+)$/', $s)) $s = str_replace(',', '.', str_replace('.', '', $s));
+        elseif (substr_count($s, ',') === 1 && !str_contains($s, '.')) $s = str_replace(',', '.', $s);
+        else $s = str_replace(',', '', $s);
+        if (!is_numeric($s)) return null;
+        $f = (float) $s;
+        return $f == floor($f) && abs($f) < 1e15 ? (int) $f : round($f, 4);
+    }
+
+    /** Baca satu berkas CSV laporan Shopee Ads. Mengembalikan ['period'=>..., 'rows'=>[...]] (rows kosong bila periode tanpa data) atau null bila bukan laporan iklan. */
+    public static function parseAdsCsv(string $csv): ?array
+    {
+        $csv = preg_replace('/^\xEF\xBB\xBF/', '', $csv) ?? $csv;
+        if (!mb_check_encoding($csv, 'UTF-8')) $csv = mb_convert_encoding($csv, 'UTF-8', 'UTF-8,ISO-8859-1,Windows-1252');
+        $first = strtok($csv, "\n") ?: '';
+        $delim = substr_count($first, ';') > substr_count($first, ',') ? ';' : ',';
+        $h = fopen('php://temp', 'r+'); fwrite($h, $csv); rewind($h);
+        $meta = []; $cols = null; $rows = [];
+        while (($r = fgetcsv($h, 0, $delim, '"', '')) !== false) {
+            if ($r === [null] || !$r) continue;
+            $c0 = trim((string) ($r[0] ?? ''));
+            if ($cols === null) {
+                if (mb_strtolower($c0) === 'urutan') {
+                    $cols = [];
+                    foreach ($r as $i => $name) { $k = self::ADS_COLS[trim((string) $name)] ?? null; if ($k && !in_array($k, $cols, true)) $cols[$i] = $k; }
+                    continue;
+                }
+                if ($c0 !== '' && isset($r[1])) $meta[$c0] = trim((string) $r[1]);
+                continue;
+            }
+            if (mb_strtolower($c0) === 'urutan') continue;     // bagian berikutnya (mis. bidding manual) memakai header yang sama
+            if (!ctype_digit($c0)) continue;                    // label bagian / baris kosong
+            $row = [];
+            foreach ($cols as $i => $k) $row[$k] = trim((string) ($r[$i] ?? ''));
+            $rows[] = $row;
+        }
+        fclose($h);
+        if ($cols === null || !in_array('cost', $cols, true)) return null;
+        $out = [];
+        foreach ($rows as $r) {
+            $name = self::str($r['name'] ?? ($meta['Nama Iklan'] ?? null));
+            $o = ['name' => $name !== null ? mb_substr($name, 0, 150) : null, 'pid' => self::str($r['pid'] ?? ($meta['No. Produk'] ?? null)),
+                'status' => self::str($r['status'] ?? null), 'type' => self::str($r['type'] ?? null), 'bidding' => self::str($r['bidding'] ?? null)];
+            $kw = self::str($r['keyword'] ?? null);
+            $o['keyword'] = $kw !== null && $kw !== '-' ? mb_substr($kw, 0, 100) : null;
+            $o['match'] = self::str($r['match'] ?? null);
+            foreach (['views', 'clicks', 'cart', 'conv', 'conv_direct', 'sold', 'gmv', 'gmv_direct', 'cost', 'rank', 'roas', 'acos'] as $k) $o[$k] = isset($r[$k]) ? self::adsNum($r[$k]) : null;
+            if ($o['cost'] === null) continue;
+            $out[] = $o;
+        }
+        return ['period' => self::str($meta['Periode'] ?? null), 'rows' => $out];
+    }
+
+    /** Gabungkan beberapa laporan jadi data audit iklan (tanpa nama toko, username, atau ID toko). */
+    public static function buildAds(array $parsed): array
+    {
+        $camps = []; $keys = []; $period = null;
+        foreach ($parsed as $p) {
+            $period ??= $p['period'];
+            foreach ($p['rows'] as $r) {
+                $auto = $r['keyword'] === null || mb_strtolower($r['keyword']) === 'pilih otomatis';
+                if (!$auto) { $keys[] = $r; continue; }
+                $key = $r['pid'] ?: mb_strtolower((string) $r['name']);
+                if (isset($camps[$key])) { foreach ($r as $k => $v) if (($camps[$key][$k] ?? null) === null && $v !== null) $camps[$key][$k] = $v; }
+                else $camps[$key] = $r;
+            }
+        }
+        $camps = array_values($camps);
+        usort($camps, fn ($a, $b) => ($b['cost'] ?? 0) <=> ($a['cost'] ?? 0));
+        usort($keys, fn ($a, $b) => ($b['cost'] ?? 0) <=> ($a['cost'] ?? 0));
+        $clean = fn (array $r) => array_filter(array_diff_key($r, ['pid' => 1]), fn ($v) => $v !== null);
+        return ['ads' => ['period' => $period, 'campaigns' => array_map($clean, array_slice($camps, 0, 60)), 'keywords' => array_map($clean, array_slice($keys, 0, 150))]];
+    }
+
+    public static function createAds(Customer $c, array $parsed): AuditScan
+    {
+        if (!self::enabled()) throw new ApiException('Marketplace Audit sedang ditutup.', 503);
+        $parsed = array_values(array_filter($parsed, fn ($p) => !empty($p['rows'])));
+        if (!$parsed) throw new ApiException('Laporan yang kamu unggah tidak berisi data iklan pada periode itu. Pilih periode yang ada iklannya, lalu unduh ulang.', 422);
+        self::expireStale($c);
+        if (AuditScan::query()->where('customer_id', $c->id)->whereIn('status', AuditScan::ACTIVE)->exists()) throw new ApiException('Masih ada audit yang berjalan. Selesaikan atau batalkan dulu.', 429);
+        $q = self::quota($c);
+        if (!$q['can']) throw new ApiException($q['reason'], 402);
+        return AuditScan::query()->create(['customer_id' => $c->id, 'token_hash' => hash('sha256', Str::random(40)), 'kind' => 'ads', 'url' => null, 'status' => 'collected', 'data' => self::buildAds($parsed)]);
+    }
+
+    /** Total & metrik turunan dari baris iklan. */
+    public static function adsTotals(array $a): array
+    {
+        $rows = $a['campaigns'] ?: $a['keywords'];
+        $t = ['cost' => 0, 'gmv' => 0, 'views' => 0, 'clicks' => 0, 'conv' => 0, 'sold' => 0];
+        foreach ($rows as $r) foreach ($t as $k => $_) $t[$k] += (float) ($r[$k] ?? 0);
+        $t['roas'] = $t['cost'] > 0 ? round($t['gmv'] / $t['cost'], 2) : null;
+        $t['acos'] = $t['gmv'] > 0 ? round($t['cost'] / $t['gmv'] * 100, 1) : null;
+        $t['ctr'] = $t['views'] > 0 ? round($t['clicks'] / $t['views'] * 100, 2) : null;
+        $t['cvr'] = $t['clicks'] > 0 ? round($t['conv'] / $t['clicks'] * 100, 2) : null;
+        $t['cpc'] = $t['clicks'] > 0 ? round($t['cost'] / $t['clicks']) : null;
+        return $t;
+    }
+
+    private static function rp(float|int|null $n): string { return 'Rp' . number_format((float) $n, 0, ',', '.'); }
+    private static function short(?string $s, int $n = 45): string { return mb_strimwidth((string) $s, 0, $n, '…'); }
+
+    private static function adsRules(array $a): array
+    {
+        $o = []; $t = self::adsTotals($a);
+        $camps = $a['campaigns']; $keys = $a['keywords'];
+        if ($t['cost'] <= 0) return [self::chk('Data', 'warn', 'Belum ada biaya iklan', 'Pada periode laporan ini tidak ada biaya iklan, jadi belum ada yang bisa dinilai.', 2)];
+        // efisiensi keseluruhan
+        $acos = $t['acos'];
+        $o[] = $acos === null ? self::chk('Efisiensi', 'bad', 'Iklan belum menghasilkan penjualan', 'Ada biaya ' . self::rp($t['cost']) . ' tetapi belum ada omzet dari iklan.', 3)
+            : ($acos <= 10 ? self::chk('Efisiensi', 'ok', 'Biaya iklan sangat efisien', "ACOS {$acos}% (ROAS {$t['roas']}x): tiap Rp1 iklan menghasilkan omzet sekitar Rp" . (int) round($t['roas']) . '. Pastikan masih di atas titik impas margin (1 ÷ margin).', 3)
+            : ($acos <= 20 ? self::chk('Efisiensi', 'warn', 'Efisiensi iklan cukup, bisa dioptimalkan', "ACOS {$acos}% (ROAS {$t['roas']}x). Cek margin produk agar iklan tetap untung.", 3)
+            : self::chk('Efisiensi', 'bad', 'Biaya iklan terlalu tinggi dibanding omzet', "ACOS {$acos}% (ROAS {$t['roas']}x). Kurangi iklan yang boros atau naikkan harga/konversi.", 3)));
+        if ($t['ctr'] !== null) $o[] = $t['ctr'] >= 3 ? self::chk('Daya tarik', 'ok', 'Rasio klik (CTR) bagus', "CTR {$t['ctr']}% dari " . number_format($t['views'], 0, ',', '.') . ' tayangan.', 2)
+            : ($t['ctr'] >= 1.5 ? self::chk('Daya tarik', 'warn', 'CTR cukup, bisa naik', "CTR {$t['ctr']}%. Perbaiki foto utama dan judul agar lebih menarik diklik.", 2)
+            : self::chk('Daya tarik', 'bad', 'CTR rendah', "CTR {$t['ctr']}%. Foto utama dan judul belum cukup menarik di hasil pencarian.", 2));
+        if ($t['cvr'] !== null && $t['clicks'] >= 50) $o[] = $t['cvr'] >= 3 ? self::chk('Konversi', 'ok', 'Konversi klik ke pembelian bagus', "{$t['cvr']}% dari " . number_format($t['clicks'], 0, ',', '.') . ' klik.', 2)
+            : ($t['cvr'] >= 1.5 ? self::chk('Konversi', 'warn', 'Konversi cukup', "{$t['cvr']}%. Perkuat deskripsi, ulasan, voucher, dan ongkir.", 2)
+            : self::chk('Konversi', 'bad', 'Konversi rendah', "{$t['cvr']}%. Pengunjung klik tapi jarang membeli: cek harga, ulasan, dan kelengkapan halaman produk.", 2));
+        // boncos
+        $waste = array_filter($camps, fn ($r) => ($r['cost'] ?? 0) > 0 && ($r['sold'] ?? 0) == 0 && ($r['conv'] ?? 0) == 0);
+        if ($waste) { $w = array_sum(array_column($waste, 'cost')); $share = round($w / $t['cost'] * 100);
+            $o[] = self::chk('Boncos', $share >= 10 ? 'bad' : 'warn', count($waste) . ' iklan habis biaya tanpa penjualan', 'Total ' . self::rp($w) . " ({$share}% dari biaya). Contoh: " . implode('; ', array_map(fn ($r) => self::short($r['name']), array_slice($waste, 0, 3))) . '.', 2);
+        } elseif ($camps) $o[] = self::chk('Boncos', 'ok', 'Tidak ada iklan yang boncos', 'Semua iklan berbiaya sudah menghasilkan penjualan.', 2);
+        // ACOS tinggi per iklan
+        $lim = max(20, ($acos ?? 0) * 1.5);
+        $hi = array_values(array_filter($camps, fn ($r) => ($r['cost'] ?? 0) > 0 && ($r['gmv'] ?? 0) > 0 && ($r['clicks'] ?? 0) >= 30 && round($r['cost'] / $r['gmv'] * 100, 1) > $lim));
+        if ($hi) $o[] = self::chk('Boncos', 'warn', count($hi) . ' iklan ACOS tinggi', implode('; ', array_map(fn ($r) => self::short($r['name'], 38) . ' (ACOS ' . round($r['cost'] / $r['gmv'] * 100) . '%)', array_slice($hi, 0, 3))) . '. Pertimbangkan jeda, turunkan target, atau perbaiki halaman produknya.', 2);
+        // konsentrasi
+        if (count($camps) >= 2) { $top = $camps[0]; $sh = round(($top['cost'] ?? 0) / $t['cost'] * 100);
+            $o[] = $sh >= 70 ? self::chk('Sebaran', 'warn', 'Biaya menumpuk di satu iklan', "{$sh}% biaya ada di \"" . self::short($top['name']) . '". Bagus kalau memang andalan, tapi risiko jika performanya turun. Uji iklan produk lain.', 1)
+                : self::chk('Sebaran', 'ok', 'Biaya iklan cukup tersebar', "Iklan terbesar memakai {$sh}% dari biaya.", 1);
+        }
+        // peluang tambah anggaran
+        $win = array_values(array_filter($camps, fn ($r) => ($r['cost'] ?? 0) > 0 && ($r['gmv'] ?? 0) > 0 && ($r['clicks'] ?? 0) >= 30 && round($r['cost'] / $r['gmv'] * 100, 1) <= max(5, ($acos ?? 100) * 0.8) && ($r['cost'] / $t['cost']) < 0.5));
+        if ($win) $o[] = self::chk('Peluang', 'ok', 'Iklan efisien yang bisa ditambah anggaran', implode('; ', array_map(fn ($r) => self::short($r['name'], 38) . ' (ROAS ' . round($r['gmv'] / $r['cost'], 1) . 'x)', array_slice($win, 0, 3))) . '.', 1);
+        // kata kunci
+        if ($keys) {
+            $kw = array_filter($keys, fn ($r) => ($r['clicks'] ?? 0) >= 10 && ($r['conv'] ?? 0) == 0 && ($r['cost'] ?? 0) > 0);
+            if ($kw) $o[] = self::chk('Kata kunci', 'warn', count($kw) . ' kata kunci banyak klik tanpa konversi', 'Contoh: ' . implode(', ', array_map(fn ($r) => '"' . self::short($r['keyword'], 30) . '"', array_slice($kw, 0, 4))) . '. Pertimbangkan dijeda atau diturunkan bid-nya.', 2);
+            else $o[] = self::chk('Kata kunci', 'ok', 'Kata kunci berbiaya sudah berkonversi', count($keys) . ' kata kunci/penempatan dianalisis.', 1);
+        }
+        // kecukupan data
+        $o[] = $t['clicks'] >= 100 ? self::chk('Data', 'ok', 'Data cukup untuk dinilai', number_format($t['clicks'], 0, ',', '.') . ' klik pada periode ' . ($a['period'] ?: 'laporan') . '.', 1)
+            : self::chk('Data', 'warn', 'Data masih sedikit', number_format($t['clicks'], 0, ',', '.') . ' klik. Ambil periode lebih panjang (14–30 hari) supaya penilaian lebih akurat.', 1);
+        return $o;
+    }
+
     // ---------- normalisasi (daftar putih, nilai dibatasi) ----------
     private static function num(mixed $v, float $min = 0, float $max = 1e12): ?float
     {
@@ -348,7 +514,7 @@ class Audit
     /** @return array{checks:array,score:int} */
     public static function rules(string $kind, array $d): array
     {
-        $c = $kind === 'product' ? self::productRules($d['product'] ?? []) : self::shopRules($d['shop'] ?? [], $d['products'] ?? []);
+        $c = $kind === 'ads' ? self::adsRules($d['ads'] ?? ['campaigns' => [], 'keywords' => []]) : ($kind === 'product' ? self::productRules($d['product'] ?? []) : self::shopRules($d['shop'] ?? [], $d['products'] ?? []));
         $max = 0; $got = 0;
         foreach ($c as $x) {
             $max += $x['w'] * 2;
@@ -409,6 +575,13 @@ class Audit
 
     private static function prompt(string $kind, array $data, array $rules): string
     {
+        if ($kind === 'ads') {
+            $tot = self::adsTotals($data['ads']);
+            return "Audit performa iklan Shopee Ads (laporan CSV penjual). Total periode (sudah dihitung): " . json_encode($tot, JSON_UNESCAPED_UNICODE) . ". Hasil pemeriksaan aturan otomatis: " . json_encode($rules['checks'], JSON_UNESCAPED_UNICODE) . "\n\n"
+                . "Keluarkan JSON dengan kunci: \"ringkasan\" (2-3 kalimat), \"skor\" (0-100), \"label\" (Sangat Potensial|Potensial|Biasa|Berisiko), \"temuan\" (array string: iklan/kata kunci terbaik & terburuk, sebut nama dan angkanya), \"peluang\" (array string), \"risiko\" (array string), "
+                . "\"rekomendasi\" (array {aksi, alasan, prioritas: tinggi|sedang|rendah}, minimal 5, spesifik per iklan/kata kunci: mana dijeda, dinaikkan anggarannya, diperbaiki halamannya), \"kata_kunci\" (array kata kunci yang layak ditambah atau dipertahankan, boleh kosong), \"saran_judul\" (array kosong). "
+                . "Catatan: biaya Rp, ROAS = omzet ÷ biaya, ACOS = biaya ÷ omzet. Titik impas bergantung margin yang tidak diketahui; sebutkan itu bila relevan. Jangan mengarang angka di luar data.\n\nData iklan (JSON):\n<data>\n" . json_encode($data['ads'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . "\n</data>";
+        }
         $what = $kind === 'product' ? 'produk' : 'toko';
         return "Audit $what Shopee ini. Hasil pemeriksaan aturan otomatis (sudah dihitung, gunakan sebagai konteks): " . json_encode($rules['checks'], JSON_UNESCAPED_UNICODE) . "\n\n"
             . "Keluarkan JSON dengan kunci: \"ringkasan\" (2-3 kalimat), \"skor\" (0-100), \"label\" (Sangat Potensial|Potensial|Biasa|Berisiko), \"temuan\" (array string: kekuatan & kelemahan utama), \"peluang\" (array string), \"risiko\" (array string), "
@@ -427,6 +600,7 @@ class Audit
         $data = $scan->data;
         $rules = self::rules($scan->kind, $data);
         $result = ['kind' => $scan->kind, 'rules' => $rules['checks'], 'rule_score' => $rules['score'], 'ai' => null, 'score' => $rules['score'], 'label' => self::label($rules['score']), 'summary' => '', 'subject' => self::subject($scan->kind, $data)];
+        if ($scan->kind === 'ads') $result['metrics'] = self::adsTotals($data['ads']);
 
         if (Ai::on()) {
             $models = array_values(array_unique(array_filter([self::textModel(), trim((string) Settings::get('ai.fallback_model', ''))])));
@@ -457,6 +631,7 @@ class Audit
 
     private static function subject(string $kind, array $d): array
     {
+        if ($kind === 'ads') return ['name' => 'Iklan Shopee', 'sub' => (string) ($d['ads']['period'] ?? '')];
         return $kind === 'product' ? ['name' => $d['product']['name'] ?? '', 'sub' => $d['product']['shop']['name'] ?? ''] : ['name' => $d['shop']['name'] ?? '', 'sub' => '@' . ($d['shop']['username'] ?? '')];
     }
 

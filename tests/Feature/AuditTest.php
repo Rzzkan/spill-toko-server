@@ -284,4 +284,57 @@ class AuditTest extends TestCase
         $this->assertSame('audit-m', Audit::textModel());
         $this->assertSame('vision-m', Audit::visionModel());
     }
+
+    private function adsCsv(): string
+    {
+        return "Semua Laporan Iklan CPC - Shopee Indonesia\nUsername,rahasia_user\nNama Toko,Toko Rahasia\nID Toko,999888777\nPeriode,31/10/2026 - 06/11/2026\n\n"
+            . "Urutan,Nama Iklan,Status,Jenis Iklan,Kode Produk,Mode Bidding,Kata Pencarian/Penempatan,Dilihat,Jumlah Klik,Konversi,Produk Terjual,Omzet Penjualan,Biaya\n"
+            . "1,Kebaya Brokat Premium,Berjalan,Iklan Produk,111,GMV Max ROAS,Pilih Otomatis,10000,500,20,22,4000000,200000\n"
+            . "2,Batik Tulis Boncos,Berjalan,Iklan Produk,222,Manual,Pilih Otomatis,5000,100,0,0,0,150000\n"
+            . "3,Kebaya Brokat Premium,Berjalan,Iklan Produk,111,Manual,kebaya wisuda,2000,60,0,0,0,40000\n";
+    }
+
+    public function test_ads_csv_upload_audits_without_storing_file_or_shop_identity(): void
+    {
+        $this->aiOn();
+        $this->webLogin();
+        \Illuminate\Support\Facades\Storage::fake('local');
+        Http::swap(new \Illuminate\Http\Client\Factory());
+        Http::fake(['*' => Http::response($this->aiJson())]);
+        $res = $this->up(['kind' => 'ads'], ['csvs' => [\Illuminate\Http\UploadedFile::fake()->createWithContent('iklan.csv', $this->adsCsv())]]);
+        $res->assertOk()->assertJsonPath('status', 'collected')->assertJsonPath('kind', 'ads');
+        $scan = AuditScan::query()->first();
+        $json = json_encode($scan->data);
+        $this->assertStringNotContainsString('rahasia_user', $json);
+        $this->assertStringNotContainsString('Toko Rahasia', $json);
+        $this->assertStringNotContainsString('999888777', $json);
+        $this->assertCount(2, $scan->data['ads']['campaigns']);
+        $this->assertCount(1, $scan->data['ads']['keywords']);
+        $this->assertSame([], \Illuminate\Support\Facades\Storage::disk('local')->allFiles());
+        $done = $this->postJson("/audit/scans/{$scan->id}/analyze")->assertOk()->assertJsonPath('status', 'done');
+        $r = $done->json('result');
+        $this->assertSame('ads', $r['kind']);
+        $this->assertEquals(350000, $r['metrics']['cost']);
+        $this->assertContains('Boncos', array_column($r['rules'], 'area'));
+    }
+
+    public function test_ads_csv_rejects_non_ads_and_empty_reports(): void
+    {
+        $this->aiOn();
+        $this->webLogin();
+        $this->up(['kind' => 'ads'], [])->assertStatus(422);
+        $this->up(['kind' => 'ads'], ['csvs' => [\Illuminate\Http\UploadedFile::fake()->createWithContent('x.csv', "a,b\n1,2\n")]])->assertStatus(422);
+        $empty = "Grup Iklan\nPeriode,01/11/2026 - 07/11/2026\n\nUrutan,Nama Iklan/Produk,Biaya\n";
+        $this->up(['kind' => 'ads'], ['csvs' => [\Illuminate\Http\UploadedFile::fake()->createWithContent('e.csv', $empty)]])->assertStatus(422);
+        $this->assertSame(0, AuditScan::query()->count());
+    }
+
+    public function test_ads_number_formats(): void
+    {
+        $p = Audit::parseAdsCsv("Periode,x\nUrutan,Nama Iklan,Biaya,Omzet Penjualan,Persentase Klik\n1,A,\"1.234.567,5\",4481.09,5.74%\n");
+        $this->assertEquals(1234567.5, $p['rows'][0]['cost']);
+        $this->assertEquals(4481.09, $p['rows'][0]['gmv']);
+        $p2 = Audit::parseAdsCsv("Urutan;Nama Iklan;Biaya\n1;B;2500\n");
+        $this->assertEquals(2500, $p2['rows'][0]['cost']);
+    }
 }
