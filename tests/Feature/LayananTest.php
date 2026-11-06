@@ -82,6 +82,23 @@ class LayananTest extends TestCase
         $this->get('/akun')->assertOk()->assertSee('Layanan Sosmed');
     }
 
+    public function test_questionnaire_download_email_and_wa_summary(): void
+    {
+        \App\Services\Settings::set('layanan.wa_number', '6281234567890');
+        $plan = $this->livePlan();
+        $this->webLogin();
+        $this->get('/layanan/pesan/' . $plan->id);
+        $this->get('/akun/layanan')->assertOk()->assertSee('wa.me/6281234567890', false)->assertSee('Tanya dulu lewat WhatsApp');
+        $this->post('/akun/layanan/pesan', ['plan' => $plan->id, 'note' => '@tokoku']);
+        $r = $this->get('/akun/layanan')->assertOk();
+        $r->assertSee('export?format=docx', false)->assertSee('temanseller.com@gmail.com')->assertSee('Konfirmasi &amp; kirim ringkasan via WhatsApp', false);
+        $r->assertSee(rawurlencode('Paket: '), false)->assertSee(rawurlencode('Catatan: @tokoku'), false);
+        \App\Services\Settings::set('layanan.questionnaire_email', 'kerja@contoh.id');
+        $this->get('/akun/layanan')->assertOk()->assertSee('mailto:kerja@contoh.id', false);
+        \App\Services\Settings::set('layanan.wa_number', '');
+        $this->get('/akun/layanan')->assertOk()->assertDontSee('wa.me', false);
+    }
+
     public function test_inactive_or_free_plan_cannot_be_ordered(): void
     {
         $this->webLogin();

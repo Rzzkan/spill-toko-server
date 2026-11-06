@@ -5,7 +5,7 @@
 <form method="POST" action="{{ route('portal.logout') }}" class="inline">@csrf<button class="text-sm text-gray-500 hover:text-gray-800">Keluar</button></form>
 @endsection
 @section('content')
-@php $waUrl = \App\Services\Layanan::waUrl('Halo TemanSeller, saya ' . ($c->name ?: $c->email) . ' ingin konfirmasi pesanan layanan kelola Instagram & Threads.'); @endphp
+@php $qn = \App\Services\Layanan::questionnaire(); @endphp
 <div>
     <h1 class="text-xl font-semibold">Layanan Sosmed</h1>
     <p class="text-sm text-gray-500">Kelola Instagram &amp; Threads oleh tim TemanSeller.</p>
@@ -17,12 +17,15 @@
     <div class="mt-1 text-lg font-semibold">{{ $pending->type->name }} – {{ $pending->name }}</div>
     <div class="text-2xl font-bold">{{ Fmt::rp($pending->price) }} <span class="text-sm font-normal text-gray-500">{{ $pending->period }}</span></div>
     <ul class="mt-3 space-y-1 text-sm text-gray-600">@foreach ($pending->featureList() as $f)<li>✓ {{ $f }}</li>@endforeach</ul>
+    @php $waUrl = \App\Services\Layanan::waUrl(\App\Services\Layanan::orderSummary($c, $pending->type->name . ' – ' . $pending->name, $pending->price, null, 'Belum dikonfirmasi (masih bertanya)')); $waLabel = 'Tanya dulu lewat WhatsApp'; @endphp
     <form method="POST" action="{{ route('portal.layanan.order') }}" class="mt-4">@csrf
         <input type="hidden" name="plan" value="{{ $pending->id }}">
         <label class="block text-sm font-medium text-gray-700">Catatan untuk kami <span class="font-normal text-gray-400">(opsional)</span></label>
         <textarea name="note" rows="3" maxlength="1000" class="mt-1 w-full rounded-lg border border-gray-300 p-3 text-sm" placeholder="Nama akun Instagram/Threads, jenis produk, gaya yang disukai…"></textarea>
         <div class="mt-3 flex gap-3"><button class="rounded-lg bg-brand-500 px-5 py-3 text-sm font-medium text-white hover:bg-brand-600">Konfirmasi pesanan</button><a href="{{ route('layanan.sosmed') }}" class="rounded-lg border border-gray-300 px-5 py-3 text-sm text-gray-700">Batal</a></div>
     </form>
+    @if ($waUrl)<div class="mt-4 border-t border-gray-100 pt-4"><a href="{{ $waUrl }}" target="_blank" rel="noopener" class="text-sm font-medium text-success-700 underline">{{ $waLabel }}</a> <span class="text-xs text-gray-500">(ringkasan paket ikut terkirim)</span></div>@endif
+    <p class="mt-3 text-xs text-gray-500">Setelah konfirmasi, kamu akan diminta mengunduh dan mengisi kuesioner brand.</p>
 </section>
 @endif
 
@@ -54,7 +57,15 @@
             <div class="font-medium">Langkah selanjutnya</div>
             <p class="mt-1">Lakukan pembayaran {{ Fmt::rp($s->price) }} lalu konfirmasi ke admin. Paket aktif setelah pembayaran diterima.</p>
             @if ($payment)<pre class="mt-3 whitespace-pre-wrap rounded-lg bg-white p-3 font-sans text-sm">{{ $payment }}</pre>@endif
-            @if ($waUrl)<a href="{{ $waUrl }}" target="_blank" rel="noopener" class="mt-3 inline-block rounded-lg bg-success-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-success-600">Konfirmasi via WhatsApp</a>@endif
+        </div>
+        @endif
+        @if (in_array($st, ['pending', 'active'], true))
+        <div class="border-t border-gray-100 p-6">
+            @php
+                $waUrl = \App\Services\Layanan::waUrl(\App\Services\Layanan::orderSummary($c, $s->plan_name, $s->price, $s->customer_note, $s->label() . ' (pesanan #' . $s->id . ')', true));
+                $waLabel = $st === 'pending' ? 'Konfirmasi & kirim ringkasan via WhatsApp' : 'Tanya / kirim kuesioner via WhatsApp';
+            @endphp
+            @include('portal._kuesioner')
         </div>
         @endif
         <form method="POST" action="{{ route('portal.layanan.note', $s->id) }}" class="border-t border-gray-100 p-6">@csrf
