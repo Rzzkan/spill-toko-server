@@ -189,4 +189,13 @@ class LayananTest extends TestCase
         Settings::set('layanan.wa_number', '+62 812-3456-7890');
         $this->get('/layanan')->assertSee('https://wa.me/6281234567890', false);
     }
+
+    public function test_public_page_uses_tabs_and_short_price(): void
+    {
+        $this->livePlan(2500000);
+        $this->get('/layanan')->assertOk()->assertSee('data-tab="combo"', false)->assertSee('Rp2,5 jt')->assertSee('role="tabpanel"', false);
+        $this->assertSame('Rp1,5 jt', \App\Support\Fmt::rpShort(1500000));
+        $this->assertSame('Rp3 jt', \App\Support\Fmt::rpShort(3000000));
+        $this->assertSame('Rp150.000', \App\Support\Fmt::rpShort(150000));
+    }
 }

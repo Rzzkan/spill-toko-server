@@ -9,6 +9,14 @@ class Fmt
 {
     public static function rp(int|float|null $n): string { return 'Rp' . number_format((float) $n, 0, ',', '.'); }
 
+    /** Harga ringkas untuk kartu: 1500000 -> "Rp1,5 jt"; di bawah 1 juta ditulis lengkap. */
+    public static function rpShort(int|float|null $n): string
+    {
+        $n = (float) $n;
+        if ($n < 1000000) return self::rp($n);
+        return 'Rp' . rtrim(rtrim(number_format($n / 1000000, 2, ',', ''), '0'), ',') . ' jt';
+    }
+
     public static function dt(?CarbonInterface $t, bool $time = true): string
     {
         return $t ? $t->copy()->setTimezone(config('temanseller.display_timezone'))->format($time ? 'd M Y H:i' : 'd M Y') : '—';

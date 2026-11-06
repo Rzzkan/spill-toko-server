@@ -55,7 +55,7 @@
                 <div class="invisible absolute left-1/2 top-full z-50 w-72 -translate-x-1/2 pt-3 opacity-0 transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
                     <div class="rounded-xl border border-slate-200 bg-white p-2 shadow-xl">
                         @foreach ($layananTypes as $t)
-                            <a href="{{ route('layanan') }}#paket" class="block rounded-lg px-3 py-2.5 hover:bg-orange-50"><span class="block truncate font-semibold text-slate-800">{{ $t->name }}</span>@if ($t->description)<span class="block truncate text-xs font-normal text-slate-500">{{ $t->description }}</span>@endif</a>
+                            <a href="{{ route('layanan', ['tab' => $t->slug]) }}#paket" class="block rounded-lg px-3 py-2.5 hover:bg-orange-50"><span class="block truncate font-semibold text-slate-800">{{ $t->name }}</span>@if ($t->description)<span class="block truncate text-xs font-normal text-slate-500">{{ $t->description }}</span>@endif</a>
                         @endforeach
                         <a href="{{ route('layanan') }}" class="mt-1 block rounded-lg border-t border-slate-100 px-3 py-2.5 text-center text-[#ee4d2d] hover:bg-orange-50">Semua layanan &amp; portofolio →</a>
                     </div>
