@@ -138,6 +138,162 @@ class Audit
         return $token;
     }
 
+
+    // ---------- unggahan: halaman tersimpan (.html/.mhtml) & screenshot ----------
+    public const MAX_PAGES = 2;
+    public const MAX_IMAGES = 4;
+
+    public static function visionModel(): string { return trim((string) Settings::get('audit.vision_model', '')); }
+
+    /**
+     * Buat pemindaian dari berkas unggahan. Berkas HANYA dibaca di memori pada request ini:
+     * teks/gambar dikirim ke AI untuk diambil angkanya, lalu dibuang. Yang tersimpan hanya data terstruktur hasil bacaan.
+     */
+    public static function createUpload(Customer $c, string $kind, ?string $url, array $pages, array $images): AuditScan
+    {
+        if (!self::enabled()) throw new ApiException('Marketplace Audit sedang ditutup.', 503);
+        if (!in_array($kind, ['product', 'shop'], true)) throw new ApiException('Pilih jenis audit: produk atau toko.', 422);
+        $target = null;
+        if ($url !== null && trim($url) !== '') {
+            $target = self::parseUrl($url);
+            if (!$target) throw new ApiException('Tautan tidak dikenali. Kosongkan saja atau tempel tautan dari shopee.co.id.', 422);
+            $kind = $target['kind'];
+        }
+        if (!$pages && !$images) throw new ApiException('Unggah minimal satu halaman tersimpan atau satu screenshot.', 422);
+        self::expireStale($c);
+        if (AuditScan::query()->where('customer_id', $c->id)->whereIn('status', AuditScan::ACTIVE)->exists()) {
+            throw new ApiException('Masih ada audit yang berjalan. Selesaikan atau batalkan dulu.', 429);
+        }
+        $q = self::quota($c);
+        if (!$q['can']) throw new ApiException($q['reason'], 402);
+        $scan = AuditScan::query()->create([
+            'customer_id' => $c->id, 'token_hash' => hash('sha256', Str::random(40)), 'kind' => $kind, 'url' => $target['url'] ?? null, 'status' => 'analyzing', 'data' => null,
+        ]);
+        $data = self::extract($scan, ['pages' => $pages, 'images' => $images]);   // berkas mentah hanya hidup di variabel ini
+        unset($pages, $images);
+        if ($data !== null) $scan->update(['data' => $data, 'status' => 'collected']);
+        return $scan->refresh();
+    }
+
+    /** Teks yang tampil dari halaman tersimpan (HTML biasa atau .mhtml), tanpa skrip/gaya/gambar. */
+    public static function pageText(string $raw): string
+    {
+        $head = substr($raw, 0, 4000);
+        if (stripos($head, 'multipart/related') !== false && ($h = self::mhtmlHtml($raw)) !== null) $raw = $h;
+        if (!mb_check_encoding($raw, 'UTF-8')) $raw = mb_convert_encoding($raw, 'UTF-8', 'UTF-8,ISO-8859-1,Windows-1252');
+        $meta = [];
+        if (preg_match('#<title[^>]*>(.*?)</title>#is', $raw, $m)) $meta[] = 'title: ' . trim(html_entity_decode(strip_tags($m[1])));
+        if (preg_match_all('#<meta[^>]+(?:property|name)=["\'](og:title|og:description|description|product:price:amount)["\'][^>]*>#i', $raw, $mm)) {
+            foreach ($mm[0] as $i => $tag) if (preg_match('#content=["\']([^"\']*)["\']#i', $tag, $cv)) $meta[] = $mm[1][$i] . ': ' . trim(html_entity_decode($cv[1]));
+        }
+        if (preg_match_all('#<script[^>]+type=["\']application/ld\+json["\'][^>]*>(.*?)</script>#is', $raw, $ld)) {
+            foreach (array_slice($ld[1], 0, 3) as $j) $meta[] = 'json-ld: ' . mb_substr(trim(preg_replace('/\s+/u', ' ', $j) ?? ''), 0, 3000);
+        }
+        $html = preg_replace('#<(script|style|noscript|svg|template|iframe|head)\b[^>]*>.*?</\1>#is', ' ', $raw) ?? $raw;
+        $html = preg_replace('#<(br|/p|/div|/li|/h[1-6]|/tr|/section|/button|/span)\b[^>]*>#i', "\n", $html) ?? $html;
+        $text = html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $out = []; $prev = '';
+        foreach (preg_split('/\R/u', $text) ?: [] as $line) {
+            $line = trim(preg_replace('/\s+/u', ' ', $line) ?? '');
+            if ($line === '' || $line === $prev) continue;
+            $out[] = $line; $prev = $line;
+        }
+        return mb_substr(implode("\n", array_merge($meta, [''], $out)), 0, 16000);
+    }
+
+    /** Ambil bagian text/html utama dari berkas MHTML. */
+    private static function mhtmlHtml(string $raw): ?string
+    {
+        if (!preg_match('#boundary="?([^"\r\n;]+)"?#i', substr($raw, 0, 4000), $m)) return null;
+        foreach (explode('--' . $m[1], $raw) as $part) {
+            $sp = preg_split('/\R\R/', $part, 2);
+            if (count($sp) < 2 || !preg_match('#Content-Type:\s*text/html#i', $sp[0])) continue;
+            $body = $sp[1];
+            if (preg_match('#Content-Transfer-Encoding:\s*quoted-printable#i', $sp[0])) $body = quoted_printable_decode($body);
+            elseif (preg_match('#Content-Transfer-Encoding:\s*base64#i', $sp[0])) $body = (string) base64_decode(preg_replace('/\s+/', '', $body), false);
+            if (preg_match('#charset="?([A-Za-z0-9_\-]+)#i', $sp[0], $cs) && strtolower($cs[1]) !== 'utf-8') $body = @mb_convert_encoding($body, 'UTF-8', $cs[1]) ?: $body;
+            return $body;
+        }
+        return null;
+    }
+
+    /** Perkecil screenshot (maks 1600 px) jadi JPEG base64 agar ringan dikirim ke AI. */
+    public static function prepareImage(string $bytes): string
+    {
+        $info = @getimagesizefromstring($bytes);
+        if (!$info || !in_array($info[2], [IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_WEBP], true)) throw new ApiException('Berkas gambar tidak dikenali (pakai JPG, PNG, atau WEBP).', 422);
+        if (!function_exists('imagecreatefromstring')) {
+            if (strlen($bytes) > 900_000) throw new ApiException('Gambar terlalu besar. Kecilkan ukurannya (maks 900 KB).', 422);
+            return base64_encode($bytes);
+        }
+        $im = @imagecreatefromstring($bytes);
+        if (!$im) throw new ApiException('Gambar tidak bisa dibaca.', 422);
+        [$w, $h] = [imagesx($im), imagesy($im)];
+        $scale = min(1, 1600 / max($w, $h));
+        if ($scale < 1) { $r = imagescale($im, max(1, (int) round($w * $scale)), max(1, (int) round($h * $scale))); if ($r) $im = $r; }
+        ob_start(); imagejpeg($im, null, 80); $jpg = (string) ob_get_clean();
+        return base64_encode($jpg);
+    }
+
+    private const EXTRACT_SYS = 'Kamu asisten ekstraksi data. Tugasmu membaca teks halaman Shopee Indonesia dan/atau screenshot, lalu menyalin angka dan teks yang BENAR-BENAR tampil. Jangan menebak atau mengarang; isi null jika tidak terlihat. Balas HANYA JSON valid tanpa markdown.';
+
+    private static function extractPrompt(string $kind, array $pages): string
+    {
+        $num = 'Semua angka ditulis sebagai angka polos tanpa pemisah ribuan dan tanpa "Rp" (contoh Rp54.000 -> 54000, "2,4rb" -> 2400, "1,2jt" -> 1200000, "4,9" -> 4.9).';
+        $spec = $kind === 'product'
+            ? '{"product":{"name","price" (harga setelah diskon),"price_min","price_max","discount_pct","stock","sold" (jumlah terjual yang tampil),"historical_sold","rating" (0-5),"rating_count","rating_dist" (array 5 angka jumlah ulasan bintang 1..5),"liked_count","images" (jumlah foto di galeri jika terlihat),"has_video" (true/false),"description" (teks deskripsi),"category","brand","attributes" (jumlah baris spesifikasi),"variations" (jumlah pilihan variasi),"free_shipping","cod","wholesale","flash_sale" (true/false),"shop":{"name","rating","followers","response_rate" (persen),"response_time","location"}},"reviews":[{"rating","text"}] (maks 10)}'
+            : '{"shop":{"name","username","rating","rating_count","followers","response_rate" (persen),"response_time","joined_days" (hari sejak bergabung; "3 tahun lalu" -> 1095),"product_count","is_official","is_mall","description","location"},"products":[{"name","price","sold","historical_sold","rating","rating_count","discount_pct","stock"}] (produk yang tampil, maks 30)}';
+        $txt = '';
+        foreach ($pages as $i => $p) $txt .= "\n<halaman_" . ($i + 1) . ">\n" . $p . "\n</halaman_" . ($i + 1) . ">";
+        return 'Ini ' . ($kind === 'product' ? 'halaman PRODUK' : 'halaman TOKO') . " Shopee. Ekstrak ke JSON dengan struktur persis: $spec\n$num Hanya isi field yang terlihat jelas.\n" . ($txt !== '' ? "Teks halaman:$txt" : 'Tidak ada teks halaman, baca dari screenshot yang dilampirkan.');
+    }
+
+    /** Konversi angka gaya Indonesia pada field numerik hasil ekstraksi ("54.000", "2,4rb", "1,2jt"). */
+    private static function idNumbers(mixed $v, ?string $key = null): mixed
+    {
+        if (is_array($v)) { foreach ($v as $k => $x) $v[$k] = self::idNumbers($x, is_string($k) ? $k : $key); return $v; }
+        if (!is_string($v) || in_array($key, ['name', 'description', 'text', 'username', 'category', 'brand', 'location', 'response_time'], true)) return $v;
+        $s = strtolower(trim(str_replace(['Rp', 'rp', ' '], '', $v)));
+        if (!preg_match('/^(\d{1,3}(?:\.\d{3})+|\d+(?:[.,]\d+)?)(rb|ribu|k|jt|juta)?\+?%?$/', $s, $m)) return $v;
+        $n = $m[1];
+        $n = preg_match('/^\d{1,3}(?:\.\d{3})+$/', $n) ? str_replace('.', '', $n) : str_replace(',', '.', $n);
+        $mul = match ($m[2] ?? '') { 'rb', 'ribu', 'k' => 1000, 'jt', 'juta' => 1_000_000, default => 1 };
+        $f = (float) $n * $mul;
+        return $f == floor($f) ? (int) $f : $f;
+    }
+
+    /** Langkah ekstraksi: data mentah unggahan -> struktur data audit. Mengembalikan null bila gagal (scan ditandai failed). */
+    private static function extract(AuditScan $scan, array $raw): ?array
+    {
+        if (!Ai::on()) { $scan->update(['status' => 'failed', 'error' => 'AI gagal: analisis AI belum diaktifkan admin, unggahan belum bisa dibaca.']); return null; }
+        $pages = array_values(array_filter((array) ($raw['pages'] ?? []), 'is_string'));
+        $images = array_values(array_filter((array) ($raw['images'] ?? []), 'is_string'));
+        $prompt = self::extractPrompt($scan->kind, $pages);
+        $content = $prompt;
+        if ($images) {
+            $content = [['type' => 'text', 'text' => $prompt]];
+            foreach ($images as $b) $content[] = ['type' => 'image_url', 'image_url' => ['url' => 'data:image/jpeg;base64,' . $b]];
+        }
+        $main = trim((string) Settings::get('ai.model', 'deepseek-v4-flash')) ?: 'deepseek-v4-flash';
+        $models = array_values(array_unique(array_filter($images ? [self::visionModel() ?: $main, trim((string) Settings::get('ai.fallback_model', ''))] : [$main, trim((string) Settings::get('ai.fallback_model', ''))])));
+        $msgs = [['role' => 'system', 'content' => self::EXTRACT_SYS], ['role' => 'user', 'content' => $content]];
+        $err = 'tidak diketahui';
+        foreach ($models as $m) {
+            $r = Ai::chat($msgs, $m);
+            self::log($scan->customer_id, $m, $r);
+            if (!$r['ok']) { $err = $r['err']; continue; }
+            $j = Ai::parseJson($r['content']);
+            if (!$j) { $err = 'jawaban AI tidak terbaca'; continue; }
+            $j = self::idNumbers($j);
+            $d = $scan->kind === 'product' ? self::normalizeProduct($j) : self::normalizeShop($j);
+            if ($d !== null) return $d;
+            $scan->update(['status' => 'failed', 'error' => 'Data tidak terbaca dari berkas. Pastikan halaman termuat penuh sebelum disimpan, atau coba screenshot lain. Kuota tidak terpakai.']);
+            return null;
+        }
+        $scan->update(['status' => 'failed', 'error' => mb_substr('AI gagal: ' . $err . '. Berkas tidak disimpan, jadi unggah ulang ya (kuota tidak terpakai).', 0, 250)]);
+        return null;
+    }
+
     // ---------- normalisasi (daftar putih, nilai dibatasi) ----------
     private static function num(mixed $v, float $min = 0, float $max = 1e12): ?float
     {

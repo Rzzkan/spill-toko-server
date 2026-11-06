@@ -42,6 +42,7 @@ class SettingDefs
             'audit.free_scans'     => ['group' => 'audit', 'label' => 'Jatah scan gratis per bulan', 'type' => 'number', 'default' => '10', 'min' => 0, 'help' => 'Dihitung per kalender bulan (WIB), reset tanggal 1. Hanya scan yang berhasil dihitung.'],
             'audit.paid_daily_cap' => ['group' => 'audit', 'label' => 'Batas harian pelanggan berlangganan', 'type' => 'number', 'default' => '100', 'min' => 0, 'help' => '0 = tanpa batas. Pelindung biaya AI untuk paket "unlimited".'],
             'audit.retention_hours' => ['group' => 'audit', 'label' => 'Masa simpan hasil (jam)', 'type' => 'number', 'default' => '24', 'min' => 1, 'help' => 'Setelah ini tautan, data, dan hasil audit dihapus otomatis; hanya hitungan kuota yang tersisa.'],
+            'audit.vision_model'   => ['group' => 'audit', 'label' => 'Model AI untuk membaca screenshot', 'type' => 'text', 'default' => '', 'help' => 'Nama model kenari.id yang mendukung gambar (vision). Kosong = pakai model AI utama (harus mendukung gambar, kalau tidak screenshot gagal dibaca). Unggahan halaman tersimpan memakai model utama.'],
             'audit.extension_url'  => ['group' => 'audit', 'label' => 'Tautan pasang extension', 'type' => 'url', 'default' => '', 'help' => 'Tautan Chrome Web Store extension yang membawa fitur Marketplace Audit. Ditampilkan di halaman audit.'],
 
             // ---- ekstensi ----

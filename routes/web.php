@@ -35,6 +35,7 @@ Route::middleware(PortalAuth::class)->group(function () {
     Route::post('/akun/layanan/pesan', [\App\Http\Controllers\Web\LayananController::class, 'order'])->middleware('throttle:6,1')->name('portal.layanan.order');
     Route::post('/akun/layanan/{sub}/catatan', [\App\Http\Controllers\Web\LayananController::class, 'note'])->whereNumber('sub')->middleware('throttle:20,1')->name('portal.layanan.note');
     Route::get('/audit', [\App\Http\Controllers\Web\AuditController::class, 'page'])->name('audit');
+    Route::post('/audit/upload', [\App\Http\Controllers\Web\AuditController::class, 'upload'])->middleware('throttle:10,1')->name('audit.upload');
     Route::post('/audit/scans', [\App\Http\Controllers\Web\AuditController::class, 'create'])->middleware('throttle:20,1')->name('audit.create');
     Route::get('/audit/scans/{id}', [\App\Http\Controllers\Web\AuditController::class, 'show'])->whereNumber('id')->middleware('throttle:120,1')->name('audit.show');
     Route::post('/audit/scans/{id}/analyze', [\App\Http\Controllers\Web\AuditController::class, 'analyze'])->whereNumber('id')->middleware('throttle:10,1')->name('audit.analyze');

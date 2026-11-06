@@ -55,6 +55,34 @@ class AuditController extends Controller
         return response()->json($this->view($x['scan'], ['token' => $x['token'], 'target' => $x['target'], 'api' => rtrim(url('/api'), '/'), 'quota' => Audit::quota($c)]));
     }
 
+    /** Unggah halaman tersimpan / screenshot: dibaca di memori lalu dibuang, tidak ada berkas yang disimpan. */
+    public function upload(Request $r): JsonResponse
+    {
+        $c = $r->attributes->get('customer');
+        $v = \Illuminate\Support\Facades\Validator::make($r->all(), [
+            'kind' => 'required|in:product,shop',
+            'url' => 'nullable|string|max:500',
+            'pages' => 'nullable|array|max:' . Audit::MAX_PAGES,
+            'pages.*' => 'file|extensions:html,htm,mhtml,mht|max:10240',
+            'shots' => 'nullable|array|max:' . Audit::MAX_IMAGES,
+            'shots.*' => 'file|extensions:jpg,jpeg,png,webp|max:6144',
+        ], [
+            'pages.*.extensions' => 'Halaman tersimpan harus berformat .html atau .mhtml.',
+            'shots.*.extensions' => 'Screenshot harus JPG, PNG, atau WEBP.',
+            'pages.*.max' => 'Halaman tersimpan maksimal 10 MB.', 'shots.*.max' => 'Setiap screenshot maksimal 6 MB.',
+        ]);
+        if ($v->fails()) throw new ApiException((string) $v->errors()->first(), 422);
+        $pages = []; $images = [];
+        foreach ((array) $r->file('pages', []) as $f) {
+            $txt = Audit::pageText((string) file_get_contents($f->getRealPath()));   // hanya dibaca; berkas sementara PHP hilang di akhir request
+            if (mb_strlen($txt) < 200) throw new ApiException('Isi halaman tersimpan hampir kosong. Tunggu halaman termuat penuh sebelum menyimpan, atau pakai screenshot.', 422);
+            $pages[] = $txt;
+        }
+        foreach ((array) $r->file('shots', []) as $f) $images[] = Audit::prepareImage((string) file_get_contents($f->getRealPath()));
+        $scan = Audit::createUpload($c, (string) $r->input('kind'), $r->input('url'), $pages, $images);
+        return response()->json($this->view($scan, ['quota' => Audit::quota($c)]));
+    }
+
     public function show(Request $r, int $id): JsonResponse
     {
         $s = $this->own($r, $id);

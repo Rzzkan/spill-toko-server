@@ -7,7 +7,8 @@ COPY . .
 RUN composer dump-autoload --no-dev --optimize --ignore-platform-reqs
 
 FROM dunglas/frankenphp:1-php8.3
-RUN install-php-extensions pdo_mysql mbstring gmp bcmath intl zip opcache pcntl
+RUN install-php-extensions pdo_mysql mbstring gmp bcmath intl zip opcache pcntl gd \
+    && printf 'upload_max_filesize=12M\npost_max_size=40M\nmax_file_uploads=10\n' > /usr/local/etc/php/conf.d/zz-uploads.ini
 ENV SERVER_NAME=:3000 \
     CADDY_GLOBAL_OPTIONS="auto_https off" \
     APP_ENV=production APP_DEBUG=false

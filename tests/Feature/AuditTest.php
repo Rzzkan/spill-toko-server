@@ -192,7 +192,7 @@ class AuditTest extends TestCase
 
     public function test_closed_and_pages(): void
     {
-        $this->get('/marketplace-audit')->assertOk()->assertSee('tidak menyimpan apa pun');
+        $this->get('/marketplace-audit')->assertOk()->assertSee('tidak disimpan');
         $this->get('/')->assertOk()->assertSee('Marketplace Audit');
         Settings::set('audit.enabled', '0');
         $this->get('/marketplace-audit')->assertNotFound();
@@ -204,5 +204,53 @@ class AuditTest extends TestCase
         $this->post('/keluar');
         $this->actingAs(User::query()->create(['name' => 'Adm', 'username' => 'adm', 'email' => 'adm@test.id', 'password' => 'rahasia123']));
         $this->get('/admin/audit')->assertOk()->assertSee('Marketplace Audit')->assertSee('Atur jatah');
+    }
+
+    private function up(array $data, array $files)
+    {
+        return $this->call('POST', '/audit/upload', $data, [], $files, ['HTTP_ACCEPT' => 'application/json']);
+    }
+
+    public function test_upload_reads_page_and_stores_no_raw_files(): void
+    {
+        $this->aiOn();
+        $c = $this->webLogin();
+        \Illuminate\Support\Facades\Storage::fake('local');
+        $extract = ['choices' => [['message' => ['content' => json_encode(['product' => ['name' => 'Kebaya Modern Brokat Premium Wanita Bahan Halus Nyaman Dipakai Acara Formal Wisuda', 'price' => 'Rp185.000', 'sold' => '2,4rb', 'rating' => '4,8', 'rating_count' => 120, 'images' => 7, 'has_video' => true, 'description_len' => 620]])]]], 'model' => 'm', 'usage' => ['prompt_tokens' => 10, 'completion_tokens' => 20]];
+        Http::swap(new \Illuminate\Http\Client\Factory());
+        Http::fake(['*' => Http::sequence()->push($extract)->push($this->aiJson())]);
+        $html = '<html><head><title>Kebaya Modern</title><script>var secret="XYZ";</script></head><body><h1>Kebaya Modern Brokat</h1><div>Rp185.000</div><div>2,4rb terjual</div>' . implode('', array_map(fn ($i) => "<p>Deskripsi kebaya cantik nomor $i dan nyaman dipakai.</p>", range(1, 10))) . '</body></html>';
+        $res = $this->up(['kind' => 'product'], ['pages' => [\Illuminate\Http\UploadedFile::fake()->createWithContent('p.html', $html)]]);
+        $res->assertOk()->assertJsonPath('status', 'collected');
+        $scan = AuditScan::query()->first();
+        $this->assertStringNotContainsString('Deskripsi kebaya', json_encode($scan->data));
+        $this->assertArrayNotHasKey('raw', $scan->data);
+        $this->assertSame(185000, (int) $scan->data['product']['price']);
+        $this->assertSame(2400, (int) $scan->data['product']['sold']);
+        $this->assertSame([], \Illuminate\Support\Facades\Storage::disk('local')->allFiles());
+        Http::assertSent(fn ($r) => str_contains(json_encode($r->data()), 'Deskripsi kebaya') && !str_contains(json_encode($r->data()), 'XYZ'));
+        $this->postJson("/audit/scans/{$scan->id}/analyze")->assertOk()->assertJsonPath('status', 'done');
+    }
+
+    public function test_upload_validation_and_ai_failure_keeps_nothing(): void
+    {
+        $this->aiOn();
+        $this->webLogin();
+        $this->up(['kind' => 'product'], [])->assertStatus(422);
+        $this->up(['kind' => 'product'], ['pages' => [\Illuminate\Http\UploadedFile::fake()->createWithContent('p.exe', 'x')]])->assertStatus(422);
+        $this->up(['kind' => 'product'], ['pages' => [\Illuminate\Http\UploadedFile::fake()->createWithContent('p.html', '<p>kosong</p>')]])->assertStatus(422);
+        Http::swap(new \Illuminate\Http\Client\Factory());
+        Http::fake(['*' => Http::response(['error' => 'x'], 500)]);
+        $html = '<html><body>' . implode('', array_map(fn ($i) => "<p>Halaman produk lengkap nomor $i dengan isi cukup panjang.</p>", range(1, 10))) . '</body></html>';
+        $this->up(['kind' => 'product'], ['pages' => [\Illuminate\Http\UploadedFile::fake()->createWithContent('p.html', $html)]])->assertOk()->assertJsonPath('status', 'failed');
+        $s = AuditScan::query()->first();
+        $this->assertNull($s->data);
+        $this->assertFalse((bool) $s->counted);
+    }
+
+    public function test_page_text_parses_mhtml(): void
+    {
+        $m = "From: x\r\nContent-Type: multipart/related; boundary=\"BB\"\r\n\r\n--BB\r\nContent-Type: text/html; charset=\"utf-8\"\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\n<html><body><p>Harga Rp54.000 =E2=9C=93</p></body></html>\r\n--BB--\r\n";
+        $this->assertStringContainsString('Harga Rp54.000 ✓', Audit::pageText($m));
     }
 }

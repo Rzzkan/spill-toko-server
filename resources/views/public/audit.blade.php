@@ -4,8 +4,9 @@
     $paid = collect($plans)->filter(fn ($p) => ($p['price'] ?? 0) > 0);
     $faq = [
         ['Apa itu Marketplace Audit?', 'Alat untuk memeriksa kesehatan toko atau produk Shopee: judul, foto, deskripsi, rating, stok, penawaran, dan reputasi toko. Hasilnya skor, daftar temuan, dan rekomendasi prioritas dari AI.'],
-        ['Apakah saya harus login Shopee?', 'Ya. Data dibaca dari halaman Shopee yang kamu buka sendiri di browser, jadi kamu perlu sedang login di Shopee. Kalau belum, kami akan memintamu login dulu.'],
-        ['Apakah kata sandi atau akun Shopee saya disimpan?', 'Tidak. Kami tidak membaca atau menyimpan kata sandi, cookie, maupun sesi login Shopee-mu. Server hanya menerima data publik toko/produk yang kamu audit, dan menghapusnya otomatis setelah ' . \App\Services\Audit::retentionHours() . ' jam.'],
+        ['Bagaimana cara mengauditnya?', 'Tidak perlu pasang apa pun. Cukup unggah screenshot halaman produk/toko, atau halaman yang kamu simpan dari browser (Ctrl+S, format .mhtml). Panduan tertulisnya ada di halaman aplikasi.'],
+        ['Apakah berkas yang saya unggah disimpan?', 'Tidak. Screenshot dan halaman tersimpan hanya dibaca sekali untuk mengambil angka dan teks yang tampil, lalu langsung dibuang. Yang tersimpan hanya data hasil bacaan dan hasil audit, dihapus otomatis setelah ' . \App\Services\Audit::retentionHours() . ' jam.'],
+        ['Apakah kata sandi atau akun Shopee saya diminta?', 'Tidak pernah. Kami tidak meminta kata sandi, cookie, atau akses ke akun Shopee-mu.'],
         ['Berapa jatah scan gratis?', $free . ' scan per bulan untuk tiap akun, reset setiap tanggal 1. Mau tanpa batas? Berlangganan unlimited.'],
         ['Scan yang gagal ikut terhitung?', 'Tidak. Jatah hanya terpakai bila audit berhasil selesai.'],
         ['Marketplace apa saja yang didukung?', 'Saat ini Shopee Indonesia. Marketplace lain menyusul.'],
@@ -37,7 +38,7 @@
     <div class="mx-auto max-w-4xl px-4 py-16 text-center md:py-24">
         <span class="rounded-full bg-white px-4 py-1.5 text-xs font-semibold text-ts-orange-text shadow-sm ring-1 ring-orange-100">Aplikasi web · Shopee</span>
         <h1 class="mt-5 text-4xl font-extrabold leading-tight tracking-tight text-ts-navy md:text-5xl">Periksa kesehatan toko &amp; produk Shopee-mu, pelan-pelan dibantu AI</h1>
-        <p class="mx-auto mt-5 max-w-2xl text-lg text-slate-600">Tempel tautan, kami kumpulkan datanya langsung dari browser-mu, lalu AI memberi skor, temuan, dan langkah perbaikan yang bisa dikerjakan hari ini.</p>
+        <p class="mx-auto mt-5 max-w-2xl text-lg text-slate-600">Unggah screenshot atau halaman Shopee-mu, lalu AI memberi skor, temuan, dan langkah perbaikan yang bisa dikerjakan hari ini.</p>
         <div class="mt-8 flex flex-wrap justify-center gap-3">
             <a href="{{ $cta }}" class="rounded-xl bg-ts-orange px-7 py-3.5 text-base font-semibold text-ts-navy shadow-lg shadow-orange-200 hover:bg-ts-orange-dark">Coba {{ $free }} scan gratis</a>
         </div>
@@ -53,16 +54,52 @@
         <div class="rounded-2xl border border-slate-200 p-6"><div class="text-2xl">🏪</div><h3 class="mt-2 text-lg font-bold">Audit toko</h3><p class="mt-1 text-sm text-slate-600">Rating toko, kecepatan balas chat, pengikut, luas katalog, produk yang belum terjual, kualitas judul, dan badge toko.</p></div>
     </div>
     <div class="mt-10 grid gap-5 md:grid-cols-3">
-        @foreach ([['01', 'Tempel tautan', 'Salin tautan toko atau produk dari Shopee.'], ['02', 'Kumpulkan di browser-mu', 'Data dibaca dari halaman Shopee yang kamu buka sendiri (kamu harus login Shopee).'], ['03', 'Terima hasil audit', 'Skor, pemeriksaan otomatis, dan rekomendasi prioritas dari AI.']] as [$n, $t, $d])
+        @foreach ([['01', 'Ambil bahan', 'Screenshot halaman produk/toko Shopee, atau simpan halamannya (Ctrl+S). Ada panduan langkah demi langkah.'], ['02', 'Unggah', 'Kami baca angka dan teksnya, lalu berkasmu langsung dibuang, tidak disimpan.'], ['03', 'Terima hasil audit', 'Skor, pemeriksaan otomatis, dan rekomendasi prioritas dari AI.']] as [$n, $t, $d])
             <div class="rounded-2xl bg-orange-50/60 p-6"><div class="text-sm font-bold text-ts-orange-text">{{ $n }}</div><div class="mt-1 font-bold">{{ $t }}</div><p class="mt-1 text-sm text-slate-600">{{ $d }}</p></div>
         @endforeach
+    </div>
+</section>
+
+<section class="bg-ts-cream/50">
+    <div class="mx-auto max-w-5xl px-4 py-16">
+        <h2 class="text-center text-3xl font-bold text-ts-navy">Contoh hasil audit</h2>
+        <p class="mx-auto mt-3 max-w-2xl text-center text-slate-600">Beginilah tampilan hasilnya: skor, pemeriksaan otomatis, dan rekomendasi yang bisa langsung kamu kerjakan. <span class="text-slate-400">(Ilustrasi dengan data contoh.)</span></p>
+        <div class="mx-auto mt-10 max-w-3xl rounded-3xl border border-slate-200 bg-white p-6 shadow-xl shadow-orange-100/60 sm:p-8" aria-label="Contoh tampilan hasil audit">
+            <div class="flex flex-wrap items-center gap-5">
+                <div class="grid size-24 shrink-0 place-items-center rounded-full text-3xl font-extrabold text-ts-navy" style="border:8px solid #FB8A12">72</div>
+                <div class="min-w-0 flex-1">
+                    <div class="text-xs font-semibold uppercase tracking-wide text-slate-400">Audit produk</div>
+                    <div class="text-lg font-bold text-ts-navy">Kebaya Modern Brokat Wisuda (contoh)</div>
+                    <span class="mt-2 inline-block rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold text-ts-orange-text">Cukup baik, masih bisa naik</span>
+                </div>
+            </div>
+            <p class="mt-4 text-sm leading-relaxed text-slate-600">Produk sudah punya rating bagus dan ulasan yang cukup. Peluang terbesar ada di judul yang belum memuat kata kunci pencarian dan deskripsi yang masih pendek.</p>
+            <div class="mt-6 grid gap-6 md:grid-cols-2">
+                <div>
+                    <div class="text-sm font-bold text-ts-navy">Pemeriksaan otomatis</div>
+                    <div class="mt-2 divide-y divide-slate-100 text-sm">
+                        @foreach ([['ok', 'Rating produk 4,8', 'Di atas rata-rata kategori.'], ['ok', 'Stok tersedia', 'Aman untuk periode promo.'], ['warn', 'Deskripsi 180 karakter', 'Disarankan minimal 500 karakter.'], ['bad', 'Tidak ada video produk', 'Video menaikkan minat beli.']] as [$s, $tt, $d])
+                            <div class="flex gap-3 py-2.5"><span class="grid size-6 shrink-0 place-items-center rounded-full text-xs font-bold {{ $s === 'ok' ? 'bg-emerald-50 text-emerald-700' : ($s === 'warn' ? 'bg-amber-50 text-amber-700' : 'bg-rose-50 text-rose-700') }}">{{ $s === 'ok' ? '✓' : ($s === 'warn' ? '!' : '✕') }}</span><div><div class="font-medium text-slate-800">{{ $tt }}</div><div class="text-slate-500">{{ $d }}</div></div></div>
+                        @endforeach
+                    </div>
+                </div>
+                <div>
+                    <div class="text-sm font-bold text-ts-navy">Rekomendasi prioritas</div>
+                    <ol class="mt-2 space-y-3 text-sm">
+                        @foreach ([['Tambahkan kata kunci di judul', 'Tinggi', 'Mis. “Kebaya Brokat Modern Wisuda Wanita”.'], ['Perpanjang deskripsi', 'Sedang', 'Cantumkan bahan, ukuran, dan cara perawatan.'], ['Tambah video 15–30 detik', 'Sedang', 'Tunjukkan detail jahitan dan jatuhnya kain.']] as $i => [$a, $pr, $al])
+                            <li class="flex gap-3"><span class="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-ts-cream text-xs font-bold text-ts-orange-text">{{ $i + 1 }}</span><div><div class="font-medium text-slate-800">{{ $a }} <span class="ml-1 rounded bg-slate-100 px-1.5 py-0.5 text-[11px] font-medium text-slate-500">{{ $pr }}</span></div><div class="text-slate-500">{{ $al }}</div></div></li>
+                        @endforeach
+                    </ol>
+                </div>
+            </div>
+        </div>
     </div>
 </section>
 
 <section class="bg-slate-50">
     <div class="mx-auto max-w-4xl px-4 py-14 text-center">
         <h2 class="text-3xl font-bold text-ts-navy">Privasi dulu</h2>
-        <p class="mx-auto mt-4 max-w-2xl text-slate-600">Aplikasi ini <b>tidak menyimpan apa pun dari akun Shopee-mu</b>: tanpa kata sandi, tanpa cookie, tanpa sesi login. Pengumpulan data berjalan di browser-mu. Yang sampai ke server hanya data publik toko/produk yang kamu minta diaudit, dan semuanya dihapus otomatis setelah {{ \App\Services\Audit::retentionHours() }} jam.</p>
+        <p class="mx-auto mt-4 max-w-2xl text-slate-600">Screenshot dan halaman yang kamu unggah <b>tidak disimpan</b>: hanya dibaca sekali untuk mengambil angka dan teks yang tampil, lalu langsung dibuang. Kami tidak pernah meminta kata sandi, cookie, atau akses akun Shopee-mu. Data hasil bacaan dan hasil audit dihapus otomatis setelah {{ \App\Services\Audit::retentionHours() }} jam.</p>
     </div>
 </section>
 
