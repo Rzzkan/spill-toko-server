@@ -21,7 +21,7 @@
         <input type="hidden" name="plan" value="{{ $pending->id }}">
         <label class="block text-sm font-medium text-gray-700">Catatan untuk kami <span class="font-normal text-gray-400">(opsional)</span></label>
         <textarea name="note" rows="3" maxlength="1000" class="mt-1 w-full rounded-lg border border-gray-300 p-3 text-sm" placeholder="Nama akun Instagram/Threads, jenis produk, gaya yang disukai…"></textarea>
-        <div class="mt-3 flex gap-3"><button class="rounded-lg bg-brand-500 px-5 py-3 text-sm font-medium text-white hover:bg-brand-600">Konfirmasi pesanan</button><a href="{{ route('layanan') }}" class="rounded-lg border border-gray-300 px-5 py-3 text-sm text-gray-700">Batal</a></div>
+        <div class="mt-3 flex gap-3"><button class="rounded-lg bg-brand-500 px-5 py-3 text-sm font-medium text-white hover:bg-brand-600">Konfirmasi pesanan</button><a href="{{ route('layanan.sosmed') }}" class="rounded-lg border border-gray-300 px-5 py-3 text-sm text-gray-700">Batal</a></div>
     </form>
 </section>
 @endif
@@ -70,12 +70,12 @@
         <div class="text-3xl">📸</div>
         <h2 class="mt-2 font-semibold">Belum ada langganan layanan</h2>
         <p class="mt-1 text-sm text-gray-500">Pilih paket kelola Instagram &amp; Threads yang sesuai tokomu.</p>
-        <a href="{{ route('layanan') }}" class="mt-4 inline-block rounded-lg bg-brand-500 px-5 py-3 text-sm font-medium text-white hover:bg-brand-600">Lihat paket</a>
+        <a href="{{ route('layanan.sosmed') }}" class="mt-4 inline-block rounded-lg bg-brand-500 px-5 py-3 text-sm font-medium text-white hover:bg-brand-600">Lihat paket</a>
     </section>
     @endif
 @endforelse
 
 @if ($subs->isNotEmpty() && $enabled)
-    <p class="mt-6 text-sm text-gray-500">Mau tambah atau ganti paket? <a href="{{ route('layanan') }}#paket" class="text-brand-500">Lihat paket</a>.</p>
+    <p class="mt-6 text-sm text-gray-500">Mau tambah atau ganti paket? <a href="{{ route('layanan.sosmed') }}#paket" class="text-brand-500">Lihat paket</a>.</p>
 @endif
 @endsection

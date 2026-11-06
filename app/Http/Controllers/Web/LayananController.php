@@ -21,8 +21,15 @@ class LayananController extends Controller
             ->with(['plans' => fn ($q) => $q->where('is_active', true)->where('price', '>', 0)])->get()->filter(fn ($t) => $t->plans->isNotEmpty())->values();
         return view('public.layanan', [
             'types' => $types, 'portfolio' => ServicePortfolio::query()->where('is_active', true)->orderBy('sort')->orderByDesc('id')->get(),
-            'wa' => Layanan::waUrl(), 'hubUrl' => url('/'), 'soon' => Layanan::comingSoon(),
+            'wa' => Layanan::waUrl(), 'hubUrl' => url('/'),
         ]);
+    }
+
+    /** Daftar semua layanan: kelola sosmed (aktif) + layanan yang segera hadir. */
+    public function overview()
+    {
+        abort_unless(Layanan::enabled(), 404);
+        return view('public.layanan-index', ['soon' => Layanan::comingSoonAll(), 'wa' => Layanan::waUrl(), 'hubUrl' => url('/')]);
     }
 
     /** Gambar portofolio dari storage (tanpa storage:link). Versi di URL hanya untuk cache-busting. */
@@ -37,7 +44,7 @@ class LayananController extends Controller
     public function start(Request $r, int $plan)
     {
         abort_unless(Layanan::enabled(), 404);
-        if (!ServicePlan::orderable()->whereKey($plan)->exists()) return redirect()->route('layanan')->with('error', 'Paket tidak tersedia.');
+        if (!ServicePlan::orderable()->whereKey($plan)->exists()) return redirect()->route('layanan.sosmed')->with('error', 'Paket tidak tersedia.');
         $r->session()->put('layanan_plan', $plan);
         return $r->session()->has('customer_id') ? redirect()->route('portal.layanan') : redirect()->route('portal.login');
     }

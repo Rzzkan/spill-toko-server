@@ -54,9 +54,9 @@
                 <button type="button" class="flex items-center gap-1 hover:text-[#ee4d2d] focus:outline-none" aria-haspopup="true">Layanan <svg class="size-3.5 transition group-hover:rotate-180 group-focus-within:rotate-180" viewBox="0 0 20 20" fill="currentColor"><path d="M5.3 7.3a1 1 0 0 1 1.4 0L10 10.6l3.3-3.3a1 1 0 1 1 1.4 1.4l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 0-1.4z"/></svg></button>
                 <div class="invisible absolute left-1/2 top-full z-50 w-72 -translate-x-1/2 pt-3 opacity-0 transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
                     <div class="rounded-xl border border-slate-200 bg-white p-2 shadow-xl">
-                        <a href="{{ route('layanan') }}" class="block rounded-lg px-3 py-2.5 hover:bg-orange-50"><span class="block font-semibold text-slate-800">Kelola Social Media</span><span class="block text-xs font-normal text-slate-500">Instagram &amp; Threads: konten siap pakai atau dibantu posting</span></a>
+                        <a href="{{ route('layanan.sosmed') }}" class="block rounded-lg px-3 py-2.5 hover:bg-orange-50"><span class="block font-semibold text-slate-800">Kelola Social Media</span><span class="block text-xs font-normal text-slate-500">Instagram &amp; Threads: konten siap pakai atau dibantu posting</span></a>
                         @foreach ($layananSoon as $x)
-                            <div class="flex items-center justify-between gap-2 rounded-lg px-3 py-2.5 opacity-70"><span class="font-semibold text-slate-600">{{ $x }}</span><span class="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-500">Segera hadir</span></div>
+                            <div class="flex items-center justify-between gap-2 rounded-lg px-3 py-2.5 opacity-70"><span class="font-semibold text-slate-600">{{ $x }}</span><span class="shrink-0 whitespace-nowrap rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-500">Segera hadir</span></div>
                         @endforeach
                     </div>
                 </div>
@@ -79,7 +79,7 @@
             <p class="mt-5 max-w-xl text-lg text-slate-600">Riset produk, intip kompetitor, analisis AI, sampai konten Instagram &amp; Threads yang dikelola untukmu. TemanSeller mengumpulkan aplikasi dan layanan pendukung seller dalam satu akun.</p>
             <div class="mt-8 flex flex-wrap items-center gap-3">
                 <a href="#aplikasi" class="rounded-xl bg-[#ee4d2d] px-6 py-3.5 text-base font-semibold text-white shadow-lg shadow-orange-200 hover:bg-[#d7401f]">Lihat semua aplikasi →</a>
-                @if ($layananOn)<a href="{{ route('layanan') }}" class="rounded-xl border border-orange-200 bg-orange-50 px-6 py-3.5 text-base font-semibold text-[#ee4d2d] hover:bg-orange-100">Layanan kelola sosmed</a>@endif
+                @if ($layananOn)<a href="{{ route('layanan.sosmed') }}" class="rounded-xl border border-orange-200 bg-orange-50 px-6 py-3.5 text-base font-semibold text-[#ee4d2d] hover:bg-orange-100">Layanan kelola sosmed</a>@endif
                 <a href="{{ $cta }}" class="rounded-xl border border-slate-200 bg-white px-6 py-3.5 text-base font-semibold text-slate-700 hover:border-[#ee4d2d] hover:text-[#ee4d2d]">Masuk ke akun</a>
             </div>
             <ul class="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-500"><li>✓ Daftar pakai Google</li><li>✓ Trial gratis tanpa kartu kredit</li><li>✓ Bayar QRIS &amp; e-wallet</li></ul>
@@ -148,7 +148,7 @@
             <p class="mt-4 text-slate-600">Dari ide konten, desain, caption, sampai jadwal posting. Kamu fokus jualan, akun sosmed tetap hidup. Hasil kerja tersimpan di folder Drive yang bisa kamu buka dari halaman akun.</p>
             <ul class="mt-5 space-y-2 text-sm text-slate-700"><li>✓ Pilih paket sesuai kebutuhan, harga jelas</li><li>✓ Lihat status langganan &amp; folder Drive di akunmu</li><li>✓ Ada portofolio hasil kerja sebelumnya</li></ul>
             <div class="mt-7 flex flex-wrap gap-3">
-                <a href="{{ route('layanan') }}" class="rounded-xl bg-[#ee4d2d] px-6 py-3.5 font-semibold text-white shadow-lg shadow-orange-200 hover:bg-[#d7401f]">Lihat paket &amp; portofolio →</a>
+                <a href="{{ route('layanan.sosmed') }}" class="rounded-xl bg-[#ee4d2d] px-6 py-3.5 font-semibold text-white shadow-lg shadow-orange-200 hover:bg-[#d7401f]">Lihat paket &amp; portofolio →</a>
                 @if ($layananFrom)<span class="self-center text-sm text-slate-500">mulai <b class="text-slate-900">{{ Fmt::rp($layananFrom) }}</b></span>@endif
             </div>
         </div>

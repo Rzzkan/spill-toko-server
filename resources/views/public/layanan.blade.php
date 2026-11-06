@@ -33,7 +33,7 @@
     <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5">
         <x-brand :href="$hubUrl" size="size-12" class="text-lg" />
         <nav class="hidden items-center gap-7 text-sm font-medium text-slate-600 md:flex">
-            <a href="{{ $hubUrl }}" class="hover:text-[#ee4d2d]">Beranda</a><a href="#paket" class="hover:text-[#ee4d2d]">Paket</a><a href="#portofolio" class="hover:text-[#ee4d2d]">Portofolio</a><a href="#faq" class="hover:text-[#ee4d2d]">FAQ</a>
+            <a href="{{ $hubUrl }}" class="hover:text-[#ee4d2d]">Beranda</a><a href="{{ route('layanan') }}" class="hover:text-[#ee4d2d]">Semua layanan</a><a href="#paket" class="hover:text-[#ee4d2d]">Paket</a><a href="#portofolio" class="hover:text-[#ee4d2d]">Portofolio</a><a href="#faq" class="hover:text-[#ee4d2d]">FAQ</a>
         </nav>
         <div class="flex items-center gap-2">
             <a href="{{ $login }}" class="hidden rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:text-[#ee4d2d] sm:block">Masuk</a>
@@ -74,9 +74,6 @@
                     @endforeach
                 </div>
             </div>
-            @if (!empty($soon))
-                <div class="mt-4 flex flex-wrap items-center justify-center gap-2 text-sm text-slate-600"><span class="font-medium">Segera hadir:</span>@foreach ($soon as $x)<span class="inline-flex items-center gap-1.5 rounded-full border border-dashed border-violet-300 bg-violet-50 px-3 py-1 font-semibold text-violet-700">🚀 {{ $x }}</span>@endforeach</div>
-            @endif
             <p class="mt-3 text-center text-sm text-slate-500">Harga jelas, tanpa biaya tersembunyi. Pembayaran dikonfirmasi manual oleh admin.</p>
             @foreach ($types as $i => $t)
                 <div data-panel="{{ $t->slug }}" role="tabpanel" class="mt-8 {{ $i === 0 ? '' : 'hidden' }}">

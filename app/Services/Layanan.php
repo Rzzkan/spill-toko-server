@@ -10,7 +10,24 @@ class Layanan
     /** Layanan yang segera hadir (mis. "Kelola TikTok"), dipisah koma di Pengaturan. Hanya info, tidak bisa dipesan. */
     public static function comingSoon(): array
     {
-        return array_values(array_filter(array_map(fn ($x) => mb_substr(trim($x), 0, 40), explode(',', (string) Settings::get('layanan.coming_soon', '')))));
+        return self::splitList((string) Settings::get('layanan.coming_soon', ''));
+    }
+
+    /** Layanan segera hadir yang tampil di dropdown menu Layanan (Pengaturan → "Segera hadir di menu"). */
+    public static function comingSoonMenu(): array
+    {
+        return self::splitList((string) Settings::get('layanan.coming_soon_menu', ''));
+    }
+
+    /** Gabungan semua layanan segera hadir (untuk halaman /layanan), tanpa duplikat. */
+    public static function comingSoonAll(): array
+    {
+        return array_values(array_unique(array_merge(self::comingSoon(), self::comingSoonMenu())));
+    }
+
+    private static function splitList(string $v): array
+    {
+        return array_values(array_filter(array_map(fn ($x) => mb_substr(trim($x), 0, 40), explode(',', $v))));
     }
 
     public static function waNumber(): string { return preg_replace('/\D+/', '', (string) Settings::get('layanan.wa_number', '')) ?? ''; }

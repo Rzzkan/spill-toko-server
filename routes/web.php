@@ -9,7 +9,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [\App\Http\Controllers\Web\PublicController::class, 'home'])->name('home');
 Route::get('/shofee', [\App\Http\Controllers\Web\PublicController::class, 'shofee'])->name('shofee');
-Route::get('/layanan', [\App\Http\Controllers\Web\LayananController::class, 'index'])->name('layanan');
+Route::get('/layanan', [\App\Http\Controllers\Web\LayananController::class, 'overview'])->name('layanan');
+Route::get('/layanan-kelola-sosmed', [\App\Http\Controllers\Web\LayananController::class, 'index'])->name('layanan.sosmed');
 Route::get('/layanan/pesan/{plan}', [\App\Http\Controllers\Web\LayananController::class, 'start'])->whereNumber('plan')->name('layanan.start');
 Route::get('/layanan/gambar/{id}/{v}', [\App\Http\Controllers\Web\LayananController::class, 'image'])->whereNumber('id')->name('layanan.image');
 Route::get('/marketplace-audit', [\App\Http\Controllers\Web\AuditController::class, 'landing'])->name('audit.landing');

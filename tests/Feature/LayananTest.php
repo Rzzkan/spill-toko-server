@@ -42,7 +42,7 @@ class LayananTest extends TestCase
     public function test_public_page_shows_empty_state_without_active_plans(): void
     {
         ServicePlan::query()->update(['is_active' => false]);
-        $this->get('/layanan')->assertOk()->assertSee('Paket sedang disiapkan')->assertSee('Portofolio akan segera');
+        $this->get('/layanan-kelola-sosmed')->assertOk()->assertSee('Paket sedang disiapkan')->assertSee('Portofolio akan segera');
     }
 
     public function test_public_page_lists_active_plans_and_portfolio(): void
@@ -50,13 +50,13 @@ class LayananTest extends TestCase
         $this->livePlan();
         ServicePortfolio::create(['title' => 'Feed Toko Hijab', 'result_text' => 'Followers +2rb', 'is_active' => true, 'link_url' => 'https://instagram.com/x']);
         ServicePortfolio::create(['title' => 'Tersembunyi', 'is_active' => false]);
-        $this->get('/layanan')->assertOk()->assertSee('Growth')->assertSee('Rp150.000')->assertSee('Feed Toko Hijab')->assertDontSee('Tersembunyi');
+        $this->get('/layanan-kelola-sosmed')->assertOk()->assertSee('Growth')->assertSee('Rp150.000')->assertSee('Feed Toko Hijab')->assertDontSee('Tersembunyi');
     }
 
     public function test_service_can_be_switched_off(): void
     {
         Settings::set('layanan.enabled', '0');
-        $this->get('/layanan')->assertNotFound();
+        $this->get('/layanan-kelola-sosmed')->assertNotFound();
         $this->get('/')->assertOk()->assertDontSee('Layanan kelola sosmed');
     }
 
@@ -131,10 +131,10 @@ class LayananTest extends TestCase
         $type = ServiceType::where('slug', 'tiktok')->first();
         $this->assertNotNull($type);
         $this->post('/admin/layanan/paket', ['service_type_id' => $type->id, 'name' => 'Basic', 'price' => 99000, 'duration_days' => 30, 'is_active' => 1, 'features' => "x\ny"])->assertRedirect();
-        $this->get('/layanan')->assertSee('TikTok')->assertSee('Rp99.000');
+        $this->get('/layanan-kelola-sosmed')->assertSee('TikTok')->assertSee('Rp99.000');
         $plan = ServicePlan::where('name', 'Basic')->first();
         $this->post('/admin/layanan/paket/' . $plan->id, ['service_type_id' => $type->id, 'name' => 'Basic', 'price' => 120000, 'duration_days' => 30, 'is_active' => 1])->assertRedirect();
-        $this->get('/layanan')->assertSee('Rp120.000');
+        $this->get('/layanan-kelola-sosmed')->assertSee('Rp120.000');
         $this->post('/admin/layanan/paket/' . $plan->id, ['service_type_id' => $type->id, 'name' => 'Basic', 'price' => 0, 'duration_days' => 30, 'is_active' => 1])->assertSessionHas('error');   // aktif harus berharga
         $this->post('/admin/layanan/jenis/' . $type->id . '/hapus')->assertSessionHas('error');                                // masih punya paket
         $this->post('/admin/layanan/paket/' . $plan->id . '/hapus')->assertSessionHas('ok');
@@ -185,15 +185,15 @@ class LayananTest extends TestCase
 
     public function test_whatsapp_link_comes_from_settings(): void
     {
-        $this->get('/layanan')->assertDontSee('wa.me');
+        $this->get('/layanan-kelola-sosmed')->assertDontSee('wa.me');
         Settings::set('layanan.wa_number', '+62 812-3456-7890');
-        $this->get('/layanan')->assertSee('https://wa.me/6281234567890', false);
+        $this->get('/layanan-kelola-sosmed')->assertSee('https://wa.me/6281234567890', false);
     }
 
     public function test_public_page_uses_tabs_and_short_price(): void
     {
         $this->livePlan(2500000);
-        $this->get('/layanan')->assertOk()->assertSee('data-tab="ig-dibantu-posting"', false)->assertSee('Rp2,5 jt')->assertSee('role="tabpanel"', false);
+        $this->get('/layanan-kelola-sosmed')->assertOk()->assertSee('data-tab="ig-dibantu-posting"', false)->assertSee('Rp2,5 jt')->assertSee('role="tabpanel"', false);
         $this->assertSame('Rp1,5 jt', \App\Support\Fmt::rpShort(1500000));
         $this->assertSame('Rp3 jt', \App\Support\Fmt::rpShort(3000000));
         $this->assertSame('Rp150.000', \App\Support\Fmt::rpShort(150000));
@@ -207,7 +207,7 @@ class LayananTest extends TestCase
         $this->assertSame(2000000, $p->price);
         $this->assertSame(4000000, $p->original_price);
         $this->assertSame(50, $p->discountPct());
-        $this->get('/layanan')->assertOk()->assertSee('IG Tanpa Posting')->assertSee('Threads Dibantu Posting')->assertSee('Hemat 50%')->assertSee('Rp4 jt')->assertSee('Add-on:')->assertSee('180 konten Feed');
+        $this->get('/layanan-kelola-sosmed')->assertOk()->assertSee('IG Tanpa Posting')->assertSee('Threads Dibantu Posting')->assertSee('Hemat 50%')->assertSee('Rp4 jt')->assertSee('Add-on:')->assertSee('180 konten Feed');
     }
 
     public function test_admin_can_set_original_price_and_addon(): void
@@ -221,12 +221,13 @@ class LayananTest extends TestCase
 
     public function test_coming_soon_shown_and_configurable_and_single_menu(): void
     {
-        $this->get('/')->assertOk()->assertSee('Kelola Social Media')->assertSee('Segera hadir')->assertSee('Kelola TikTok')->assertDontSee('Threads Tanpa Posting');
-        $this->get('/layanan')->assertOk()->assertSee('Segera hadir:')->assertSee('Kelola TikTok');
+        $this->get('/')->assertOk()->assertSee('Kelola Social Media')->assertSee('Segera hadir')->assertSee('Layanan Jasa Live Marketplace')->assertDontSee('Kelola TikTok')->assertDontSee('Threads Tanpa Posting');
+        $this->get('/layanan')->assertOk()->assertSee('Kelola TikTok')->assertSee('Layanan Jasa Live Marketplace')->assertSee('Segera hadir')->assertSee(route('layanan.sosmed'));
         Settings::set('layanan.coming_soon', 'Edit Video, Content Plan');
         $this->assertSame(['Edit Video', 'Content Plan'], \App\Services\Layanan::comingSoon());
         $this->get('/layanan')->assertSee('Edit Video')->assertDontSee('Kelola TikTok');
-        Settings::set('layanan.coming_soon', '');
-        $this->get('/layanan')->assertDontSee('Segera hadir:');
+        Settings::set('layanan.coming_soon', ''); Settings::set('layanan.coming_soon_menu', '');
+        $this->get('/layanan')->assertDontSee('Segera hadir');
+        $this->get('/layanan-kelola-sosmed')->assertOk();
     }
 }
