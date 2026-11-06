@@ -74,6 +74,9 @@
                     @endforeach
                 </div>
             </div>
+            @if (!empty($soon))
+                <div class="mt-4 flex flex-wrap items-center justify-center gap-2 text-sm text-slate-600"><span class="font-medium">Segera hadir:</span>@foreach ($soon as $x)<span class="inline-flex items-center gap-1.5 rounded-full border border-dashed border-violet-300 bg-violet-50 px-3 py-1 font-semibold text-violet-700">🚀 {{ $x }}</span>@endforeach</div>
+            @endif
             <p class="mt-3 text-center text-sm text-slate-500">Harga jelas, tanpa biaya tersembunyi. Pembayaran dikonfirmasi manual oleh admin.</p>
             @foreach ($types as $i => $t)
                 <div data-panel="{{ $t->slug }}" role="tabpanel" class="mt-8 {{ $i === 0 ? '' : 'hidden' }}">

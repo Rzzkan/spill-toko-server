@@ -31,6 +31,7 @@ class SettingDefs
 
             // ---- layanan ----
             'layanan.enabled'      => ['group' => 'layanan', 'label' => 'Tampilkan layanan di situs', 'type' => 'bool', 'default' => '1', 'help' => 'Matikan untuk menyembunyikan tab Layanan dan menutup pemesanan.'],
+            'layanan.coming_soon'  => ['group' => 'layanan', 'label' => 'Layanan segera hadir', 'type' => 'text', 'default' => '', 'help' => 'Nama layanan yang akan datang, pisahkan dengan koma (mis. Kelola TikTok, Edit Video). Tampil sebagai info "Segera hadir" di menu dan halaman Layanan; kosongkan untuk menyembunyikan.'],
             'layanan.wa_number'    => ['group' => 'layanan', 'label' => 'Nomor WhatsApp admin', 'type' => 'text', 'default' => '', 'help' => 'Format internasional tanpa + (contoh 6281234567890). Dipakai untuk tombol konsultasi & konfirmasi pesanan.'],
             'layanan.wa_template'  => ['group' => 'layanan', 'label' => 'Template pesan WhatsApp', 'type' => 'textarea', 'default' => "Halo TemanSeller, saya ingin konsultasi layanan kelola Instagram & Threads.", 'help' => 'Pesan awal saat calon pelanggan klik WhatsApp.'],
             'layanan.payment_info' => ['group' => 'layanan', 'label' => 'Info pembayaran', 'type' => 'textarea', 'default' => '', 'help' => 'Ditampilkan ke pelanggan setelah memesan (mis. rekening transfer). Pembayaran dikonfirmasi manual oleh admin.'],

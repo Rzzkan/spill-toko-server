@@ -7,6 +7,12 @@ class Layanan
 {
     public static function enabled(): bool { return Settings::bool('layanan.enabled'); }
 
+    /** Layanan yang segera hadir (mis. "Kelola TikTok"), dipisah koma di Pengaturan. Hanya info, tidak bisa dipesan. */
+    public static function comingSoon(): array
+    {
+        return array_values(array_filter(array_map(fn ($x) => mb_substr(trim($x), 0, 40), explode(',', (string) Settings::get('layanan.coming_soon', '')))));
+    }
+
     public static function waNumber(): string { return preg_replace('/\D+/', '', (string) Settings::get('layanan.wa_number', '')) ?? ''; }
 
     /** Tautan wa.me dengan pesan awal; null bila nomor belum diisi admin. */

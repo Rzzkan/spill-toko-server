@@ -218,4 +218,15 @@ class LayananTest extends TestCase
         $p->refresh();
         $this->assertSame([600000, 'Tambah desain Rp10.000'], [$p->original_price, $p->addon]);
     }
+
+    public function test_coming_soon_shown_and_configurable_and_single_menu(): void
+    {
+        $this->get('/')->assertOk()->assertSee('Kelola Social Media')->assertSee('Segera hadir')->assertSee('Kelola TikTok')->assertDontSee('Threads Tanpa Posting');
+        $this->get('/layanan')->assertOk()->assertSee('Segera hadir:')->assertSee('Kelola TikTok');
+        Settings::set('layanan.coming_soon', 'Edit Video, Content Plan');
+        $this->assertSame(['Edit Video', 'Content Plan'], \App\Services\Layanan::comingSoon());
+        $this->get('/layanan')->assertSee('Edit Video')->assertDontSee('Kelola TikTok');
+        Settings::set('layanan.coming_soon', '');
+        $this->get('/layanan')->assertDontSee('Segera hadir:');
+    }
 }

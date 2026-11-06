@@ -1,7 +1,7 @@
 @php
     use App\Support\Fmt;
     $cta = url('/login');
-    $layananTypes = $layananTypes ?? collect();
+    $layananTypes = $layananTypes ?? collect(); $layananSoon = $layananSoon ?? [];
     $layananOn = $layananOn ?? false; $layananFrom = $layananFrom ?? null;
     $faq = [
         ['Apa itu TemanSeller?', 'TemanSeller adalah kumpulan aplikasi untuk membantu seller online bekerja lebih cepat: riset produk, pantau kompetitor, sampai analisis dengan AI. Aplikasinya ditambah bertahap.'],
@@ -54,10 +54,10 @@
                 <button type="button" class="flex items-center gap-1 hover:text-[#ee4d2d] focus:outline-none" aria-haspopup="true">Layanan <svg class="size-3.5 transition group-hover:rotate-180 group-focus-within:rotate-180" viewBox="0 0 20 20" fill="currentColor"><path d="M5.3 7.3a1 1 0 0 1 1.4 0L10 10.6l3.3-3.3a1 1 0 1 1 1.4 1.4l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 0-1.4z"/></svg></button>
                 <div class="invisible absolute left-1/2 top-full z-50 w-72 -translate-x-1/2 pt-3 opacity-0 transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
                     <div class="rounded-xl border border-slate-200 bg-white p-2 shadow-xl">
-                        @foreach ($layananTypes as $t)
-                            <a href="{{ route('layanan', ['tab' => $t->slug]) }}#paket" class="block rounded-lg px-3 py-2.5 hover:bg-orange-50"><span class="block truncate font-semibold text-slate-800">{{ $t->name }}</span>@if ($t->description)<span class="block truncate text-xs font-normal text-slate-500">{{ $t->description }}</span>@endif</a>
+                        <a href="{{ route('layanan') }}" class="block rounded-lg px-3 py-2.5 hover:bg-orange-50"><span class="block font-semibold text-slate-800">Kelola Social Media</span><span class="block text-xs font-normal text-slate-500">Instagram &amp; Threads: konten siap pakai atau dibantu posting</span></a>
+                        @foreach ($layananSoon as $x)
+                            <div class="flex items-center justify-between gap-2 rounded-lg px-3 py-2.5 opacity-70"><span class="font-semibold text-slate-600">{{ $x }}</span><span class="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-500">Segera hadir</span></div>
                         @endforeach
-                        <a href="{{ route('layanan') }}" class="mt-1 block rounded-lg border-t border-slate-100 px-3 py-2.5 text-center text-[#ee4d2d] hover:bg-orange-50">Semua layanan &amp; portofolio →</a>
                     </div>
                 </div>
             </div>

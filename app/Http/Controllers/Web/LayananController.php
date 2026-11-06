@@ -21,7 +21,7 @@ class LayananController extends Controller
             ->with(['plans' => fn ($q) => $q->where('is_active', true)->where('price', '>', 0)])->get()->filter(fn ($t) => $t->plans->isNotEmpty())->values();
         return view('public.layanan', [
             'types' => $types, 'portfolio' => ServicePortfolio::query()->where('is_active', true)->orderBy('sort')->orderByDesc('id')->get(),
-            'wa' => Layanan::waUrl(), 'hubUrl' => url('/'),
+            'wa' => Layanan::waUrl(), 'hubUrl' => url('/'), 'soon' => Layanan::comingSoon(),
         ]);
     }
 
