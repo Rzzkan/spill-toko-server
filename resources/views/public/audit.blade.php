@@ -4,7 +4,7 @@
     $paid = collect($plans)->filter(fn ($p) => ($p['price'] ?? 0) > 0);
     $faq = [
         ['Apa itu Marketplace Audit?', 'Alat untuk memeriksa kesehatan toko atau produk Shopee: judul, foto, deskripsi, rating, stok, penawaran, dan reputasi toko. Hasilnya skor, daftar temuan, dan rekomendasi prioritas dari AI.'],
-        ['Apakah saya harus login Shopee?', 'Ya. Data dikumpulkan di browser kamu sendiri lewat extension, jadi kamu perlu sedang login di Shopee. Kalau belum, kami akan memintamu login dulu.'],
+        ['Apakah saya harus login Shopee?', 'Ya. Data dibaca dari halaman Shopee yang kamu buka sendiri di browser, jadi kamu perlu sedang login di Shopee. Kalau belum, kami akan memintamu login dulu.'],
         ['Apakah kata sandi atau akun Shopee saya disimpan?', 'Tidak. Kami tidak membaca atau menyimpan kata sandi, cookie, maupun sesi login Shopee-mu. Server hanya menerima data publik toko/produk yang kamu audit, dan menghapusnya otomatis setelah ' . \App\Services\Audit::retentionHours() . ' jam.'],
         ['Berapa jatah scan gratis?', $free . ' scan per bulan untuk tiap akun, reset setiap tanggal 1. Mau tanpa batas? Berlangganan unlimited.'],
         ['Scan yang gagal ikut terhitung?', 'Tidak. Jatah hanya terpakai bila audit berhasil selesai.'],
@@ -35,12 +35,11 @@
 
 <section class="grad">
     <div class="mx-auto max-w-4xl px-4 py-16 text-center md:py-24">
-        <span class="rounded-full bg-white px-4 py-1.5 text-xs font-semibold text-ts-orange-text shadow-sm ring-1 ring-orange-100">Web + Extension Chrome · Shopee</span>
+        <span class="rounded-full bg-white px-4 py-1.5 text-xs font-semibold text-ts-orange-text shadow-sm ring-1 ring-orange-100">Aplikasi web · Shopee</span>
         <h1 class="mt-5 text-4xl font-extrabold leading-tight tracking-tight text-ts-navy md:text-5xl">Periksa kesehatan toko &amp; produk Shopee-mu, pelan-pelan dibantu AI</h1>
         <p class="mx-auto mt-5 max-w-2xl text-lg text-slate-600">Tempel tautan, kami kumpulkan datanya langsung dari browser-mu, lalu AI memberi skor, temuan, dan langkah perbaikan yang bisa dikerjakan hari ini.</p>
         <div class="mt-8 flex flex-wrap justify-center gap-3">
             <a href="{{ $cta }}" class="rounded-xl bg-ts-orange px-7 py-3.5 text-base font-semibold text-ts-navy shadow-lg shadow-orange-200 hover:bg-ts-orange-dark">Coba {{ $free }} scan gratis</a>
-            @if ($ext)<a href="{{ $ext }}" target="_blank" rel="noopener" class="rounded-xl border border-slate-200 bg-white px-7 py-3.5 text-base font-semibold text-slate-700 hover:border-ts-orange">Pasang extension ↗</a>@endif
         </div>
         <p class="mt-4 text-sm text-slate-500">Masuk dengan Google · {{ $free }} scan gratis tiap bulan</p>
         <div class="mx-auto mt-10 max-w-md overflow-hidden rounded-3xl border border-orange-100 bg-ts-cream shadow-xl shadow-orange-100"><img src="{{ asset('img/slides/audit.webp') }}" alt="Maskot TemanSeller dengan stetoskop dan papan ceklis audit" class="w-full" width="960" height="720"></div>
@@ -54,7 +53,7 @@
         <div class="rounded-2xl border border-slate-200 p-6"><div class="text-2xl">🏪</div><h3 class="mt-2 text-lg font-bold">Audit toko</h3><p class="mt-1 text-sm text-slate-600">Rating toko, kecepatan balas chat, pengikut, luas katalog, produk yang belum terjual, kualitas judul, dan badge toko.</p></div>
     </div>
     <div class="mt-10 grid gap-5 md:grid-cols-3">
-        @foreach ([['01', 'Tempel tautan', 'Salin tautan toko atau produk dari Shopee.'], ['02', 'Kumpulkan di browser-mu', 'Extension membaca halaman Shopee yang kamu buka sendiri (kamu harus login Shopee).'], ['03', 'Terima hasil audit', 'Skor, pemeriksaan otomatis, dan rekomendasi prioritas dari AI.']] as [$n, $t, $d])
+        @foreach ([['01', 'Tempel tautan', 'Salin tautan toko atau produk dari Shopee.'], ['02', 'Kumpulkan di browser-mu', 'Data dibaca dari halaman Shopee yang kamu buka sendiri (kamu harus login Shopee).'], ['03', 'Terima hasil audit', 'Skor, pemeriksaan otomatis, dan rekomendasi prioritas dari AI.']] as [$n, $t, $d])
             <div class="rounded-2xl bg-orange-50/60 p-6"><div class="text-sm font-bold text-ts-orange-text">{{ $n }}</div><div class="mt-1 font-bold">{{ $t }}</div><p class="mt-1 text-sm text-slate-600">{{ $d }}</p></div>
         @endforeach
     </div>
