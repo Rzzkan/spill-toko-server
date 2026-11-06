@@ -50,3 +50,13 @@ vendor/bin/phpunit      # 22 tes: API, webhook, AI (cache/kuota/fallback), admin
 - **Jangan ganti `APP_KEY` setelah ada data**: nilai rahasia di Pengaturan tidak bisa didekripsi lagi.
 - **Kunci lisensi (Ed25519)** dibuat otomatis sekali. Menggantinya (Pengaturan → Extension) membuat semua lisensi lama tak valid sampai extension dirilis ulang dengan kunci publik baru.
 - Dibuat di atas template [TailAdmin Laravel](https://tailadmin.com) (MIT, lihat `LICENSE`).
+
+## Marketplace Audit (v1.8.0)
+
+Aplikasi `audit` (Shopee): pengguna login Google di temanseller.com, buka `/audit`, tempel tautan toko/produk. Data dikumpulkan di **browser pengguna** oleh extension (sesi Shopee pengguna tidak pernah sampai ke server), dikirim ke `POST /api/audit/scans/{id}/data` (header `X-Audit-Token`, sekali pakai), lalu server menjalankan pemeriksaan aturan + audit AI (kenari.id).
+
+- Kuota: jatah gratis per bulan (WIB) dan batas harian pelanggan diatur di Admin → Pengaturan → Marketplace Audit. Harga paket unlimited (bulanan/tahunan) di Admin → Aplikasi → Marketplace Audit (harga 0 = belum dijual).
+- Scan hanya terhitung bila audit selesai. Satu pemindaian aktif per pengguna.
+- Tautan, data, dan hasil dihapus otomatis setelah masa simpan (scheduler `audit-purge`, tiap jam); baris hitungan tetap.
+- Halaman: `/marketplace-audit` (publik), `/audit` (login), `/admin/audit`.
+- Kontrak extension↔halaman↔server: lihat `docs/AUDIT-EXTENSION.md` di repo extension.

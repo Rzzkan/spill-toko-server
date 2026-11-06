@@ -38,6 +38,8 @@ class PortalController extends Controller
         $c = Customer::fromGoogle($g);
         $r->session()->regenerate();
         $r->session()->put('customer_id', $c->id);
+        $next = $r->session()->pull('login_next');
+        if ($next === '/audit') return response()->json(['redirect' => route('audit')]);
         return response()->json(['redirect' => $r->session()->has('buy_plan') ? route('portal.buy.go') : ($r->session()->has('layanan_plan') ? route('portal.layanan') : route('portal.account'))]);
     }
 

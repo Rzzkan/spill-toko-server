@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Admin\{AiUsageController, AppController, AuthController, CustomerController, DashboardController, LayananController, OrderController, ProfileController, SettingsController};
+use App\Http\Controllers\Admin\{AiUsageController, AppController, AuthController, CustomerController, AuditController, DashboardController, LayananController, OrderController, ProfileController, SettingsController};
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('admin')->name('admin.')->group(function () {
@@ -22,6 +22,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/aplikasi', [AppController::class, 'store'])->name('apps.store');
         Route::get('/aplikasi/{app:slug}', [AppController::class, 'edit'])->name('apps.edit');
         Route::post('/aplikasi/{app:slug}', [AppController::class, 'update'])->name('apps.update');
+
+        Route::get('/audit', [AuditController::class, 'index'])->name('audit');
 
         // Layanan Kelola Instagram & Threads
         Route::prefix('layanan')->name('layanan.')->group(function () {

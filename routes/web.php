@@ -12,6 +12,7 @@ Route::get('/shofee', [\App\Http\Controllers\Web\PublicController::class, 'shofe
 Route::get('/layanan', [\App\Http\Controllers\Web\LayananController::class, 'index'])->name('layanan');
 Route::get('/layanan/pesan/{plan}', [\App\Http\Controllers\Web\LayananController::class, 'start'])->whereNumber('plan')->name('layanan.start');
 Route::get('/layanan/gambar/{id}/{v}', [\App\Http\Controllers\Web\LayananController::class, 'image'])->whereNumber('id')->name('layanan.image');
+Route::get('/marketplace-audit', [\App\Http\Controllers\Web\AuditController::class, 'landing'])->name('audit.landing');
 Route::get('/privasi', [\App\Http\Controllers\Web\PublicController::class, 'privacy'])->name('privacy');
 Route::redirect('/privacy', '/privasi', 301);
 Route::get('/thanks', [\App\Http\Controllers\Web\PublicController::class, 'thanks'])->middleware('throttle:30,1')->name('thanks');
@@ -32,6 +33,13 @@ Route::middleware(PortalAuth::class)->group(function () {
     Route::get('/akun/layanan', [\App\Http\Controllers\Web\LayananController::class, 'account'])->name('portal.layanan');
     Route::post('/akun/layanan/pesan', [\App\Http\Controllers\Web\LayananController::class, 'order'])->middleware('throttle:6,1')->name('portal.layanan.order');
     Route::post('/akun/layanan/{sub}/catatan', [\App\Http\Controllers\Web\LayananController::class, 'note'])->whereNumber('sub')->middleware('throttle:20,1')->name('portal.layanan.note');
+    Route::get('/audit', [\App\Http\Controllers\Web\AuditController::class, 'page'])->name('audit');
+    Route::post('/audit/scans', [\App\Http\Controllers\Web\AuditController::class, 'create'])->middleware('throttle:20,1')->name('audit.create');
+    Route::get('/audit/scans/{id}', [\App\Http\Controllers\Web\AuditController::class, 'show'])->whereNumber('id')->middleware('throttle:120,1')->name('audit.show');
+    Route::post('/audit/scans/{id}/analyze', [\App\Http\Controllers\Web\AuditController::class, 'analyze'])->whereNumber('id')->middleware('throttle:10,1')->name('audit.analyze');
+    Route::post('/audit/scans/{id}/rearm', [\App\Http\Controllers\Web\AuditController::class, 'rearm'])->whereNumber('id')->middleware('throttle:20,1')->name('audit.rearm');
+    Route::post('/audit/scans/{id}/cancel', [\App\Http\Controllers\Web\AuditController::class, 'cancel'])->whereNumber('id')->name('audit.cancel');
+    Route::delete('/audit/scans/{id}', [\App\Http\Controllers\Web\AuditController::class, 'destroy'])->whereNumber('id')->name('audit.destroy');
     Route::post('/keluar', [PortalController::class, 'logout'])->name('portal.logout');
 });
 

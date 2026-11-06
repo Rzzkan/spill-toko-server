@@ -14,6 +14,7 @@ class PortalAuth
         $c = ($id = $request->session()->get('customer_id')) ? Customer::query()->find($id) : null;
         if (!$c) {
             $request->session()->forget('customer_id');
+            if ($request->isMethod('GET') && $request->is('audit')) $request->session()->put('login_next', '/audit');   // setelah login kembali ke halaman audit
             return redirect()->route('portal.login');
         }
         $request->attributes->set('customer', $c);

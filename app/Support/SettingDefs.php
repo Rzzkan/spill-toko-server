@@ -14,6 +14,7 @@ class SettingDefs
         'prompt' => 'Prompt AI',
         'ekstensi' => 'Extension',
         'layanan' => 'Layanan Sosmed',
+        'audit' => 'Marketplace Audit',
     ];
 
     public static function all(): array
@@ -33,6 +34,13 @@ class SettingDefs
             'layanan.wa_number'    => ['group' => 'layanan', 'label' => 'Nomor WhatsApp admin', 'type' => 'text', 'default' => '', 'help' => 'Format internasional tanpa + (contoh 6281234567890). Dipakai untuk tombol konsultasi & konfirmasi pesanan.'],
             'layanan.wa_template'  => ['group' => 'layanan', 'label' => 'Template pesan WhatsApp', 'type' => 'textarea', 'default' => "Halo TemanSeller, saya ingin konsultasi layanan kelola Instagram & Threads.", 'help' => 'Pesan awal saat calon pelanggan klik WhatsApp.'],
             'layanan.payment_info' => ['group' => 'layanan', 'label' => 'Info pembayaran', 'type' => 'textarea', 'default' => '', 'help' => 'Ditampilkan ke pelanggan setelah memesan (mis. rekening transfer). Pembayaran dikonfirmasi manual oleh admin.'],
+
+            // ---- marketplace audit ----
+            'audit.enabled'        => ['group' => 'audit', 'label' => 'Buka Marketplace Audit', 'type' => 'bool', 'default' => '1', 'help' => 'Matikan untuk menutup halaman dan pemindaian baru.'],
+            'audit.free_scans'     => ['group' => 'audit', 'label' => 'Jatah scan gratis per bulan', 'type' => 'number', 'default' => '10', 'min' => 0, 'help' => 'Dihitung per kalender bulan (WIB), reset tanggal 1. Hanya scan yang berhasil dihitung.'],
+            'audit.paid_daily_cap' => ['group' => 'audit', 'label' => 'Batas harian pelanggan berlangganan', 'type' => 'number', 'default' => '100', 'min' => 0, 'help' => '0 = tanpa batas. Pelindung biaya AI untuk paket "unlimited".'],
+            'audit.retention_hours' => ['group' => 'audit', 'label' => 'Masa simpan hasil (jam)', 'type' => 'number', 'default' => '24', 'min' => 1, 'help' => 'Setelah ini tautan, data, dan hasil audit dihapus otomatis; hanya hitungan kuota yang tersisa.'],
+            'audit.extension_url'  => ['group' => 'audit', 'label' => 'Tautan pasang extension', 'type' => 'url', 'default' => '', 'help' => 'Tautan Chrome Web Store extension yang membawa fitur Marketplace Audit. Ditampilkan di halaman audit.'],
 
             // ---- ekstensi ----
             'app.extension_id' => ['group' => 'ekstensi', 'label' => 'ID extension Chrome', 'type' => 'text', 'default' => 'ecngchlgljjgclfjhljppkmmoamdfpjl', 'help' => 'Dipakai untuk menampilkan Redirect URI Google yang benar. Ganti dengan ID dari Chrome Web Store setelah publish.'],
