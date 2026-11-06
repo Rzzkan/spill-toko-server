@@ -138,7 +138,7 @@ class Audit
     }
 
 
-    // ---------- unggahan: halaman tersimpan (.html/.mhtml) & screenshot ----------
+    // ---------- unggahan: PDF halaman web & screenshot ----------
     public const MAX_PAGES = 2;
     public const MAX_IMAGES = 4;
 
@@ -160,7 +160,7 @@ class Audit
             if (!$target) throw new ApiException('Tautan tidak dikenali. Kosongkan saja atau tempel tautan dari shopee.co.id.', 422);
             $kind = $target['kind'];
         }
-        if (!$pages && !$images) throw new ApiException('Unggah minimal satu halaman tersimpan atau satu screenshot.', 422);
+        if (!$pages && !$images) throw new ApiException('Unggah minimal satu PDF halaman web atau satu screenshot.', 422);
         self::expireStale($c);
         if (AuditScan::query()->where('customer_id', $c->id)->whereIn('status', AuditScan::ACTIVE)->exists()) {
             throw new ApiException('Masih ada audit yang berjalan. Selesaikan atau batalkan dulu.', 429);
@@ -176,46 +176,26 @@ class Audit
         return $scan->refresh();
     }
 
-    /** Teks yang tampil dari halaman tersimpan (HTML biasa atau .mhtml), tanpa skrip/gaya/gambar. */
-    public static function pageText(string $raw): string
+    /** Teks dari PDF halaman web (Cetak > Simpan sebagai PDF). Hanya dibaca di memori; maksimal 20 halaman. */
+    public static function pdfText(string $bytes): string
     {
-        $head = substr($raw, 0, 4000);
-        if (stripos($head, 'multipart/related') !== false && ($h = self::mhtmlHtml($raw)) !== null) $raw = $h;
-        if (!mb_check_encoding($raw, 'UTF-8')) $raw = mb_convert_encoding($raw, 'UTF-8', 'UTF-8,ISO-8859-1,Windows-1252');
-        $meta = [];
-        if (preg_match('#<title[^>]*>(.*?)</title>#is', $raw, $m)) $meta[] = 'title: ' . trim(html_entity_decode(strip_tags($m[1])));
-        if (preg_match_all('#<meta[^>]+(?:property|name)=["\'](og:title|og:description|description|product:price:amount)["\'][^>]*>#i', $raw, $mm)) {
-            foreach ($mm[0] as $i => $tag) if (preg_match('#content=["\']([^"\']*)["\']#i', $tag, $cv)) $meta[] = $mm[1][$i] . ': ' . trim(html_entity_decode($cv[1]));
+        if (!str_starts_with(ltrim(substr($bytes, 0, 1024)), '%PDF')) throw new ApiException('Berkas bukan PDF yang valid.', 422);
+        try {
+            $pdf = (new \Smalot\PdfParser\Parser())->parseContent($bytes);
+            $parts = [];
+            foreach (array_slice($pdf->getPages(), 0, 20) as $pg) $parts[] = $pg->getText();
+            $text = implode("\n", $parts);
+        } catch (\Throwable $e) {
+            throw new ApiException('PDF tidak bisa dibaca (mungkin terkunci atau rusak). Coba simpan ulang dari browser, atau pakai screenshot.', 422);
         }
-        if (preg_match_all('#<script[^>]+type=["\']application/ld\+json["\'][^>]*>(.*?)</script>#is', $raw, $ld)) {
-            foreach (array_slice($ld[1], 0, 3) as $j) $meta[] = 'json-ld: ' . mb_substr(trim(preg_replace('/\s+/u', ' ', $j) ?? ''), 0, 3000);
-        }
-        $html = preg_replace('#<(script|style|noscript|svg|template|iframe|head)\b[^>]*>.*?</\1>#is', ' ', $raw) ?? $raw;
-        $html = preg_replace('#<(br|/p|/div|/li|/h[1-6]|/tr|/section|/button|/span)\b[^>]*>#i', "\n", $html) ?? $html;
-        $text = html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        if (!mb_check_encoding($text, 'UTF-8')) $text = mb_convert_encoding($text, 'UTF-8', 'UTF-8,ISO-8859-1,Windows-1252');
         $out = []; $prev = '';
         foreach (preg_split('/\R/u', $text) ?: [] as $line) {
             $line = trim(preg_replace('/\s+/u', ' ', $line) ?? '');
             if ($line === '' || $line === $prev) continue;
             $out[] = $line; $prev = $line;
         }
-        return mb_substr(implode("\n", array_merge($meta, [''], $out)), 0, 16000);
-    }
-
-    /** Ambil bagian text/html utama dari berkas MHTML. */
-    private static function mhtmlHtml(string $raw): ?string
-    {
-        if (!preg_match('#boundary="?([^"\r\n;]+)"?#i', substr($raw, 0, 4000), $m)) return null;
-        foreach (explode('--' . $m[1], $raw) as $part) {
-            $sp = preg_split('/\R\R/', $part, 2);
-            if (count($sp) < 2 || !preg_match('#Content-Type:\s*text/html#i', $sp[0])) continue;
-            $body = $sp[1];
-            if (preg_match('#Content-Transfer-Encoding:\s*quoted-printable#i', $sp[0])) $body = quoted_printable_decode($body);
-            elseif (preg_match('#Content-Transfer-Encoding:\s*base64#i', $sp[0])) $body = (string) base64_decode(preg_replace('/\s+/', '', $body), false);
-            if (preg_match('#charset="?([A-Za-z0-9_\-]+)#i', $sp[0], $cs) && strtolower($cs[1]) !== 'utf-8') $body = @mb_convert_encoding($body, 'UTF-8', $cs[1]) ?: $body;
-            return $body;
-        }
-        return null;
+        return mb_substr(implode("\n", $out), 0, 16000);
     }
 
     /** Perkecil screenshot (maks 1600 px) jadi JPEG base64 agar ringan dikirim ke AI. */

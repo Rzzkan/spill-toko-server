@@ -206,12 +206,27 @@ class AuditTest extends TestCase
         $this->get('/admin/audit')->assertOk()->assertSee('Marketplace Audit')->assertSee('Atur jatah');
     }
 
+    private function pdf(array $lines): string
+    {
+        $stream = "BT /F1 12 Tf 50 750 Td 14 TL\n";
+        foreach ($lines as $l) $stream .= '(' . str_replace(['\\', '(', ')'], ['\\\\', '\\(', '\\)'], $l) . ") Tj T*\n";
+        $stream .= 'ET';
+        $o = [1 => '<< /Type /Catalog /Pages 2 0 R >>', 2 => '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+            3 => '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>',
+            4 => '<< /Length ' . strlen($stream) . " >>\nstream\n" . $stream . "\nendstream", 5 => '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>'];
+        $out = "%PDF-1.4\n"; $off = [];
+        foreach ($o as $i => $body) { $off[$i] = strlen($out); $out .= "$i 0 obj\n$body\nendobj\n"; }
+        $x = strlen($out); $out .= "xref\n0 6\n0000000000 65535 f \n";
+        foreach ($off as $v) $out .= sprintf("%010d 00000 n \n", $v);
+        return $out . "trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n$x\n%%EOF";
+    }
+
     private function up(array $data, array $files)
     {
         return $this->call('POST', '/audit/upload', $data, [], $files, ['HTTP_ACCEPT' => 'application/json']);
     }
 
-    public function test_upload_reads_page_and_stores_no_raw_files(): void
+    public function test_upload_reads_pdf_and_stores_no_raw_files(): void
     {
         $this->aiOn();
         $c = $this->webLogin();
@@ -219,8 +234,8 @@ class AuditTest extends TestCase
         $extract = ['choices' => [['message' => ['content' => json_encode(['product' => ['name' => 'Kebaya Modern Brokat Premium Wanita Bahan Halus Nyaman Dipakai Acara Formal Wisuda', 'price' => 'Rp185.000', 'sold' => '2,4rb', 'rating' => '4,8', 'rating_count' => 120, 'images' => 7, 'has_video' => true, 'description_len' => 620]])]]], 'model' => 'm', 'usage' => ['prompt_tokens' => 10, 'completion_tokens' => 20]];
         Http::swap(new \Illuminate\Http\Client\Factory());
         Http::fake(['*' => Http::sequence()->push($extract)->push($this->aiJson())]);
-        $html = '<html><head><title>Kebaya Modern</title><script>var secret="XYZ";</script></head><body><h1>Kebaya Modern Brokat</h1><div>Rp185.000</div><div>2,4rb terjual</div>' . implode('', array_map(fn ($i) => "<p>Deskripsi kebaya cantik nomor $i dan nyaman dipakai.</p>", range(1, 10))) . '</body></html>';
-        $res = $this->up(['kind' => 'product'], ['pages' => [\Illuminate\Http\UploadedFile::fake()->createWithContent('p.html', $html)]]);
+        $lines = array_merge(['Kebaya Modern Brokat', 'Rp185.000', '2,4rb terjual'], array_map(fn ($i) => "Deskripsi kebaya cantik nomor $i dan nyaman dipakai untuk acara formal.", range(1, 10)));
+        $res = $this->up(['kind' => 'product'], ['pdfs' => [\Illuminate\Http\UploadedFile::fake()->createWithContent('p.pdf', $this->pdf($lines))]]);
         $res->assertOk()->assertJsonPath('status', 'collected');
         $scan = AuditScan::query()->first();
         $this->assertStringNotContainsString('Deskripsi kebaya', json_encode($scan->data));
@@ -228,7 +243,7 @@ class AuditTest extends TestCase
         $this->assertSame(185000, (int) $scan->data['product']['price']);
         $this->assertSame(2400, (int) $scan->data['product']['sold']);
         $this->assertSame([], \Illuminate\Support\Facades\Storage::disk('local')->allFiles());
-        Http::assertSent(fn ($r) => str_contains(json_encode($r->data()), 'Deskripsi kebaya') && !str_contains(json_encode($r->data()), 'XYZ'));
+        Http::assertSent(fn ($r) => str_contains(json_encode($r->data()), 'Deskripsi kebaya'));
         $this->postJson("/audit/scans/{$scan->id}/analyze")->assertOk()->assertJsonPath('status', 'done');
     }
 
@@ -237,21 +252,16 @@ class AuditTest extends TestCase
         $this->aiOn();
         $this->webLogin();
         $this->up(['kind' => 'product'], [])->assertStatus(422);
-        $this->up(['kind' => 'product'], ['pages' => [\Illuminate\Http\UploadedFile::fake()->createWithContent('p.exe', 'x')]])->assertStatus(422);
-        $this->up(['kind' => 'product'], ['pages' => [\Illuminate\Http\UploadedFile::fake()->createWithContent('p.html', '<p>kosong</p>')]])->assertStatus(422);
+        $this->up(['kind' => 'product'], ['pdfs' => [\Illuminate\Http\UploadedFile::fake()->createWithContent('p.exe', 'x')]])->assertStatus(422);
+        $this->up(['kind' => 'product'], ['pdfs' => [\Illuminate\Http\UploadedFile::fake()->createWithContent('p.pdf', 'bukan pdf')]])->assertStatus(422);
+        $this->up(['kind' => 'product'], ['pdfs' => [\Illuminate\Http\UploadedFile::fake()->createWithContent('p.pdf', $this->pdf(['kosong']))]])->assertStatus(422);
         Http::swap(new \Illuminate\Http\Client\Factory());
         Http::fake(['*' => Http::response(['error' => 'x'], 500)]);
-        $html = '<html><body>' . implode('', array_map(fn ($i) => "<p>Halaman produk lengkap nomor $i dengan isi cukup panjang.</p>", range(1, 10))) . '</body></html>';
-        $this->up(['kind' => 'product'], ['pages' => [\Illuminate\Http\UploadedFile::fake()->createWithContent('p.html', $html)]])->assertOk()->assertJsonPath('status', 'failed');
+        $lines = array_map(fn ($i) => "Halaman produk lengkap nomor $i dengan isi cukup panjang untuk dibaca.", range(1, 10));
+        $this->up(['kind' => 'product'], ['pdfs' => [\Illuminate\Http\UploadedFile::fake()->createWithContent('p.pdf', $this->pdf($lines))]])->assertOk()->assertJsonPath('status', 'failed');
         $s = AuditScan::query()->first();
         $this->assertNull($s->data);
         $this->assertFalse((bool) $s->counted);
-    }
-
-    public function test_page_text_parses_mhtml(): void
-    {
-        $m = "From: x\r\nContent-Type: multipart/related; boundary=\"BB\"\r\n\r\n--BB\r\nContent-Type: text/html; charset=\"utf-8\"\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\n<html><body><p>Harga Rp54.000 =E2=9C=93</p></body></html>\r\n--BB--\r\n";
-        $this->assertStringContainsString('Harga Rp54.000 ✓', Audit::pageText($m));
     }
 
     public function test_hub_and_menu_point_to_audit_landing_and_payment_info(): void

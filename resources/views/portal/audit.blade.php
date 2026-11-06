@@ -8,7 +8,7 @@
 <div class="flex flex-wrap items-end justify-between gap-3">
     <div>
         <h1 class="text-xl font-semibold">🩺 Marketplace Audit</h1>
-        <p class="text-sm text-gray-500">Audit toko atau produk Shopee, dibantu AI. Unggah screenshot atau halaman tersimpan, kami periksa.</p>
+        <p class="text-sm text-gray-500">Audit toko atau produk Shopee, dibantu AI. Unggah PDF halaman web atau screenshot, kami periksa.</p>
     </div>
     <div id="quota" class="rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm">
         @if ($q['unlimited'])
@@ -32,15 +32,15 @@
 
 <div class="mt-5 grid gap-4 md:grid-cols-2">
             <div>
-                <label class="block text-sm font-medium text-gray-700" for="pages">2a. Halaman tersimpan <span class="font-normal text-gray-400">(.html / .mhtml, maks 2)</span></label>
-                <input id="pages" name="pages[]" type="file" multiple accept=".html,.htm,.mhtml,.mht" class="mt-2 block w-full rounded-lg border border-dashed border-gray-300 p-3 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-ts-cream file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-ts-navy">
+                <label class="block text-sm font-medium text-gray-700" for="pdfs">2a. PDF halaman web <span class="font-normal text-gray-400">(.pdf, maks 2)</span></label>
+                <input id="pdfs" name="pdfs[]" type="file" multiple accept=".pdf,application/pdf" class="mt-2 block w-full rounded-lg border border-dashed border-gray-300 p-3 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-ts-cream file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-ts-navy">
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700" for="shots">2b. Screenshot <span class="font-normal text-gray-400">(JPG / PNG / WEBP, maks 4)</span></label>
                 <input id="shots" name="shots[]" type="file" multiple accept="image/jpeg,image/png,image/webp" class="mt-2 block w-full rounded-lg border border-dashed border-gray-300 p-3 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-ts-cream file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-ts-navy">
             </div>
         </div>
-        <p class="mt-2 text-xs text-gray-500">Cukup salah satu: halaman tersimpan atau screenshot. Kalau dua-duanya diunggah, hasilnya biasanya lebih lengkap.</p>
+        <p class="mt-2 text-xs text-gray-500">Cukup salah satu: PDF halaman web atau screenshot. Kalau dua-duanya diunggah, hasilnya biasanya lebih lengkap.</p>
 
         <button id="go" type="submit" class="mt-5 rounded-lg bg-ts-orange px-6 py-3 text-sm font-semibold text-ts-navy hover:bg-ts-orange-dark disabled:opacity-50">Mulai audit</button>
         <p id="formerr" class="mt-3 hidden text-sm text-error-600"></p>
@@ -60,15 +60,15 @@
     <p class="mt-1 text-sm text-gray-500">Pilih salah satu cara. Dua-duanya hanya butuh browser dan HP/laptop yang kamu pakai sehari-hari.</p>
     <div class="mt-4 grid gap-5 md:grid-cols-2">
         <div class="rounded-xl bg-ts-cream/60 p-5">
-            <div class="text-sm font-semibold text-ts-navy">Cara A · Simpan halaman (laptop)</div>
+            <div class="text-sm font-semibold text-ts-navy">Cara A · Simpan halaman jadi PDF (laptop)</div>
             <ol class="mt-3 space-y-2 text-sm text-gray-700">
                 <li><b>1.</b> Buka halaman produk atau toko di Shopee lewat Chrome/Edge di laptop. Login dulu kalau diminta.</li>
                 <li><b>2.</b> Tunggu sampai halaman termuat penuh. Gulir pelan ke bawah sampai deskripsi dan ulasan terlihat.</li>
-                <li><b>3.</b> Tekan <kbd class="rounded bg-white px-1.5 py-0.5 text-xs ring-1 ring-gray-300">Ctrl</kbd> + <kbd class="rounded bg-white px-1.5 py-0.5 text-xs ring-1 ring-gray-300">S</kbd> (Mac: <kbd class="rounded bg-white px-1.5 py-0.5 text-xs ring-1 ring-gray-300">⌘</kbd> + <kbd class="rounded bg-white px-1.5 py-0.5 text-xs ring-1 ring-gray-300">S</kbd>).</li>
-                <li><b>4.</b> Pada "Save as type" / "Format", pilih <b>Webpage, Single File (.mhtml)</b>. Kalau tidak ada, pilih <b>Webpage, Complete</b>. Simpan.</li>
-                <li><b>5.</b> Unggah berkas <code>.mhtml</code> atau <code>.html</code>-nya di kolom 2a.</li>
+                <li><b>3.</b> Tekan <kbd class="rounded bg-white px-1.5 py-0.5 text-xs ring-1 ring-gray-300">Ctrl</kbd> + <kbd class="rounded bg-white px-1.5 py-0.5 text-xs ring-1 ring-gray-300">P</kbd> (Mac: <kbd class="rounded bg-white px-1.5 py-0.5 text-xs ring-1 ring-gray-300">⌘</kbd> + <kbd class="rounded bg-white px-1.5 py-0.5 text-xs ring-1 ring-gray-300">P</kbd>).</li>
+                <li><b>4.</b> Pada "Destination" / "Tujuan", pilih <b>Save as PDF</b> (Simpan sebagai PDF), lalu klik <b>Save</b>.</li>
+                <li><b>5.</b> Unggah file PDF-nya di kolom 2a.</li>
             </ol>
-            <p class="mt-3 text-xs text-gray-500">Hasil paling lengkap. Untuk toko, simpan halaman toko (bagian "Semua Produk" ikut terbaca).</p>
+            <p class="mt-3 text-xs text-gray-500">Hasil paling lengkap. Untuk toko, cetak halaman toko (bagian "Semua Produk" ikut terbaca). Kalau teks di PDF kosong, pakai Cara B.</p>
         </div>
         <div class="rounded-xl bg-ts-cream/60 p-5">
             <div class="text-sm font-semibold text-ts-navy">Cara B · Screenshot (HP atau laptop)</div>
@@ -166,13 +166,13 @@ function reset() { scan = null; clearTimeout(timer); $('go').disabled = false; s
 
 $('upform')?.addEventListener('submit', async (ev) => {
     ev.preventDefault(); ferr('');
-    const f = ev.target, np = f.pages.files.length, ns = f.shots.files.length;
-    if (!np && !ns) return ferr('Unggah minimal satu halaman tersimpan atau satu screenshot. Lihat cara di bawah.');
-    if (np > 2 || ns > 4) return ferr('Maksimal 2 halaman tersimpan dan 4 screenshot.');
+    const f = ev.target, np = f.pdfs.files.length, ns = f.shots.files.length;
+    if (!np && !ns) return ferr('Unggah minimal satu PDF halaman web atau satu screenshot. Lihat cara di bawah.');
+    if (np > 2 || ns > 4) return ferr('Maksimal 2 PDF dan 4 screenshot.');
     $('go').disabled = true; stage('reading');
     try {
         const s = await api('POST', '{{ route('audit.upload') }}', new FormData(f));
-        f.pages.value = ''; f.shots.value = '';   // lepas referensi berkas dari form
+        f.pdfs.value = ''; f.shots.value = '';   // lepas referensi berkas dari form
         scan = s; setQuota(s.quota); handle(s);
     } catch (e) { show(); ferr(e.message); $('go').disabled = false; }
 });
