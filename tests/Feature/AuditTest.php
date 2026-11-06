@@ -253,4 +253,13 @@ class AuditTest extends TestCase
         $m = "From: x\r\nContent-Type: multipart/related; boundary=\"BB\"\r\n\r\n--BB\r\nContent-Type: text/html; charset=\"utf-8\"\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\n<html><body><p>Harga Rp54.000 =E2=9C=93</p></body></html>\r\n--BB--\r\n";
         $this->assertStringContainsString('Harga Rp54.000 ✓', Audit::pageText($m));
     }
+
+    public function test_hub_and_menu_point_to_audit_landing_and_payment_info(): void
+    {
+        \App\Models\App::query()->where('slug', 'audit')->update(['url' => '/akun/aplikasi/audit']);
+        \App\Services\AppCatalog::flush();
+        $r = $this->get('/')->assertOk();
+        $r->assertSee(url('/marketplace-audit'), false)->assertDontSee(url('/akun/aplikasi/audit'), false);
+        $this->get('/marketplace-audit')->assertOk()->assertSee('Info pembayaran')->assertSee('Midtrans')->assertSee('Bagaimana cara membayar paket unlimited?');
+    }
 }

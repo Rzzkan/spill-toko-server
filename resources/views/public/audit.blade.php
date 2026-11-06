@@ -7,6 +7,7 @@
         ['Bagaimana cara mengauditnya?', 'Tidak perlu pasang apa pun. Cukup unggah screenshot halaman produk/toko, atau halaman yang kamu simpan dari browser (Ctrl+S, format .mhtml). Panduan tertulisnya ada di halaman aplikasi.'],
         ['Apakah berkas yang saya unggah disimpan?', 'Tidak. Screenshot dan halaman tersimpan hanya dibaca sekali untuk mengambil angka dan teks yang tampil, lalu langsung dibuang. Yang tersimpan hanya data hasil bacaan dan hasil audit, dihapus otomatis setelah ' . \App\Services\Audit::retentionHours() . ' jam.'],
         ['Apakah kata sandi atau akun Shopee saya diminta?', 'Tidak pernah. Kami tidak meminta kata sandi, cookie, atau akses ke akun Shopee-mu.'],
+        ['Bagaimana cara membayar paket unlimited?', 'Lewat Midtrans: klik Berlangganan, masuk dengan Google, lalu bayar sesuai nominal paket di halaman Midtrans. Paket aktif otomatis setelah pembayaran berhasil dan tidak diperpanjang otomatis.'],
         ['Berapa jatah scan gratis?', $free . ' scan per bulan untuk tiap akun, reset setiap tanggal 1. Mau tanpa batas? Berlangganan unlimited.'],
         ['Scan yang gagal ikut terhitung?', 'Tidak. Jatah hanya terpakai bila audit berhasil selesai.'],
         ['Marketplace apa saja yang didukung?', 'Saat ini Shopee Indonesia. Marketplace lain menyusul.'],
@@ -112,6 +113,16 @@
         @empty
             <div class="rounded-2xl border border-dashed border-slate-300 p-6 text-sm text-slate-500"><div class="font-bold text-slate-700">Unlimited</div><p class="mt-2">Paket scan tanpa batas segera hadir.</p></div>
         @endforelse
+    </div>
+    <div class="mx-auto mt-8 max-w-3xl rounded-2xl border border-slate-200 bg-slate-50 p-6 text-sm text-slate-600">
+        <div class="font-bold text-ts-navy">Info pembayaran</div>
+        <ul class="mt-3 space-y-2">
+            <li><b>Bayar lewat Midtrans.</b> Klik <i>Berlangganan</i>, masuk dengan Google, lalu kamu diarahkan ke halaman pembayaran Midtrans dengan nominal sesuai paket. Pilihan metode (misalnya QRIS, transfer virtual account, atau e-wallet) tampil di halaman itu.</li>
+            <li><b>Aktif otomatis.</b> Setelah pembayaran berhasil, scan tanpa batas langsung aktif di akunmu selama masa paket.</li>
+            <li><b>Tanpa perpanjangan otomatis.</b> Kamu hanya membayar sekali per periode. Saat habis, kamu bisa memperpanjang atau kembali ke paket gratis.</li>
+            <li><b>Gratis dulu boleh.</b> Pilih <i>Mulai</i> untuk memakai jatah gratis tanpa data pembayaran.</li>
+            <li><b>Ada kendala pembayaran?</b> @if (\App\Services\Layanan::waUrl('Halo TemanSeller, saya butuh bantuan pembayaran Marketplace Audit.'))<a href="{{ \App\Services\Layanan::waUrl('Halo TemanSeller, saya butuh bantuan pembayaran Marketplace Audit.') }}" target="_blank" rel="noopener" class="font-semibold text-ts-orange-text underline">Hubungi kami via WhatsApp</a>.@else Hubungi kami lewat halaman akun.@endif</li>
+        </ul>
     </div>
 </section>
 

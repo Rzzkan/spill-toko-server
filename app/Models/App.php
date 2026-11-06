@@ -28,6 +28,8 @@ class App extends Model
     public function landingUrl(): string
     {
         $u = trim((string) $this->url);
+        // Marketplace Audit: tujuan selalu halaman penjelasannya; login baru diminta saat klik Coba/Mulai/Berlangganan.
+        if ($this->slug === 'audit' && ($u === '' || preg_match('#^(https?://[^/]+)?/akun(/|$)#', $u))) return url('/marketplace-audit');
         if ($u !== '') return preg_match('#^https?://#i', $u) ? $u : url('/' . ltrim($u, '/'));
         if ($this->slug === self::DEFAULT) return \App\Http\Controllers\Web\PublicController::shofeeUrl();
         return url('/akun/aplikasi/' . $this->slug);
