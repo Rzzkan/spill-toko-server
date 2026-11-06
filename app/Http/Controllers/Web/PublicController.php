@@ -32,7 +32,9 @@ class PublicController extends Controller
     {
         $apps = AppCatalog::active()->map(fn (AppModel $a) => AppCatalog::summary($a) + [
             'url' => $a->landingUrl()]);
-        return view('public.hub', ['apps' => $apps]);
+        $on = \App\Services\Layanan::enabled();
+        return view('public.hub', ['apps' => $apps, 'layananOn' => $on,
+            'layananFrom' => $on ? \App\Models\ServicePlan::orderable()->reorder()->min('price') : null]);
     }
 
     public function shofee()

@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Admin\{AiUsageController, AppController, AuthController, CustomerController, DashboardController, OrderController, ProfileController, SettingsController};
+use App\Http\Controllers\Admin\{AiUsageController, AppController, AuthController, CustomerController, DashboardController, LayananController, OrderController, ProfileController, SettingsController};
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('admin')->name('admin.')->group(function () {
@@ -22,6 +22,33 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/aplikasi', [AppController::class, 'store'])->name('apps.store');
         Route::get('/aplikasi/{app:slug}', [AppController::class, 'edit'])->name('apps.edit');
         Route::post('/aplikasi/{app:slug}', [AppController::class, 'update'])->name('apps.update');
+
+        // Layanan Kelola Instagram & Threads
+        Route::prefix('layanan')->name('layanan.')->group(function () {
+            Route::redirect('/', '/admin/layanan/paket')->name('index');
+            Route::get('/paket', [LayananController::class, 'plans'])->name('plans');
+            Route::get('/jenis/baru', [LayananController::class, 'typeForm'])->name('type.create');
+            Route::get('/jenis/{type}', [LayananController::class, 'typeForm'])->whereNumber('type')->name('type.edit');
+            Route::post('/jenis', [LayananController::class, 'typeSave'])->name('type.store');
+            Route::post('/jenis/{type}', [LayananController::class, 'typeSave'])->whereNumber('type')->name('type.update');
+            Route::post('/jenis/{type}/hapus', [LayananController::class, 'typeDelete'])->whereNumber('type')->name('type.delete');
+            Route::get('/paket/baru', [LayananController::class, 'planForm'])->name('plan.create');
+            Route::get('/paket/{plan}', [LayananController::class, 'planForm'])->whereNumber('plan')->name('plan.edit');
+            Route::post('/paket', [LayananController::class, 'planSave'])->name('plan.store');
+            Route::post('/paket/{plan}', [LayananController::class, 'planSave'])->whereNumber('plan')->name('plan.update');
+            Route::post('/paket/{plan}/hapus', [LayananController::class, 'planDelete'])->whereNumber('plan')->name('plan.delete');
+            Route::get('/portofolio', [LayananController::class, 'portfolio'])->name('portfolio');
+            Route::get('/portofolio/baru', [LayananController::class, 'portfolioForm'])->name('portfolio.create');
+            Route::get('/portofolio/{item}', [LayananController::class, 'portfolioForm'])->whereNumber('item')->name('portfolio.edit');
+            Route::post('/portofolio', [LayananController::class, 'portfolioSave'])->name('portfolio.store');
+            Route::post('/portofolio/{item}', [LayananController::class, 'portfolioSave'])->whereNumber('item')->name('portfolio.update');
+            Route::post('/portofolio/{item}/hapus', [LayananController::class, 'portfolioDelete'])->whereNumber('item')->name('portfolio.delete');
+            Route::get('/langganan', [LayananController::class, 'subs'])->name('subs');
+            Route::get('/langganan/baru', [LayananController::class, 'subForm'])->name('sub.create');
+            Route::get('/langganan/{sub}', [LayananController::class, 'subForm'])->whereNumber('sub')->name('sub.edit');
+            Route::post('/langganan', [LayananController::class, 'subSave'])->name('sub.store');
+            Route::post('/langganan/{sub}', [LayananController::class, 'subSave'])->whereNumber('sub')->name('sub.update');
+        });
 
         Route::get('/order', [OrderController::class, 'index'])->name('orders');
 

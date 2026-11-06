@@ -51,6 +51,20 @@
     </table>
 </div>
 
+@if (\App\Services\Layanan::enabled() || $layananSubs->isNotEmpty())
+@php $ls = $layananSubs->first(); @endphp
+<h2 class="mt-8 text-lg font-semibold">Layanan Sosmed <span class="text-sm font-normal text-gray-500">(kelola Instagram &amp; Threads)</span></h2>
+<a href="{{ route('portal.layanan') }}" class="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gray-200 bg-white p-5 shadow-theme-sm hover:border-brand-300">
+    @if ($ls)
+        <div><div class="font-medium">{{ $ls->plan_name }}</div><div class="text-sm text-gray-500">{{ $ls->effectiveStatus() === 'active' && $ls->ends_at ? 'Aktif sampai ' . Fmt::dt($ls->ends_at, false) : $ls->label() }}</div></div>
+        <x-admin.badge :tone="$ls->tone()">{{ $ls->label() }}</x-admin.badge>
+    @else
+        <div><div class="font-medium">Belum berlangganan</div><div class="text-sm text-gray-500">Kami yang kelola konten Instagram &amp; Threads tokomu.</div></div>
+        <span class="text-sm font-medium text-brand-500">Lihat layanan →</span>
+    @endif
+</a>
+@endif
+
 <h2 class="mt-8 text-lg font-semibold">Riwayat pembayaran</h2>
 <div class="mt-3 overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow-theme-sm">
     <table class="w-full text-left text-sm">

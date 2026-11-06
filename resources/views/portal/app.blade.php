@@ -14,7 +14,7 @@
 @endphp
 <div class="flex items-center gap-3">
     <x-app-icon :app="$appRow" size="size-14" />
-    <div><h1 class="text-xl font-semibold">{{ $appRow->name }}</h1>@if ($appRow->tagline)<p class="text-sm text-gray-500">{{ $appRow->tagline }}</p>@endif</div>
+    <div><h1 class="text-xl font-semibold">{{ $appRow->name }}@if ($appRow->slug === 'shofee') <span class="ml-1 align-middle rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">Extension Chrome</span>@endif</h1>@if ($appRow->tagline)<p class="text-sm text-gray-500">{{ $appRow->tagline }}</p>@endif</div>
 </div>
 
 <section class="mt-6 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-theme-sm">

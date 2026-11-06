@@ -33,6 +33,8 @@ class Customer extends Model
     public function aiLogs(): HasMany { return $this->hasMany(AiLog::class); }
     public function devices(): HasMany { return $this->hasMany(CustomerDevice::class); }
 
+    public function serviceSubscriptions(): HasMany { return $this->hasMany(ServiceSubscription::class)->latest('id'); }
+
     public function subscriptions(): HasMany { return $this->hasMany(Subscription::class); }
 
     /**

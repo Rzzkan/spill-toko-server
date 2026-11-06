@@ -9,6 +9,15 @@ Backend SaaS untuk extension Chrome **TemanSeller**: login Google, langganan (tr
 ## Portal pengguna (web)
 `/login` login dengan akun Google (akun yang sama dengan extension) → `/akun`: status langganan (Trial/Bulanan/Lifetime, tanggal berakhir, sisa hari, kuota AI hari ini), tombol **Berlangganan / Perpanjang** (Midtrans) dan riwayat pembayaran. Perpanjangan Bulanan ditambahkan setelah masa aktif berjalan. Butuh *Authorized JavaScript origins* = domain situs di OAuth client Google.
 
+## Layanan Kelola Instagram & Threads (v1.7)
+Layanan jasa berlangganan (mirip urusin.co), terpisah dari aplikasi ber-Midtrans seperti Shofee.
+- **Publik**: tab **Layanan** di beranda → `/layanan` (paket per jenis, portofolio, FAQ, tombol WhatsApp). Beranda juga memuat seksi layanan; Shofee ditandai **Extension Chrome**.
+- **Admin** (`/admin/layanan`): **Paket & Harga** (jenis paket dan paket dinamis: nama, harga, periode, fitur, lama aktif, aktif/draf, unggulan), **Portofolio** (tambah/ubah/hapus + unggah gambar), **Langganan Pelanggan** (aktifkan pesanan, atur masa aktif, tautan folder Drive, pesan ke pelanggan, tambah manual lewat email). **Pengaturan → Layanan Sosmed**: nomor WhatsApp, template pesan, info pembayaran, saklar tampil/sembunyi.
+- **Akun pelanggan** (`/akun/layanan`): status langganan, jenis paket, masa berlaku, dan tautan folder Drive; konfirmasi pesanan dari tombol "Pesan paket ini".
+- Alur bayar **manual**: pelanggan memesan → status *Menunggu konfirmasi* → bayar sesuai info pembayaran + konfirmasi WhatsApp → admin mengubah ke *Aktif*.
+- Tiga paket awal dibuat sebagai **draf nonaktif berharga 0**; tidak tampil sampai admin mengisi harga dan mengaktifkan. Portofolio awal kosong.
+- Gambar portofolio disimpan di disk lokal (`storage/app/private/layanan`, volume `storage` Docker) dan disajikan lewat rute `/layanan/gambar/{id}/{v}` (tanpa `storage:link`).
+
 ## Halaman admin (`/admin`)
 Dashboard (statistik + grafik) · Pengguna (cari/filter, tambah hari, Lifetime, cabut akses, riwayat) · Order · Pemakaian AI (grafik, pengguna teratas, log galat, kosongkan cache) · **Pengaturan** (Langganan, Google Login, Midtrans, AI kenari.id, Prompt AI, Extension) dengan tombol **Tes** untuk Google/Midtrans/kenari.id dan **Muat daftar model** · Profil admin.
 

@@ -13,6 +13,7 @@ class SettingDefs
         'ai' => 'AI (kenari.id)',
         'prompt' => 'Prompt AI',
         'ekstensi' => 'Extension',
+        'layanan' => 'Layanan Sosmed',
     ];
 
     public static function all(): array
@@ -26,6 +27,12 @@ class SettingDefs
         return [
             // ---- langganan ----
             'license_ttl_hours'   => ['group' => 'langganan', 'label' => 'Batas offline extension (jam)', 'type' => 'number', 'default' => '72', 'min' => 1, 'help' => 'Extension harus terhubung ke server lagi paling lambat sekian jam.'],
+
+            // ---- layanan ----
+            'layanan.enabled'      => ['group' => 'layanan', 'label' => 'Tampilkan layanan di situs', 'type' => 'bool', 'default' => '1', 'help' => 'Matikan untuk menyembunyikan tab Layanan dan menutup pemesanan.'],
+            'layanan.wa_number'    => ['group' => 'layanan', 'label' => 'Nomor WhatsApp admin', 'type' => 'text', 'default' => '', 'help' => 'Format internasional tanpa + (contoh 6281234567890). Dipakai untuk tombol konsultasi & konfirmasi pesanan.'],
+            'layanan.wa_template'  => ['group' => 'layanan', 'label' => 'Template pesan WhatsApp', 'type' => 'textarea', 'default' => "Halo TemanSeller, saya ingin konsultasi layanan kelola Instagram & Threads.", 'help' => 'Pesan awal saat calon pelanggan klik WhatsApp.'],
+            'layanan.payment_info' => ['group' => 'layanan', 'label' => 'Info pembayaran', 'type' => 'textarea', 'default' => '', 'help' => 'Ditampilkan ke pelanggan setelah memesan (mis. rekening transfer). Pembayaran dikonfirmasi manual oleh admin.'],
 
             // ---- ekstensi ----
             'app.extension_id' => ['group' => 'ekstensi', 'label' => 'ID extension Chrome', 'type' => 'text', 'default' => 'ecngchlgljjgclfjhljppkmmoamdfpjl', 'help' => 'Dipakai untuk menampilkan Redirect URI Google yang benar. Ganti dengan ID dari Chrome Web Store setelah publish.'],

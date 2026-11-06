@@ -12,6 +12,7 @@ class MenuHelper
                 ['icon' => 'user-profile', 'name' => 'Pengguna', 'path' => '/admin/pengguna'],
                 ['icon' => 'layout', 'name' => 'Aplikasi', 'path' => '/admin/aplikasi'],
                 ['icon' => 'ecommerce', 'name' => 'Order', 'path' => '/admin/order'],
+                ['icon' => 'chat', 'name' => 'Layanan Sosmed', 'path' => '/admin/layanan'],
                 ['icon' => 'ai-assistant', 'name' => 'Pemakaian AI', 'path' => '/admin/pemakaian-ai'],
             ]],
             ['title' => 'Sistem', 'items' => [

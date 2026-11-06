@@ -1,12 +1,15 @@
 @php
     use App\Support\Fmt;
     $cta = url('/login');
+    $layananOn = $layananOn ?? false; $layananFrom = $layananFrom ?? null;
     $faq = [
         ['Apa itu TemanSeller?', 'TemanSeller adalah kumpulan aplikasi untuk membantu seller online bekerja lebih cepat: riset produk, pantau kompetitor, sampai analisis dengan AI. Aplikasinya ditambah bertahap.'],
         ['Apakah satu akun bisa dipakai untuk semua aplikasi?', 'Bisa. Kamu cukup masuk dengan Google sekali. Di halaman akun kamu bisa lihat aplikasi apa saja yang sedang kamu pakai, kapan masa aktifnya, dan riwayat pembayarannya.'],
         ['Apakah langganan tiap aplikasi dipisah?', 'Ya. Setiap aplikasi punya masa trial, paket, dan harga sendiri. Berlangganan satu aplikasi tidak otomatis mengaktifkan aplikasi lain, jadi kamu hanya bayar yang kamu butuhkan.'],
         ['Bayarnya lewat apa?', 'Lewat Midtrans: QRIS, e-wallet, transfer bank virtual account, dan kartu. Status langganan aktif otomatis beberapa detik setelah pembayaran berhasil.'],
         ['Ada trial gratis?', 'Ada. Tiap aplikasi punya trial gratis sendiri tanpa kartu kredit. Lama trial tertera di kartu aplikasinya.'],
+        ['Apa itu layanan Kelola Instagram & Threads?', 'Layanan berlangganan di mana tim kami yang menyiapkan dan mengelola konten Instagram dan Threads tokomu: ide, desain, caption, sampai jadwal posting. Kamu cukup memilih paket, lalu hasil kerja tersimpan rapi di folder Drive yang bisa kamu buka dari halaman akun.'],
+        ['Shofee itu aplikasi apa?', 'Shofee adalah extension Chrome. Kamu memasangnya dari Chrome Web Store di browser komputer, lalu fiturnya muncul langsung di halaman Shopee. Bukan aplikasi HP.'],
         ['Kapan aplikasi berikutnya rilis?', 'Sedang dikerjakan satu per satu. Begitu rilis, aplikasinya langsung muncul di halaman ini dan di akunmu.'],
     ];
 @endphp
@@ -17,7 +20,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" href="{{ asset('favicon.ico') }}"><link rel="apple-touch-icon" href="{{ asset('img/brand/temanseller-180.png') }}">
     <title>TemanSeller — Aplikasi Pendukung Seller Marketplace</title>
-    <meta name="description" content="TemanSeller menyediakan aplikasi untuk membantu seller online: riset produk, pantau kompetitor, dan analisis AI. Satu akun untuk semua aplikasi, trial gratis.">
+    <meta name="description" content="TemanSeller menyediakan aplikasi untuk membantu seller online: riset produk, pantau kompetitor, dan analisis AI. Satu akun untuk semua aplikasi, trial gratis. Ada juga layanan kelola Instagram & Threads.">
     <meta property="og:title" content="TemanSeller — Aplikasi Pendukung Seller Marketplace">
     <meta property="og:description" content="Satu akun, banyak aplikasi untuk seller online. Mulai dari Shofee, extension Chrome untuk riset Shopee.">
     @vite(['resources/css/app.css'])
@@ -34,7 +37,7 @@
     <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5">
         <x-brand :href="url('/')" size="size-12" class="text-lg" />
         <nav class="hidden items-center gap-7 text-sm font-medium text-slate-600 md:flex">
-            <a href="#aplikasi" class="hover:text-[#ee4d2d]">Aplikasi</a><a href="#kenapa" class="hover:text-[#ee4d2d]">Kenapa TemanSeller</a><a href="#cara" class="hover:text-[#ee4d2d]">Cara mulai</a><a href="#faq" class="hover:text-[#ee4d2d]">FAQ</a>
+            <a href="#aplikasi" class="hover:text-[#ee4d2d]">Aplikasi</a>@if ($layananOn)<a href="{{ route('layanan') }}" class="hover:text-[#ee4d2d]">Layanan</a>@endif<a href="#kenapa" class="hover:text-[#ee4d2d]">Kenapa TemanSeller</a><a href="#cara" class="hover:text-[#ee4d2d]">Cara mulai</a><a href="#faq" class="hover:text-[#ee4d2d]">FAQ</a>
         </nav>
         <div class="flex items-center gap-2">
             <a href="{{ $cta }}" class="hidden rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:text-[#ee4d2d] sm:block">Masuk</a>
@@ -46,11 +49,12 @@
 <section class="grad">
     <div class="mx-auto grid max-w-6xl items-center gap-12 px-4 pb-16 pt-14 lg:grid-cols-2 lg:pb-24 lg:pt-20">
         <div>
-            <span class="inline-flex items-center gap-2 rounded-full border border-orange-200 bg-white px-3 py-1 text-xs font-semibold text-[#ee4d2d]">🛠️ Alat kerja seller marketplace</span>
+            <span class="inline-flex items-center gap-2 rounded-full border border-orange-200 bg-white px-3 py-1 text-xs font-semibold text-[#ee4d2d]">🛠️ Aplikasi &amp; layanan untuk seller marketplace</span>
             <h1 class="mt-5 text-4xl font-extrabold leading-[1.1] tracking-tight text-slate-900 sm:text-5xl">Jualan online makin ringan, <span class="text-[#ee4d2d]">ditemani aplikasi yang pas.</span></h1>
-            <p class="mt-5 max-w-xl text-lg text-slate-600">Riset produk, intip kompetitor, sampai analisis AI. TemanSeller mengumpulkan aplikasi pendukung seller dalam satu akun, dan terus bertambah.</p>
+            <p class="mt-5 max-w-xl text-lg text-slate-600">Riset produk, intip kompetitor, analisis AI, sampai konten Instagram &amp; Threads yang dikelola untukmu. TemanSeller mengumpulkan aplikasi dan layanan pendukung seller dalam satu akun.</p>
             <div class="mt-8 flex flex-wrap items-center gap-3">
                 <a href="#aplikasi" class="rounded-xl bg-[#ee4d2d] px-6 py-3.5 text-base font-semibold text-white shadow-lg shadow-orange-200 hover:bg-[#d7401f]">Lihat semua aplikasi →</a>
+                @if ($layananOn)<a href="{{ route('layanan') }}" class="rounded-xl border border-orange-200 bg-orange-50 px-6 py-3.5 text-base font-semibold text-[#ee4d2d] hover:bg-orange-100">Layanan kelola sosmed</a>@endif
                 <a href="{{ $cta }}" class="rounded-xl border border-slate-200 bg-white px-6 py-3.5 text-base font-semibold text-slate-700 hover:border-[#ee4d2d] hover:text-[#ee4d2d]">Masuk ke akun</a>
             </div>
             <ul class="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-500"><li>✓ Daftar pakai Google</li><li>✓ Trial gratis tanpa kartu kredit</li><li>✓ Bayar QRIS &amp; e-wallet</li></ul>
@@ -60,7 +64,7 @@
                 <img src="{{ asset('img/preview/toko-ringkasan.jpg') }}" alt="Shofee: ringkasan toko di halaman Shopee" class="w-full">
                 <img src="{{ asset('img/preview/toko-analisa-ai.jpg') }}" alt="Shofee: analisis AI" class="w-full border-t border-slate-100">
             </div>
-            <div class="absolute -bottom-4 -left-2 flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold shadow-lg ring-1 ring-slate-100 sm:-left-6"><img src="{{ asset('img/brand/shofee-64.png') }}" alt="" class="size-6 rounded-md">Shofee <span class="font-normal text-slate-500">· aplikasi pertama</span></div>
+            <div class="absolute -bottom-4 -left-2 flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold shadow-lg ring-1 ring-slate-100 sm:-left-6"><img src="{{ asset('img/brand/shofee-64.png') }}" alt="" class="size-6 rounded-md">Shofee <span class="font-normal text-slate-500">· Extension Chrome</span></div>
         </div>
     </div>
 </section>
@@ -87,7 +91,7 @@
                     </div>
                     <h3 class="mt-4 text-xl font-bold text-slate-900">{{ $a->name }}</h3>
                     @if ($a->tagline)<p class="mt-1 text-sm font-medium text-[#ee4d2d]">{{ $a->tagline }}</p>@endif
-                    @if ($a->slug === 'shofee')<p class="mt-3 text-sm text-slate-600">Lihat estimasi omzet kompetitor, produk andalan, dan peluang pasar langsung di halaman Shopee, lengkap dengan rekomendasi dari AI.</p>@endif
+                    @if ($a->slug === 'shofee')<p class="mt-3 text-sm text-slate-600">Extension Chrome: pasang di browser komputer, lalu lihat estimasi omzet kompetitor, produk andalan, dan peluang pasar langsung di halaman Shopee, lengkap dengan rekomendasi dari AI.</p>@endif
                     <div class="mt-5 flex items-end justify-between border-t border-slate-100 pt-4">
                         <div>@if ($x['from'])<div class="text-xs text-slate-500">mulai</div><div class="text-lg font-bold text-slate-900">{{ Fmt::rp($x['from']) }}<span class="text-sm font-normal text-slate-500">/bulan</span></div>@endif</div>
                         @if ($x['trial'] > 0)<span class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">Trial {{ $x['trial'] }} hari</span>@endif
@@ -108,6 +112,28 @@
         </div>
     </div>
 </section>
+
+@if ($layananOn)
+<section id="layanan" class="bg-gradient-to-b from-white to-orange-50/60 py-20">
+    <div class="mx-auto grid max-w-6xl items-center gap-10 px-4 lg:grid-cols-2">
+        <div>
+            <span class="inline-flex rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-[#ee4d2d]">Layanan berlangganan</span>
+            <h2 class="mt-4 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">Kelola Instagram &amp; Threads tokomu, kami yang kerjakan</h2>
+            <p class="mt-4 text-slate-600">Dari ide konten, desain, caption, sampai jadwal posting. Kamu fokus jualan, akun sosmed tetap hidup. Hasil kerja tersimpan di folder Drive yang bisa kamu buka dari halaman akun.</p>
+            <ul class="mt-5 space-y-2 text-sm text-slate-700"><li>✓ Pilih paket sesuai kebutuhan, harga jelas</li><li>✓ Lihat status langganan &amp; folder Drive di akunmu</li><li>✓ Ada portofolio hasil kerja sebelumnya</li></ul>
+            <div class="mt-7 flex flex-wrap gap-3">
+                <a href="{{ route('layanan') }}" class="rounded-xl bg-[#ee4d2d] px-6 py-3.5 font-semibold text-white shadow-lg shadow-orange-200 hover:bg-[#d7401f]">Lihat paket &amp; portofolio →</a>
+                @if ($layananFrom)<span class="self-center text-sm text-slate-500">mulai <b class="text-slate-900">{{ Fmt::rp($layananFrom) }}</b></span>@endif
+            </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+            @foreach ([['📸', 'Instagram', 'Feed, carousel, dan story terjadwal'], ['🧵', 'Threads', 'Posting rutin & balasan yang terarah'], ['🎨', 'Visual konsisten', 'Gaya brand yang seragam di semua konten'], ['📁', 'Hasil di Drive', 'Semua aset rapi dan bisa kamu unduh']] as [$i, $t, $d])
+                <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-orange-100"><div class="text-3xl">{{ $i }}</div><h3 class="mt-2 font-bold text-slate-900">{{ $t }}</h3><p class="mt-1 text-sm text-slate-600">{{ $d }}</p></div>
+            @endforeach
+        </div>
+    </div>
+</section>
+@endif
 
 <section id="kenapa" class="bg-slate-50 py-20">
     <div class="mx-auto max-w-6xl px-4">
@@ -156,7 +182,7 @@
 <footer class="border-t border-slate-100 bg-white">
     <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-8 text-sm text-slate-500 sm:flex-row">
         <x-brand size="size-10" class="font-semibold text-slate-700" />
-        <div class="flex flex-wrap justify-center gap-5"><a href="#aplikasi" class="hover:text-[#ee4d2d]">Aplikasi</a><a href="#faq" class="hover:text-[#ee4d2d]">FAQ</a><a href="{{ $cta }}" class="hover:text-[#ee4d2d]">Akun</a><a href="{{ url('/privasi') }}" class="hover:text-[#ee4d2d]">Privasi</a>@foreach ($apps as $x)<a href="{{ $x['url'] }}" class="hover:text-[#ee4d2d]">{{ $x['app']->name }}</a>@endforeach</div>
+        <div class="flex flex-wrap justify-center gap-5"><a href="#aplikasi" class="hover:text-[#ee4d2d]">Aplikasi</a>@if ($layananOn)<a href="{{ route('layanan') }}" class="hover:text-[#ee4d2d]">Layanan</a>@endif<a href="#faq" class="hover:text-[#ee4d2d]">FAQ</a><a href="{{ $cta }}" class="hover:text-[#ee4d2d]">Akun</a><a href="{{ url('/privasi') }}" class="hover:text-[#ee4d2d]">Privasi</a>@foreach ($apps as $x)<a href="{{ $x['url'] }}" class="hover:text-[#ee4d2d]">{{ $x['app']->name }}</a>@endforeach</div>
         <div>© {{ date('Y') }} TemanSeller. <span class="text-xs text-slate-400">v{{ config('temanseller.version') }}</span></div>
     </div>
 </footer>

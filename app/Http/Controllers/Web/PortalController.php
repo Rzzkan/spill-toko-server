@@ -38,7 +38,7 @@ class PortalController extends Controller
         $c = Customer::fromGoogle($g);
         $r->session()->regenerate();
         $r->session()->put('customer_id', $c->id);
-        return response()->json(['redirect' => $r->session()->has('buy_plan') ? route('portal.buy.go') : route('portal.account')]);
+        return response()->json(['redirect' => $r->session()->has('buy_plan') ? route('portal.buy.go') : ($r->session()->has('layanan_plan') ? route('portal.layanan') : route('portal.account'))]);
     }
 
     public function account(Request $r)
@@ -51,7 +51,7 @@ class PortalController extends Controller
             return ['app' => $app, 'a' => $a, 'sub' => $sub];
         });
         return view('portal.account', [
-            'c' => $c, 'apps' => $apps, 'plansByApp' => $apps->mapWithKeys(fn ($x) => [$x['app']->slug => Plans::all($x['app']->slug)])->all(),
+            'c' => $c, 'layananSubs' => $c->serviceSubscriptions()->limit(5)->get(), 'apps' => $apps, 'plansByApp' => $apps->mapWithKeys(fn ($x) => [$x['app']->slug => Plans::all($x['app']->slug)])->all(),
             'orders' => Order::query()->where('customer_id', $c->id)->latest('id')->limit(15)->get(),
             'appNames' => AppCatalog::names(),
             'devices' => \Illuminate\Support\Facades\Schema::hasTable('customer_devices') ? $c->devices()->orderByDesc('last_seen_at')->get() : collect(), 'maxDevices' => max(1, (int) config('temanseller.max_devices', 2)),
