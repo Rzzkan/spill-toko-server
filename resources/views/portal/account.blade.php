@@ -10,7 +10,7 @@
 </div>
 
 @php $active = $apps->filter(fn ($x) => $x['a']['plan'] !== 'none'); @endphp
-<h2 class="mt-8 text-lg font-semibold">Langganan aplikasi Anda <span class="text-sm font-normal text-gray-500">({{ $active->count() }} aplikasi dipakai)</span></h2>
+<h2 class="mt-8 text-lg font-semibold">Langganan aplikasimu <span class="text-sm font-normal text-gray-500">({{ $active->count() }} aplikasi dipakai)</span></h2>
 <p class="mt-1 text-sm text-gray-500">Setiap aplikasi TemanSeller punya trial dan langganan sendiri.</p>
 <div class="mt-3 grid gap-4 sm:grid-cols-2">
     @foreach ($apps as $x)

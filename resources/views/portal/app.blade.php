@@ -30,13 +30,13 @@
         @if ($appRow->slug === 'shofee')<div><div class="text-xs uppercase text-gray-500">Analisis AI hari ini</div>
             <div class="mt-1 font-medium">@if ($ai['enabled']) {{ $ai['used'] }} / {{ $ai['limit'] ?? '∞' }} @else — @endif</div></div>@endif
     </div>
-    @if ($a['plan'] === 'none')<p class="border-t border-gray-100 px-6 py-3 text-sm text-gray-500">Anda belum memakai {{ $appRow->name }}. Trial {{ $trialDays }} hari dimulai otomatis saat Anda masuk lewat aplikasinya, atau langsung pilih paket di bawah.</p>
-    @elseif ($a['plan'] === 'trial')<p class="border-t border-gray-100 px-6 py-3 text-sm text-gray-500">Anda sedang dalam masa trial {{ $trialDays }} hari. Berlangganan agar akses tidak terputus setelah trial berakhir.</p>
-    @elseif (!$a['access'])<p class="border-t border-gray-100 bg-error-50 px-6 py-3 text-sm text-error-700">Akses Anda sudah berakhir. Perpanjang di bawah untuk memakai kembali {{ $appRow->name }}.</p>
-    @elseif ($a['plan'] === 'monthly' && $left <= 5)<p class="border-t border-gray-100 bg-warning-50 px-6 py-3 text-sm text-warning-700">Langganan segera berakhir. Perpanjang sekarang — sisa hari Anda tetap dihitung.</p>@endif
+    @if ($a['plan'] === 'none')<p class="border-t border-gray-100 px-6 py-3 text-sm text-gray-500">Kamu belum memakai {{ $appRow->name }}. {{ $trialDays > 0 ? 'Trial ' . $trialDays . ' hari dimulai otomatis saat kamu masuk lewat aplikasinya, atau langsung pilih paket di bawah.' : 'Mulai dari aplikasinya, atau pilih paket di bawah bila perlu.' }}</p>
+    @elseif ($a['plan'] === 'trial')<p class="border-t border-gray-100 px-6 py-3 text-sm text-gray-500">Kamu sedang dalam masa trial {{ $trialDays }} hari. Berlangganan agar akses tidak terputus setelah trial berakhir.</p>
+    @elseif (!$a['access'])<p class="border-t border-gray-100 bg-error-50 px-6 py-3 text-sm text-error-700">Akses kamu sudah berakhir. Perpanjang di bawah untuk memakai kembali {{ $appRow->name }}.</p>
+    @elseif ($a['plan'] === 'monthly' && $left <= 5)<p class="border-t border-gray-100 bg-warning-50 px-6 py-3 text-sm text-warning-700">Langganan segera berakhir. Perpanjang sekarang — sisa hari kamu tetap dihitung.</p>@endif
 </section>
 
-<h2 class="mt-8 text-lg font-semibold">{{ $a['plan'] === 'lifetime' ? 'Paket Anda' : ($a['plan'] === 'monthly' ? 'Perpanjang langganan' : 'Pilih paket') }}</h2>
+<h2 class="mt-8 text-lg font-semibold">{{ $a['plan'] === 'lifetime' ? 'Paket kamu' : ($a['plan'] === 'monthly' ? 'Perpanjang langganan' : 'Pilih paket') }}</h2>
 @if (!$canPay)<div class="mt-3 rounded-lg bg-warning-50 p-4 text-sm text-warning-700">Pembayaran belum tersedia. Hubungi admin.</div>@endif
 <div class="mt-3 grid gap-4 sm:grid-cols-2">
     @foreach (collect($plans)->only(['monthly', 'yearly'])->keys() as $k)
@@ -54,7 +54,7 @@
         </div>
     @endforeach
 </div>
-@if ($isLifetime)<p class="mt-3 text-sm text-gray-500">Anda memiliki akses Lifetime untuk {{ $appRow->name }} — tidak perlu berlangganan.</p>@endif
+@if ($isLifetime)<p class="mt-3 text-sm text-gray-500">Kamu memiliki akses Lifetime untuk {{ $appRow->name }} — tidak perlu berlangganan.</p>@endif
 @if (!count($plans))<p class="mt-3 text-sm text-gray-500">Paket {{ $appRow->name }} belum dibuka.</p>@endif
 
 

@@ -92,7 +92,7 @@ class PortalController extends Controller
         $p = Plans::find($plan, $slug);
         if (!$p) return redirect($errorTo)->with('error', 'Paket tidak dikenal.');
         $sub = $c->subscription($slug, true);
-        if ($sub->lifetime) return redirect($errorTo)->with('error', 'Akun Anda sudah Lifetime untuk ' . $app->name . ', tidak perlu berlangganan.');
+        if ($sub->lifetime) return redirect($errorTo)->with('error', 'Akunmu sudah Lifetime untuk ' . $app->name . ', tidak perlu berlangganan.');
         $order = Order::query()->create(['order_id' => 'ST-' . time() . '-' . Str::lower(Str::random(8)), 'customer_id' => $c->id, 'app' => $slug,
             'plan' => $plan, 'amount' => $p['price'], 'status' => 'pending']);
         try {

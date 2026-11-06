@@ -12,7 +12,7 @@ export default function initCharts() {
         const fmt = (v) => (cfg.currency ? "Rp" + Number(v).toLocaleString("id-ID") : Number(v).toLocaleString("id-ID"));
         const base = {
             chart: { type: cfg.type, height: cfg.height || 280, toolbar: { show: false }, fontFamily: "Outfit, sans-serif", background: "transparent" },
-            colors: cfg.colors || ["#465fff", "#12b76a", "#f79009", "#f04438"],
+            colors: cfg.colors || ["#FB8A12", "#12b76a", "#f79009", "#f04438"],
             theme: { mode: dark() ? "dark" : "light" },
             dataLabels: { enabled: false },
             grid: { borderColor: dark() ? "#1d2939" : "#eaecf0" },

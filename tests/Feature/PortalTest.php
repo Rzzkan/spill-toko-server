@@ -75,7 +75,7 @@ class PortalTest extends TestCase
         Customer::first()->subscription('shofee', true)->update(['lifetime' => true]);
         Settings::set('midtrans.server_key', 'SB-Mid-server-1');
         $this->get('/akun')->assertOk()->assertSee('Selamanya');
-        $this->get('/akun/aplikasi/shofee')->assertOk()->assertSee('Anda memiliki akses Lifetime');
+        $this->get('/akun/aplikasi/shofee')->assertOk()->assertSee('Kamu memiliki akses Lifetime');
         $this->post('/akun/aplikasi/shofee/bayar', ['plan' => 'lifetime'])->assertSessionHas('error');
         $this->assertSame(0, Order::count());
     }

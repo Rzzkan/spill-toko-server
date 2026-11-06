@@ -52,7 +52,7 @@
     <div class="font-semibold">Masuk ke Shopee dulu</div>
     <p class="mt-1 text-sm text-gray-600">Kamu belum login di Shopee pada browser ini. Buka Shopee, login seperti biasa (kami tidak melihat atau menyimpan data login-mu), lalu kembali ke sini dan lanjutkan.</p>
     <div class="mt-3 flex flex-wrap gap-3">
-        <a href="https://shopee.co.id/buyer/login" target="_blank" rel="noopener" class="rounded-lg bg-[#ee4d2d] px-5 py-2.5 text-sm font-medium text-white">Buka Shopee untuk login ↗</a>
+        <a href="https://shopee.co.id/buyer/login" target="_blank" rel="noopener" class="rounded-lg bg-ts-orange px-5 py-2.5 text-sm font-medium text-ts-navy">Buka Shopee untuk login ↗</a>
         <button id="resume" class="rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700">Saya sudah login, lanjutkan</button>
         <button class="cancel rounded-lg px-3 py-2.5 text-sm text-gray-500">Batalkan</button>
     </div>
@@ -173,7 +173,7 @@ document.querySelectorAll('[data-del]').forEach((b) => b.addEventListener('click
 const ICON = { ok: ['✓', 'text-success-700 bg-success-50'], warn: ['!', 'text-warning-700 bg-warning-50'], bad: ['✕', 'text-error-700 bg-error-50'] };
 const ul = (a) => a && a.length ? '<ul class="mt-2 space-y-1.5 text-sm text-gray-700">' + a.map((x) => '<li class="flex gap-2"><span class="text-gray-400">•</span><span>' + esc(x) + '</span></li>').join('') + '</ul>' : '';
 function renderResult(r) {
-    const ai = r.ai, col = r.score >= 80 ? '#12b76a' : r.score >= 60 ? '#465fff' : r.score >= 40 ? '#f79009' : '#f04438';
+    const ai = r.ai, col = r.score >= 80 ? '#12b76a' : r.score >= 60 ? '#FB8A12' : r.score >= 40 ? '#f79009' : '#f04438';
     const groups = {};
     (r.rules || []).forEach((c) => (groups[c.area] ||= []).push(c));
     let h = '<div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-theme-sm"><div class="flex flex-wrap items-center gap-5">'

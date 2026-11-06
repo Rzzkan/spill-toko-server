@@ -1,8 +1,8 @@
 @extends('layouts.portal', ['title' => 'Masuk'])
 @section('content')
 <div class="mx-auto max-w-md rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-theme-sm">
-    <h1 class="text-title-sm font-semibold">Masuk ke akun Anda</h1>
-    <p class="mt-2 text-sm text-gray-500">Gunakan akun Google yang sama dengan yang dipakai di extension {{ config('app.name') }} untuk melihat status langganan dan memperpanjangnya.</p>
+    <h1 class="text-title-sm font-semibold">Masuk ke akunmu</h1>
+    <p class="mt-2 text-sm text-gray-500">Gunakan akun Google yang sama dengan yang dipakai di extension Shofee untuk melihat status langganan dan memperpanjangnya.</p>
     @if ($clientId === '')
         <div class="mt-6 rounded-lg bg-warning-50 p-4 text-sm text-warning-700">Login Google belum dikonfigurasi. Hubungi admin.</div>
     @else

@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="robots" content="noindex">
     <link rel="icon" href="{{ asset('favicon.ico') }}"><link rel="apple-touch-icon" href="{{ asset('img/brand/temanseller-180.png') }}">
-    <title>{{ ($title ?? 'Akun') . ' · ' . config('app.name') }}</title>
+    <title>{{ ($title ?? 'Akun') . ' · TemanSeller' }}</title>
     @vite(['resources/css/app.css'])
 </head>
 <body class="min-h-screen bg-gray-50 text-gray-800">
@@ -20,7 +20,7 @@
     @if (session('error'))<div class="mb-5 rounded-xl border border-error-500 bg-error-50 p-4 text-sm text-error-700">⚠ {{ session('error') }}</div>@endif
     @if (session('ok'))<div class="mb-5 rounded-xl border border-success-500 bg-success-50 p-4 text-sm text-success-700">✓ {{ session('ok') }}</div>@endif
     @yield('content')
-    <p class="py-6 text-center text-xs text-gray-400">{{ config('app.name') }} · versi {{ config('temanseller.version') }}</p>
+    <p class="py-6 text-center text-xs text-gray-400">TemanSeller · v{{ config('temanseller.version') }}</p>
 </main>
 @stack('scripts')
 </body>
