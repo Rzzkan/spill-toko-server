@@ -84,12 +84,14 @@
                             <article class="relative flex w-full flex-col rounded-3xl p-7 md:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] {{ $f ? 'bg-[#1a1033] text-white shadow-2xl shadow-violet-200 lg:-my-3 lg:py-9' : 'border border-slate-200 bg-white shadow-sm' }}">
                                 @if ($p->badge || $f)<span class="absolute right-6 top-6 rounded-full bg-gradient-to-r from-violet-500 to-orange-400 px-3.5 py-1.5 text-xs font-bold text-white">{{ $p->badge ?: 'Rekomendasi' }}</span>@endif
                                 <h4 class="text-base font-bold {{ $f ? 'text-white' : 'text-violet-900' }}">{{ $p->name }}</h4>
-                                <div class="mt-3 flex items-end gap-2"><span class="text-4xl font-extrabold tracking-tight">{{ Fmt::rpShort($p->price) }}</span><span class="pb-1.5 text-sm font-semibold {{ $f ? 'text-violet-300' : 'text-slate-500' }}">{{ $p->period }}</span></div>
+                                @if ($p->discountPct() > 0)<div class="mt-3 flex items-center gap-2 text-sm"><span class="line-through {{ $f ? 'text-slate-400' : 'text-slate-400' }}">{{ Fmt::rpShort($p->original_price) }}</span><span class="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-bold text-emerald-700">Hemat {{ $p->discountPct() }}%</span></div>@endif
+                                <div class="{{ $p->discountPct() > 0 ? 'mt-1' : 'mt-3' }} flex items-end gap-2"><span class="text-4xl font-extrabold tracking-tight">{{ Fmt::rpShort($p->price) }}</span><span class="pb-1.5 text-sm font-semibold {{ $f ? 'text-violet-300' : 'text-slate-500' }}">{{ $p->period }}</span></div>
                                 @if ($p->tagline)<p class="mt-1 text-sm {{ $f ? 'text-slate-300' : 'text-slate-500' }}">{{ $p->tagline }}</p>@endif
                                 <div class="my-5 border-t border-dashed {{ $f ? 'border-white/20' : 'border-slate-200' }}"></div>
                                 <ul class="flex-1 space-y-3 text-sm {{ $f ? 'text-slate-100' : 'text-slate-700' }}">
                                     @foreach ($p->featureList() as $ft)<li class="flex gap-3"><span class="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full text-[11px] font-bold {{ $f ? 'bg-white/15 text-violet-200' : 'bg-violet-100 text-violet-600' }}">✓</span><span>{{ $ft }}</span></li>@endforeach
                                 </ul>
+                                @if ($p->addon)<p class="mt-4 rounded-lg px-3 py-2 text-xs {{ $f ? 'bg-white/10 text-slate-200' : 'bg-violet-50 text-violet-800' }}"><b>Add-on:</b> {{ $p->addon }}</p>@endif
                                 <a href="{{ route('layanan.start', $p->id) }}" class="mt-7 rounded-xl px-4 py-3 text-center text-sm font-semibold {{ $f ? 'bg-white text-[#1a1033] hover:bg-orange-50' : 'bg-[#1a1033] text-white hover:bg-slate-800' }}">Pilih paket ini</a>
                             </article>
                         @endforeach

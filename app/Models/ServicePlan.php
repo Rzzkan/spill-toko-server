@@ -7,9 +7,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ServicePlan extends Model
 {
-    protected $fillable = ['service_type_id', 'name', 'tagline', 'price', 'period', 'features', 'badge', 'is_featured', 'is_active', 'duration_days', 'sort'];
+    protected $fillable = ['service_type_id', 'name', 'tagline', 'price', 'original_price', 'period', 'features', 'addon', 'badge', 'is_featured', 'is_active', 'duration_days', 'sort'];
 
-    protected function casts(): array { return ['is_featured' => 'boolean', 'is_active' => 'boolean', 'price' => 'integer']; }
+    protected function casts(): array { return ['is_featured' => 'boolean', 'is_active' => 'boolean', 'price' => 'integer', 'original_price' => 'integer']; }
+
+    /** Persen hemat bila ada harga coret yang lebih tinggi dari harga jual. */
+    public function discountPct(): int
+    {
+        return $this->original_price > $this->price && $this->price > 0 ? (int) round((1 - $this->price / $this->original_price) * 100) : 0;
+    }
 
     public function type(): BelongsTo { return $this->belongsTo(ServiceType::class, 'service_type_id'); }
 

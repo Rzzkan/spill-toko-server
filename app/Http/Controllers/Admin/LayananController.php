@@ -62,10 +62,11 @@ class LayananController extends Controller
     {
         $d = $r->validate([
             'service_type_id' => ['required', 'exists:service_types,id'], 'name' => ['required', 'string', 'max:80'], 'tagline' => ['nullable', 'string', 'max:160'],
-            'price' => ['required', 'integer', 'min:0', 'max:1000000000'], 'period' => ['nullable', 'string', 'max:30'], 'features' => ['nullable', 'string', 'max:2000'],
+            'price' => ['required', 'integer', 'min:0', 'max:1000000000'], 'original_price' => ['nullable', 'integer', 'min:0', 'max:1000000000'], 'addon' => ['nullable', 'string', 'max:200'], 'period' => ['nullable', 'string', 'max:30'], 'features' => ['nullable', 'string', 'max:2000'],
             'badge' => ['nullable', 'string', 'max:30'], 'duration_days' => ['required', 'integer', 'min:1', 'max:3650'], 'sort' => ['nullable', 'integer', 'min:0', 'max:999'],
         ]);
         $d['sort'] = (int) ($d['sort'] ?? 0);
+        $d['original_price'] = (int) ($d['original_price'] ?? 0);
         $d['period'] = $d['period'] ?? '';
         $d['is_featured'] = $r->boolean('is_featured');
         $d['is_active'] = $r->boolean('is_active');

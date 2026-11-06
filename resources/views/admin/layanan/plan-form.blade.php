@@ -12,11 +12,13 @@
         <x-admin.input label="Nama paket" name="name" :value="$plan->name" placeholder="mis. Growth" />
         <x-admin.input label="Tagline (teks di bawah harga)" name="tagline" :value="$plan->tagline" class="sm:col-span-2" />
         <x-admin.input label="Harga (Rp)" name="price" type="number" :value="$plan->price" help="0 = belum dijual." />
+        <x-admin.input label="Harga coret (Rp, opsional)" name="original_price" type="number" :value="$plan->original_price" help="Harga sebelum diskon, tampil dicoret di kartu. Isi lebih tinggi dari harga jual; 0 = tanpa coret." />
         <x-admin.input label="Teks periode" name="period" :value="$plan->period" help="Tampil setelah harga, mis. /bulan." />
         <x-admin.input label="Lama langganan (hari)" name="duration_days" type="number" :value="$plan->duration_days" help="Dipakai saat paket diaktifkan tanpa tanggal berakhir." />
         <x-admin.input label="Lencana (kosong = \"Rekomendasi\" untuk paket unggulan)" name="badge" :value="$plan->badge" placeholder="mis. Paling laris" />
         <div class="sm:col-span-2"><label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Fitur (satu per baris)</label>
             <textarea name="features" rows="6" class="w-full rounded-lg border border-gray-300 bg-transparent p-3 text-sm dark:border-gray-700 dark:text-white/90">{{ old('features', $plan->features) }}</textarea></div>
+        <x-admin.input label="Add-on (opsional)" name="addon" :value="$plan->addon" class="sm:col-span-2" placeholder="mis. Tambah desain Rp10.000 / desain (sesuai permintaan)" help="Tampil sebagai catatan di bawah daftar fitur." />
         <x-admin.input label="Urutan tampil" name="sort" type="number" :value="$plan->sort" />
         <div class="flex flex-col gap-2 pt-1 text-sm text-gray-700 dark:text-gray-300">
             <label class="flex items-center gap-2"><input type="checkbox" name="is_active" value="1" @checked(old('is_active', $plan->is_active))> Aktif (dijual di halaman publik)</label>

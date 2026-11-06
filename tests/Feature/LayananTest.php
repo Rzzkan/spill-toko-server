@@ -35,14 +35,13 @@ class LayananTest extends TestCase
 
     private function livePlan(int $price = 150000): ServicePlan
     {
-        $type = ServiceType::query()->where('slug', 'combo')->first();
+        $type = ServiceType::query()->where('slug', 'ig-dibantu-posting')->first();
         return ServicePlan::query()->create(['service_type_id' => $type->id, 'name' => 'Growth', 'price' => $price, 'period' => '/bulan', 'features' => "A\nB", 'is_active' => true, 'duration_days' => 30]);
     }
 
-    public function test_seeded_drafts_are_inactive_and_public_page_shows_empty_state(): void
+    public function test_public_page_shows_empty_state_without_active_plans(): void
     {
-        $this->assertSame(3, ServiceType::count());
-        $this->assertSame(0, ServicePlan::where('is_active', true)->count());
+        ServicePlan::query()->update(['is_active' => false]);
         $this->get('/layanan')->assertOk()->assertSee('Paket sedang disiapkan')->assertSee('Portofolio akan segera');
     }
 
@@ -87,6 +86,7 @@ class LayananTest extends TestCase
     {
         $this->webLogin();
         $draft = ServicePlan::query()->first();
+        $draft->update(['is_active' => false]);
         $this->post('/akun/layanan/pesan', ['plan' => $draft->id])->assertSessionHas('error');
         $this->assertSame(0, ServiceSubscription::count());
     }
@@ -126,7 +126,7 @@ class LayananTest extends TestCase
     public function test_admin_manages_types_and_plans_dynamically(): void
     {
         $this->actingAs($this->admin());
-        $this->get('/admin/layanan/paket')->assertOk()->assertSee('Starter');
+        $this->get('/admin/layanan/paket')->assertOk()->assertSee('Coba Sendiri');
         $this->post('/admin/layanan/jenis', ['name' => 'TikTok', 'sort' => 4, 'is_active' => 1])->assertRedirect();
         $type = ServiceType::where('slug', 'tiktok')->first();
         $this->assertNotNull($type);
@@ -193,9 +193,29 @@ class LayananTest extends TestCase
     public function test_public_page_uses_tabs_and_short_price(): void
     {
         $this->livePlan(2500000);
-        $this->get('/layanan')->assertOk()->assertSee('data-tab="combo"', false)->assertSee('Rp2,5 jt')->assertSee('role="tabpanel"', false);
+        $this->get('/layanan')->assertOk()->assertSee('data-tab="ig-dibantu-posting"', false)->assertSee('Rp2,5 jt')->assertSee('role="tabpanel"', false);
         $this->assertSame('Rp1,5 jt', \App\Support\Fmt::rpShort(1500000));
         $this->assertSame('Rp3 jt', \App\Support\Fmt::rpShort(3000000));
         $this->assertSame('Rp150.000', \App\Support\Fmt::rpShort(150000));
+    }
+
+    public function test_seeded_packages_and_discount_display(): void
+    {
+        $this->assertSame(4, ServiceType::query()->count());
+        $this->assertSame(8, ServicePlan::query()->where('is_active', true)->count());
+        $p = ServicePlan::query()->where('name', 'Naik Kelas')->whereHas('type', fn ($q) => $q->where('slug', 'ig-dibantu-posting'))->first();
+        $this->assertSame(2000000, $p->price);
+        $this->assertSame(4000000, $p->original_price);
+        $this->assertSame(50, $p->discountPct());
+        $this->get('/layanan')->assertOk()->assertSee('IG Tanpa Posting')->assertSee('Threads Dibantu Posting')->assertSee('Hemat 50%')->assertSee('Rp4 jt')->assertSee('Add-on:')->assertSee('180 konten Feed');
+    }
+
+    public function test_admin_can_set_original_price_and_addon(): void
+    {
+        $this->actingAs($this->admin());
+        $p = ServicePlan::query()->first();
+        $this->post('/admin/layanan/paket/' . $p->id, ['service_type_id' => $p->service_type_id, 'name' => $p->name, 'price' => 300000, 'original_price' => 600000, 'addon' => 'Tambah desain Rp10.000', 'duration_days' => 30, 'is_active' => 1])->assertRedirect();
+        $p->refresh();
+        $this->assertSame([600000, 'Tambah desain Rp10.000'], [$p->original_price, $p->addon]);
     }
 }
