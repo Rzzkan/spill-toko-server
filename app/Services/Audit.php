@@ -23,7 +23,6 @@ class Audit
     /** Batas harian untuk pelanggan berlangganan (0 = tanpa batas). */
     public static function paidDailyCap(): int { return max(0, Settings::int('audit.paid_daily_cap', 100)); }
     public static function retentionHours(): int { return max(1, Settings::int('audit.retention_hours', 24)); }
-    public static function extensionUrl(): string { return trim((string) Settings::get('audit.extension_url', '')); }
 
     private static function tz(): string { return (string) config('temanseller.display_timezone', 'Asia/Jakarta'); }
     private static function monthStart(): Carbon { return now(self::tz())->startOfMonth()->utc(); }
@@ -144,6 +143,8 @@ class Audit
     public const MAX_IMAGES = 4;
 
     public static function visionModel(): string { return trim((string) Settings::get('audit.vision_model', '')); }
+    /** Model untuk analisis & membaca halaman tersimpan: pengaturan audit, atau model utama AI bila kosong. */
+    public static function textModel(): string { return trim((string) Settings::get('audit.model', '')) ?: (trim((string) Settings::get('ai.model', 'deepseek-v4-flash')) ?: 'deepseek-v4-flash'); }
 
     /**
      * Buat pemindaian dari berkas unggahan. Berkas HANYA dibaca di memori pada request ini:
@@ -274,7 +275,7 @@ class Audit
             $content = [['type' => 'text', 'text' => $prompt]];
             foreach ($images as $b) $content[] = ['type' => 'image_url', 'image_url' => ['url' => 'data:image/jpeg;base64,' . $b]];
         }
-        $main = trim((string) Settings::get('ai.model', 'deepseek-v4-flash')) ?: 'deepseek-v4-flash';
+        $main = self::textModel();
         $models = array_values(array_unique(array_filter($images ? [self::visionModel() ?: $main, trim((string) Settings::get('ai.fallback_model', ''))] : [$main, trim((string) Settings::get('ai.fallback_model', ''))])));
         $msgs = [['role' => 'system', 'content' => self::EXTRACT_SYS], ['role' => 'user', 'content' => $content]];
         $err = 'tidak diketahui';
@@ -448,7 +449,7 @@ class Audit
         $result = ['kind' => $scan->kind, 'rules' => $rules['checks'], 'rule_score' => $rules['score'], 'ai' => null, 'score' => $rules['score'], 'label' => self::label($rules['score']), 'summary' => '', 'subject' => self::subject($scan->kind, $data)];
 
         if (Ai::on()) {
-            $models = array_values(array_unique(array_filter([trim((string) Settings::get('ai.model', 'deepseek-v4-flash')) ?: 'deepseek-v4-flash', trim((string) Settings::get('ai.fallback_model', ''))])));
+            $models = array_values(array_unique(array_filter([self::textModel(), trim((string) Settings::get('ai.fallback_model', ''))])));
             $last = null;
             $msgs = [['role' => 'system', 'content' => self::SYS], ['role' => 'user', 'content' => self::prompt($scan->kind, $data, $rules)]];
             foreach ($models as $m) {

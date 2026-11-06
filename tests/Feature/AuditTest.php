@@ -262,4 +262,16 @@ class AuditTest extends TestCase
         $r->assertSee(url('/marketplace-audit'), false)->assertDontSee(url('/akun/aplikasi/audit'), false);
         $this->get('/marketplace-audit')->assertOk()->assertSee('Info pembayaran')->assertSee('Midtrans')->assertSee('Bagaimana cara membayar paket unlimited?');
     }
+
+    public function test_audit_model_setting_is_used_with_fallback_to_main(): void
+    {
+        $this->aiOn();
+        $this->assertSame('deepseek-v4-flash', Audit::textModel());
+        Settings::set('ai.model', 'main-m');
+        $this->assertSame('main-m', Audit::textModel());
+        Settings::set('audit.model', 'audit-m');
+        Settings::set('audit.vision_model', 'vision-m');
+        $this->assertSame('audit-m', Audit::textModel());
+        $this->assertSame('vision-m', Audit::visionModel());
+    }
 }

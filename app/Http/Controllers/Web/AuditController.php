@@ -18,7 +18,7 @@ class AuditController extends Controller
     {
         abort_unless(Audit::enabled(), 404);
         return view('public.audit', [
-            'free' => Audit::freeScans(), 'plans' => Plans::all(Audit::APP), 'ext' => Audit::extensionUrl(), 'hubUrl' => url('/'),
+            'free' => Audit::freeScans(), 'plans' => Plans::all(Audit::APP), 'hubUrl' => url('/'),
             'loggedIn' => request()->session()->has('customer_id'),
         ]);
     }
@@ -30,7 +30,7 @@ class AuditController extends Controller
         $recent = AuditScan::query()->where('customer_id', $c->id)->whereNull('purged_at')->where('status', 'done')->latest('id')->limit(10)->get(['id', 'kind', 'url', 'result', 'created_at'])
             ->map(fn ($s) => ['id' => $s->id, 'kind' => $s->kind, 'name' => $s->result['subject']['name'] ?? $s->url, 'score' => $s->result['score'] ?? null, 'at' => $s->created_at->timezone(config('temanseller.display_timezone'))->format('d M H:i')]);
         return view('portal.audit', [
-            'c' => $c, 'q' => Audit::quota($c), 'recent' => $recent, 'ext' => Audit::extensionUrl(), 'plans' => Plans::all(Audit::APP),
+            'c' => $c, 'q' => Audit::quota($c), 'recent' => $recent, 'plans' => Plans::all(Audit::APP),
             'hours' => Audit::retentionHours(), 'enabled' => Audit::enabled(), 'apiBase' => rtrim(url('/api'), '/'),
         ]);
     }

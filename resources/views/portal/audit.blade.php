@@ -30,16 +30,13 @@
             <label class="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-300 px-4 py-2.5 text-sm has-[:checked]:border-ts-orange has-[:checked]:bg-ts-cream"><input type="radio" name="kind" value="shop" class="accent-orange-500"> Toko</label>
         </div>
 
-        <label class="mt-5 block text-sm font-medium text-gray-700" for="url">2. Tautan Shopee <span class="font-normal text-gray-400">(opsional, untuk catatan saja)</span></label>
-        <input id="url" name="url" type="url" inputmode="url" placeholder="https://shopee.co.id/nama-produk-i.123.456" class="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 text-sm">
-
-        <div class="mt-5 grid gap-4 md:grid-cols-2">
+<div class="mt-5 grid gap-4 md:grid-cols-2">
             <div>
-                <label class="block text-sm font-medium text-gray-700" for="pages">3a. Halaman tersimpan <span class="font-normal text-gray-400">(.html / .mhtml, maks 2)</span></label>
+                <label class="block text-sm font-medium text-gray-700" for="pages">2a. Halaman tersimpan <span class="font-normal text-gray-400">(.html / .mhtml, maks 2)</span></label>
                 <input id="pages" name="pages[]" type="file" multiple accept=".html,.htm,.mhtml,.mht" class="mt-2 block w-full rounded-lg border border-dashed border-gray-300 p-3 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-ts-cream file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-ts-navy">
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700" for="shots">3b. Screenshot <span class="font-normal text-gray-400">(JPG / PNG / WEBP, maks 4)</span></label>
+                <label class="block text-sm font-medium text-gray-700" for="shots">2b. Screenshot <span class="font-normal text-gray-400">(JPG / PNG / WEBP, maks 4)</span></label>
                 <input id="shots" name="shots[]" type="file" multiple accept="image/jpeg,image/png,image/webp" class="mt-2 block w-full rounded-lg border border-dashed border-gray-300 p-3 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-ts-cream file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-ts-navy">
             </div>
         </div>
@@ -69,7 +66,7 @@
                 <li><b>2.</b> Tunggu sampai halaman termuat penuh. Gulir pelan ke bawah sampai deskripsi dan ulasan terlihat.</li>
                 <li><b>3.</b> Tekan <kbd class="rounded bg-white px-1.5 py-0.5 text-xs ring-1 ring-gray-300">Ctrl</kbd> + <kbd class="rounded bg-white px-1.5 py-0.5 text-xs ring-1 ring-gray-300">S</kbd> (Mac: <kbd class="rounded bg-white px-1.5 py-0.5 text-xs ring-1 ring-gray-300">⌘</kbd> + <kbd class="rounded bg-white px-1.5 py-0.5 text-xs ring-1 ring-gray-300">S</kbd>).</li>
                 <li><b>4.</b> Pada "Save as type" / "Format", pilih <b>Webpage, Single File (.mhtml)</b>. Kalau tidak ada, pilih <b>Webpage, Complete</b>. Simpan.</li>
-                <li><b>5.</b> Unggah berkas <code>.mhtml</code> atau <code>.html</code>-nya di kolom 3a.</li>
+                <li><b>5.</b> Unggah berkas <code>.mhtml</code> atau <code>.html</code>-nya di kolom 2a.</li>
             </ol>
             <p class="mt-3 text-xs text-gray-500">Hasil paling lengkap. Untuk toko, simpan halaman toko (bagian "Semua Produk" ikut terbaca).</p>
         </div>
@@ -79,7 +76,7 @@
                 <li><b>1.</b> Buka halaman produk atau toko di aplikasi/browser Shopee.</li>
                 <li><b>2.</b> Ambil screenshot bagian <b>atas</b> (judul, harga, rating, terjual, variasi).</li>
                 <li><b>3.</b> Gulir, lalu screenshot <b>deskripsi</b> dan <b>ulasan</b> pembeli. Untuk toko: profil toko dan daftar produknya.</li>
-                <li><b>4.</b> Unggah maksimal 4 gambar di kolom 3b. Pastikan teks terbaca jelas, tidak buram, tidak terpotong.</li>
+                <li><b>4.</b> Unggah maksimal 4 gambar di kolom 2b. Pastikan teks terbaca jelas, tidak buram, tidak terpotong.</li>
             </ol>
             <p class="mt-3 text-xs text-gray-500">Cara tombol screenshot: HP, tekan tombol daya + volume bawah. Windows: <kbd class="rounded bg-white px-1.5 py-0.5 text-xs ring-1 ring-gray-300">Win</kbd>+<kbd class="rounded bg-white px-1.5 py-0.5 text-xs ring-1 ring-gray-300">Shift</kbd>+<kbd class="rounded bg-white px-1.5 py-0.5 text-xs ring-1 ring-gray-300">S</kbd>. Mac: <kbd class="rounded bg-white px-1.5 py-0.5 text-xs ring-1 ring-gray-300">⌘</kbd>+<kbd class="rounded bg-white px-1.5 py-0.5 text-xs ring-1 ring-gray-300">Shift</kbd>+<kbd class="rounded bg-white px-1.5 py-0.5 text-xs ring-1 ring-gray-300">4</kbd>.</p>
         </div>

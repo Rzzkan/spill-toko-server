@@ -104,6 +104,11 @@
                             @case('model')
                                 <input id="{{ $id }}" list="models-list" type="text" name="{{ $name }}" value="{{ $old }}" autocomplete="off" placeholder="mis. deepseek-v4-flash"
                                     class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-dark-900 dark:text-white/90">
+                                <select x-show="models.length" x-cloak @change="if ($event.target.value) { document.getElementById('{{ $id }}').value = $event.target.value; $event.target.value = ''; }"
+                                    class="mt-2 h-10 w-full rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-700 dark:border-gray-700 dark:bg-dark-900 dark:text-white/90">
+                                    <option value="">— pilih dari daftar model —</option>
+                                    <template x-for="m in models" :key="m"><option :value="m" x-text="m"></option></template>
+                                </select>
                                 @break
                             @default
                                 <input id="{{ $id }}" type="{{ in_array($f['type'], ['number']) ? 'number' : 'text' }}" name="{{ $name }}" value="{{ $old }}" @if (isset($f['min'])) min="{{ $f['min'] }}" @endif
@@ -117,11 +122,15 @@
 
         <div class="mt-8 flex flex-wrap items-center gap-3 border-t border-gray-100 pt-6 dark:border-gray-800">
             <x-admin.btn>Simpan pengaturan</x-admin.btn>
-            @if (in_array($group, ['google', 'midtrans', 'affiliate', 'ai']))
-                <span class="text-xs text-gray-500">Tes memakai nilai yang <b>sudah tersimpan</b>:</span>
+            @if (in_array($group, ['google', 'midtrans', 'affiliate', 'ai', 'audit']))
+                <span class="text-xs text-gray-500">@if ($group !== 'audit')Tes memakai nilai yang <b>sudah tersimpan</b>:@endif</span>
                 @if ($group === 'google')<x-admin.btn tone="outline" type="button" @click="run('google')" x-bind:disabled="busy.google === true"><span x-text="busy.google ? 'Menguji…' : 'Tes Google'"></span></x-admin.btn>@endif
                 @if ($group === 'midtrans')<x-admin.btn tone="outline" type="button" @click="run('midtrans')" x-bind:disabled="busy.midtrans === true"><span x-text="busy.midtrans ? 'Menguji…' : 'Tes Midtrans'"></span></x-admin.btn>@endif
                 @if ($group === 'affiliate')<x-admin.btn tone="outline" type="button" @click="run('affiliate')" x-bind:disabled="busy.affiliate === true"><span x-text="busy.affiliate ? 'Menguji…' : 'Tes Affiliate'"></span></x-admin.btn>@endif
+                @if ($group === 'audit')
+                    <x-admin.btn tone="outline" type="button" @click="run('models')" x-bind:disabled="busy.models === true"><span x-text="busy.models ? 'Memuat…' : 'Muat daftar model'"></span></x-admin.btn>
+                    <span class="text-xs text-gray-500">Memakai API key kenari.id dari pengaturan AI. Setelah daftar muncul, klik kolom model lalu pilih.</span>
+                @endif
                 @if ($group === 'ai')
                     <x-admin.btn tone="outline" type="button" @click="run('ai')" x-bind:disabled="busy.ai === true"><span x-text="busy.ai ? 'Menguji…' : 'Tes koneksi kenari.id'"></span></x-admin.btn>
                     <x-admin.btn tone="outline" type="button" @click="run('models')" x-bind:disabled="busy.models === true"><span x-text="busy.models ? 'Memuat…' : 'Muat daftar model'"></span></x-admin.btn>
