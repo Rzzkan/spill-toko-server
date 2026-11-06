@@ -1,6 +1,7 @@
 @php
     use App\Support\Fmt;
     $cta = url('/login');
+    $layananTypes = $layananTypes ?? collect();
     $layananOn = $layananOn ?? false; $layananFrom = $layananFrom ?? null;
     $faq = [
         ['Apa itu TemanSeller?', 'TemanSeller adalah kumpulan aplikasi untuk membantu seller online bekerja lebih cepat: riset produk, pantau kompetitor, sampai analisis dengan AI. Aplikasinya ditambah bertahap.'],
@@ -37,7 +38,31 @@
     <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5">
         <x-brand :href="url('/')" size="size-12" class="text-lg" />
         <nav class="hidden items-center gap-7 text-sm font-medium text-slate-600 md:flex">
-            <a href="#aplikasi" class="hover:text-[#ee4d2d]">Aplikasi</a>@if ($layananOn)<a href="{{ route('layanan') }}" class="hover:text-[#ee4d2d]">Layanan</a>@endif<a href="#kenapa" class="hover:text-[#ee4d2d]">Kenapa TemanSeller</a><a href="#cara" class="hover:text-[#ee4d2d]">Cara mulai</a><a href="#faq" class="hover:text-[#ee4d2d]">FAQ</a>
+            <div class="group relative">
+                <button type="button" class="flex items-center gap-1 hover:text-[#ee4d2d] focus:outline-none" aria-haspopup="true">Aplikasi <svg class="size-3.5 transition group-hover:rotate-180 group-focus-within:rotate-180" viewBox="0 0 20 20" fill="currentColor"><path d="M5.3 7.3a1 1 0 0 1 1.4 0L10 10.6l3.3-3.3a1 1 0 1 1 1.4 1.4l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 0-1.4z"/></svg></button>
+                <div class="invisible absolute left-1/2 top-full z-50 w-72 -translate-x-1/2 pt-3 opacity-0 transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                    <div class="rounded-xl border border-slate-200 bg-white p-2 shadow-xl">
+                        @foreach ($apps as $x)
+                            <a href="{{ $x['url'] }}" class="flex items-center gap-3 rounded-lg px-3 py-2.5 hover:bg-orange-50"><x-app-icon :app="$x['app']" size="size-9" /><span class="min-w-0"><span class="block truncate font-semibold text-slate-800">{{ $x['app']->name }}</span>@if ($x['app']->tagline)<span class="block truncate text-xs font-normal text-slate-500">{{ $x['app']->tagline }}</span>@endif</span></a>
+                        @endforeach
+                        <a href="#aplikasi" class="mt-1 block rounded-lg border-t border-slate-100 px-3 py-2.5 text-center text-[#ee4d2d] hover:bg-orange-50">Lihat semua aplikasi →</a>
+                    </div>
+                </div>
+            </div>
+            @if ($layananOn)
+            <div class="group relative">
+                <button type="button" class="flex items-center gap-1 hover:text-[#ee4d2d] focus:outline-none" aria-haspopup="true">Layanan <svg class="size-3.5 transition group-hover:rotate-180 group-focus-within:rotate-180" viewBox="0 0 20 20" fill="currentColor"><path d="M5.3 7.3a1 1 0 0 1 1.4 0L10 10.6l3.3-3.3a1 1 0 1 1 1.4 1.4l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 0-1.4z"/></svg></button>
+                <div class="invisible absolute left-1/2 top-full z-50 w-72 -translate-x-1/2 pt-3 opacity-0 transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                    <div class="rounded-xl border border-slate-200 bg-white p-2 shadow-xl">
+                        @foreach ($layananTypes as $t)
+                            <a href="{{ route('layanan') }}#paket" class="block rounded-lg px-3 py-2.5 hover:bg-orange-50"><span class="block truncate font-semibold text-slate-800">{{ $t->name }}</span>@if ($t->description)<span class="block truncate text-xs font-normal text-slate-500">{{ $t->description }}</span>@endif</a>
+                        @endforeach
+                        <a href="{{ route('layanan') }}" class="mt-1 block rounded-lg border-t border-slate-100 px-3 py-2.5 text-center text-[#ee4d2d] hover:bg-orange-50">Semua layanan &amp; portofolio →</a>
+                    </div>
+                </div>
+            </div>
+            @endif
+            <a href="#kenapa" class="hover:text-[#ee4d2d]">Kenapa TemanSeller</a><a href="#cara" class="hover:text-[#ee4d2d]">Cara mulai</a><a href="#faq" class="hover:text-[#ee4d2d]">FAQ</a>
         </nav>
         <div class="flex items-center gap-2">
             <a href="{{ $cta }}" class="hidden rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:text-[#ee4d2d] sm:block">Masuk</a>

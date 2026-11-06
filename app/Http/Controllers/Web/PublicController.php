@@ -33,7 +33,9 @@ class PublicController extends Controller
         $apps = AppCatalog::active()->map(fn (AppModel $a) => AppCatalog::summary($a) + [
             'url' => $a->landingUrl()]);
         $on = \App\Services\Layanan::enabled();
-        return view('public.hub', ['apps' => $apps, 'layananOn' => $on,
+        $types = $on ? \App\Models\ServiceType::query()->where('is_active', true)->orderBy('sort')->orderBy('id')
+            ->with(['plans' => fn ($q) => $q->where('is_active', true)->where('price', '>', 0)])->get()->filter(fn ($t) => $t->plans->isNotEmpty())->values() : collect();
+        return view('public.hub', ['apps' => $apps, 'layananOn' => $on, 'layananTypes' => $types,
             'layananFrom' => $on ? \App\Models\ServicePlan::orderable()->reorder()->min('price') : null]);
     }
 
