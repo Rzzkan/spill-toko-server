@@ -5,7 +5,7 @@
 <form method="POST" action="{{ route('portal.logout') }}" class="inline">@csrf<button class="text-sm text-gray-500 hover:text-gray-800">Keluar</button></form>
 @endsection
 @section('content')
-@php $qn = \App\Services\Layanan::questionnaire(); @endphp
+@php $formUrl = \App\Services\Layanan::formUrl(); @endphp
 <div>
     <h1 class="text-xl font-semibold">Layanan Sosmed</h1>
     <p class="text-sm text-gray-500">Kelola Instagram &amp; Threads oleh tim TemanSeller.</p>
@@ -25,7 +25,7 @@
         <div class="mt-3 flex gap-3"><button class="rounded-lg bg-brand-500 px-5 py-3 text-sm font-medium text-white hover:bg-brand-600">Konfirmasi pesanan</button><a href="{{ route('layanan.sosmed') }}" class="rounded-lg border border-gray-300 px-5 py-3 text-sm text-gray-700">Batal</a></div>
     </form>
     @if ($waUrl)<div class="mt-4 border-t border-gray-100 pt-4"><a href="{{ $waUrl }}" target="_blank" rel="noopener" class="text-sm font-medium text-success-700 underline">{{ $waLabel }}</a> <span class="text-xs text-gray-500">(ringkasan paket ikut terkirim)</span></div>@endif
-    <p class="mt-3 text-xs text-gray-500">Setelah konfirmasi, kamu akan diminta mengunduh dan mengisi kuesioner brand.</p>
+    <p class="mt-3 text-xs text-gray-500">Setelah konfirmasi, kamu akan diminta mengisi kuesioner brand lewat Google Form.</p>
 </section>
 @endif
 
@@ -62,7 +62,7 @@
         @if (in_array($st, ['pending', 'active'], true))
         <div class="border-t border-gray-100 p-6">
             @php
-                $waUrl = \App\Services\Layanan::waUrl(\App\Services\Layanan::orderSummary($c, $s->plan_name, $s->price, $s->customer_note, $s->label() . ' (pesanan #' . $s->id . ')', true));
+                $waUrl = \App\Services\Layanan::waUrl(\App\Services\Layanan::orderSummary($c, $s->plan_name, $s->price, $s->customer_note, $s->label() . ' (pesanan #' . $s->id . ')', $formUrl !== null));
                 $waLabel = $st === 'pending' ? 'Konfirmasi & kirim ringkasan via WhatsApp' : 'Tanya / kirim kuesioner via WhatsApp';
             @endphp
             @include('portal._kuesioner')

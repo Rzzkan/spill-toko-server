@@ -49,16 +49,8 @@ class Layanan
         return preg_match('#^https://[^\s]+$#i', $u) ? $u : null;
     }
 
-    // ---------- kuesioner client ----------
-    /** Tautan Google Docs -> tautan unduh .docx; tautan lain dipakai apa adanya. */
-    public static function questionnaire(): ?array
-    {
-        $u = self::safeUrl((string) Settings::get('layanan.questionnaire_url', ''));
-        if (!$u) return null;
-        $dl = preg_match('#^https://docs\.google\.com/document/d/([A-Za-z0-9_-]+)#', $u, $m) ? 'https://docs.google.com/document/d/' . $m[1] . '/export?format=docx' : $u;
-        $em = trim((string) Settings::get('layanan.questionnaire_email', ''));
-        return ['open' => $u, 'download' => $dl, 'email' => filter_var($em, FILTER_VALIDATE_EMAIL) ? $em : null, 'wa' => self::waNumber() !== ''];
-    }
+    // ---------- kuesioner client (Google Form) ----------
+    public static function formUrl(): ?string { return self::safeUrl((string) Settings::get('layanan.form_url', '')); }
 
     /** Ringkasan pesanan untuk pesan WhatsApp pertama, supaya admin langsung paham konteksnya. */
     public static function orderSummary(\App\Models\Customer $c, string $plan, int|float $price, ?string $note = null, ?string $status = null, bool $questionnaire = false): string
@@ -68,7 +60,7 @@ class Layanan
             'Paket: ' . $plan, 'Harga: Rp' . number_format((float) $price, 0, ',', '.')];
         if ($status) $l[] = 'Status: ' . $status;
         $l[] = 'Catatan: ' . (trim((string) $note) !== '' ? trim(preg_replace('/\s+/', ' ', (string) $note)) : '-');
-        if ($questionnaire) $l[] = 'Kuesioner: ' . ($questionnaire === true ? 'akan saya kirim lewat email/WhatsApp' : $questionnaire);
+        if ($questionnaire) $l[] = 'Kuesioner: sudah saya isi lewat Google Form';
         $l[] = ''; $l[] = 'Saya ingin bertanya / melanjutkan.';
         return implode("\n", $l);
     }

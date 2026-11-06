@@ -82,19 +82,21 @@ class LayananTest extends TestCase
         $this->get('/akun')->assertOk()->assertSee('Layanan Sosmed');
     }
 
-    public function test_questionnaire_download_email_and_wa_summary(): void
+    public function test_google_form_and_wa_summary(): void
     {
         \App\Services\Settings::set('layanan.wa_number', '6281234567890');
         $plan = $this->livePlan();
         $this->webLogin();
         $this->get('/layanan/pesan/' . $plan->id);
-        $this->get('/akun/layanan')->assertOk()->assertSee('wa.me/6281234567890', false)->assertSee('Tanya dulu lewat WhatsApp');
+        $this->get('/akun/layanan')->assertOk()->assertSee('wa.me/6281234567890', false)->assertSee('Tanya dulu lewat WhatsApp')->assertDontSee('Google Form ↗');
         $this->post('/akun/layanan/pesan', ['plan' => $plan->id, 'note' => '@tokoku']);
+        $this->get('/akun/layanan')->assertOk()->assertDontSee('Isi kuesioner (Google Form)');   // belum diisi admin
+        \App\Services\Settings::set('layanan.form_url', 'https://forms.gle/abc123');
         $r = $this->get('/akun/layanan')->assertOk();
-        $r->assertSee('export?format=docx', false)->assertSee('temanseller.com@gmail.com')->assertSee('Konfirmasi &amp; kirim ringkasan via WhatsApp', false);
-        $r->assertSee(rawurlencode('Paket: '), false)->assertSee(rawurlencode('Catatan: @tokoku'), false);
-        \App\Services\Settings::set('layanan.questionnaire_email', 'kerja@contoh.id');
-        $this->get('/akun/layanan')->assertOk()->assertSee('mailto:kerja@contoh.id', false);
+        $r->assertSee('https://forms.gle/abc123', false)->assertSee('Isi kuesioner (Google Form)')->assertSee('Konfirmasi &amp; kirim ringkasan via WhatsApp', false);
+        $r->assertSee(rawurlencode('Catatan: @tokoku'), false);
+        \App\Services\Settings::set('layanan.form_url', 'javascript:alert(1)');
+        $this->get('/akun/layanan')->assertOk()->assertDontSee('javascript:', false);
         \App\Services\Settings::set('layanan.wa_number', '');
         $this->get('/akun/layanan')->assertOk()->assertDontSee('wa.me', false);
     }

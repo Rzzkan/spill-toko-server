@@ -67,7 +67,7 @@ class LayananController extends Controller
         if ($open) return redirect()->route('portal.layanan')->with('ok', 'Pesanan paket ini sudah tercatat dan menunggu konfirmasi.');
         ServiceSubscription::query()->create(['customer_id' => $c->id, 'service_plan_id' => $plan->id, 'plan_name' => $plan->type->name . ' – ' . $plan->name,
             'price' => $plan->price, 'status' => 'pending', 'customer_note' => $d['note'] ?? null]);
-        return redirect()->route('portal.layanan')->with('ok', 'Pesanan tercatat. Unduh dan isi kuesioner brand di bawah, lalu kirim lewat email atau WhatsApp; admin akan mengaktifkan paketmu setelah pembayaran.');
+        return redirect()->route('portal.layanan')->with('ok', 'Pesanan tercatat. Isi kuesioner brand lewat Google Form di bawah; admin akan mengaktifkan paketmu setelah pembayaran.');
     }
 
     /** Pelanggan memperbarui catatan (nama akun/brand, kebutuhan) pada langganannya. */
