@@ -36,6 +36,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="facebook-domain-verification" content="gzts236t5urmz20vp3wahb33svsly8" />
     <link rel="icon" href="{{ asset('favicon.ico') }}"><link rel="apple-touch-icon" href="{{ asset('img/brand/temanseller-180.png') }}">
     <title>TemanSeller — Aplikasi Pendukung Seller Marketplace</title>
     <meta name="description" content="TemanSeller menyediakan aplikasi untuk membantu seller online: riset produk, pantau kompetitor, dan analisis AI. Satu akun untuk semua aplikasi, trial gratis. Ada juga layanan kelola Instagram & Threads.">

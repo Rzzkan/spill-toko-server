@@ -14,6 +14,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="facebook-domain-verification" content="gzts236t5urmz20vp3wahb33svsly8" />
     <link rel="icon" href="{{ asset('favicon.ico') }}"><link rel="apple-touch-icon" href="{{ asset('img/brand/temanseller-180.png') }}">
     <title>Jasa Kelola Instagram &amp; Threads — TemanSeller</title>
     <meta name="description" content="Layanan berlangganan kelola konten Instagram dan Threads untuk seller online: ide, desain, caption, dan jadwal posting. Lihat paket dan portofolio.">

@@ -14,6 +14,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="facebook-domain-verification" content="gzts236t5urmz20vp3wahb33svsly8" />
     <link rel="icon" href="{{ asset('img/brand/shofee.ico') }}"><link rel="apple-touch-icon" href="{{ asset('img/brand/shofee-180.png') }}">
     <title>Shofee — Riset Produk & Kompetitor Shopee dengan Analisis AI</title>
     <meta name="description" content="Extension Chrome untuk riset produk, toko kompetitor, dan kata kunci Shopee langsung di halaman Shopee. Estimasi omzet, tren penjualan, dan rekomendasi AI. Coba gratis {{ $trial }} hari.">

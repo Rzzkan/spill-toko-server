@@ -19,6 +19,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="facebook-domain-verification" content="gzts236t5urmz20vp3wahb33svsly8" />
     <link rel="icon" href="{{ asset('favicon.ico') }}"><link rel="apple-touch-icon" href="{{ asset('img/brand/temanseller-180.png') }}">
     <title>Marketplace Audit — Audit Toko &amp; Produk Shopee dengan AI | TemanSeller</title>
     <meta name="description" content="Audit toko dan produk Shopee otomatis: skor, temuan, dan rekomendasi AI. {{ $free }} scan gratis per bulan. Data dikumpulkan di browser kamu, tanpa menyimpan akun Shopee.">

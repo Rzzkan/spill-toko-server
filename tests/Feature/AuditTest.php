@@ -193,7 +193,7 @@ class AuditTest extends TestCase
     public function test_closed_and_pages(): void
     {
         $this->get('/marketplace-audit')->assertOk()->assertSee('tidak disimpan');
-        $this->get('/')->assertOk()->assertSee('Marketplace Audit');
+        $this->get('/')->assertOk()->assertSee('Marketplace Audit')->assertSee('facebook-domain-verification', false)->assertSee('gzts236t5urmz20vp3wahb33svsly8', false);
         Settings::set('audit.enabled', '0');
         $this->get('/marketplace-audit')->assertNotFound();
     }

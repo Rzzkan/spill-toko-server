@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="facebook-domain-verification" content="gzts236t5urmz20vp3wahb33svsly8" />
     <link rel="icon" href="{{ asset('favicon.ico') }}"><link rel="apple-touch-icon" href="{{ asset('img/brand/temanseller-180.png') }}">
     <title>Kebijakan Privasi · TemanSeller &amp; Shofee</title>
     <meta name="description" content="Kebijakan privasi TemanSeller dan extension Chrome Shofee: data apa yang dikumpulkan, untuk apa, dan hak kamu.">
