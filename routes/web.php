@@ -14,6 +14,7 @@ Route::get('/layanan-kelola-sosmed', [\App\Http\Controllers\Web\LayananControlle
 Route::get('/layanan/pesan/{plan}', [\App\Http\Controllers\Web\LayananController::class, 'start'])->whereNumber('plan')->name('layanan.start');
 Route::get('/layanan/gambar/{id}/{v}', [\App\Http\Controllers\Web\LayananController::class, 'image'])->whereNumber('id')->name('layanan.image');
 Route::get('/marketplace-audit', [\App\Http\Controllers\Web\AuditController::class, 'landing'])->name('audit.landing');
+Route::get('/swara', [\App\Http\Controllers\Web\SwaraController::class, 'landing'])->name('swara.landing');
 Route::get('/privasi', [\App\Http\Controllers\Web\PublicController::class, 'privacy'])->name('privacy');
 Route::redirect('/privacy', '/privasi', 301);
 Route::get('/thanks', [\App\Http\Controllers\Web\PublicController::class, 'thanks'])->middleware('throttle:30,1')->name('thanks');
@@ -42,6 +43,9 @@ Route::middleware(PortalAuth::class)->group(function () {
     Route::post('/audit/scans/{id}/rearm', [\App\Http\Controllers\Web\AuditController::class, 'rearm'])->whereNumber('id')->middleware('throttle:20,1')->name('audit.rearm');
     Route::post('/audit/scans/{id}/cancel', [\App\Http\Controllers\Web\AuditController::class, 'cancel'])->whereNumber('id')->name('audit.cancel');
     Route::delete('/audit/scans/{id}', [\App\Http\Controllers\Web\AuditController::class, 'destroy'])->whereNumber('id')->name('audit.destroy');
+    Route::get('/akun/swara', [\App\Http\Controllers\Web\SwaraController::class, 'page'])->name('swara.page');
+    Route::post('/akun/swara/pair', [\App\Http\Controllers\Web\SwaraController::class, 'pair'])->middleware('throttle:10,1')->name('swara.pair');
+    Route::post('/akun/swara/token', [\App\Http\Controllers\Web\SwaraController::class, 'token'])->middleware('throttle:30,1')->name('swara.token');
     Route::post('/keluar', [PortalController::class, 'logout'])->name('portal.logout');
 });
 

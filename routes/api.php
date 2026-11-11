@@ -9,6 +9,8 @@ Route::match(['GET', 'POST', 'OPTIONS'], '/index.php', [ApiController::class, 'g
 
 // Rute bersih (setara)
 Route::get('/plans', [ApiController::class, 'plans']);
+// Kunci publik Swara: aman dibuka tanpa auth (kunci publik bukan rahasia), dipakai notebook Colab untuk verifikasi token.
+Route::get('/swara/pubkey', fn () => response()->json(['pubkey' => \App\Services\Swara::publicKey()]))->middleware('throttle:30,1');
 Route::post('/auth', [ApiController::class, 'auth']);
 Route::post('/audit/scans/{id}/data', [\App\Http\Controllers\Api\AuditApiController::class, 'data'])->whereNumber('id')->middleware('throttle:30,1');
 Route::post('/midtrans/notify', [ApiController::class, 'notify']);
