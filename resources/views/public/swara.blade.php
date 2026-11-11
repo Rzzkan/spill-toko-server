@@ -44,6 +44,7 @@
             <a href="{{ $cta }}" class="rounded-xl bg-ts-orange px-7 py-3.5 text-base font-semibold text-ts-navy shadow-lg shadow-orange-200 hover:bg-ts-orange-dark">{{ $loggedIn ? 'Buka Swara' : 'Masuk dengan Google' }}</a>
         </div>
         <p class="mt-4 text-sm text-slate-500">Sekali beli · bukan langganan bulanan</p>
+        <div class="mx-auto mt-10 max-w-md overflow-hidden rounded-3xl border border-orange-100 bg-ts-cream shadow-xl shadow-orange-100"><img src="{{ asset('img/slides/swara.webp') }}" alt="Maskot TemanSeller mengacungkan jempol di samping mikrofon, melambangkan fitur cloning suara Swara" class="w-full" width="960" height="720"></div>
     </div>
 </section>
 

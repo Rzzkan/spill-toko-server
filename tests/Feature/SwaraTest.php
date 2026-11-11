@@ -48,6 +48,22 @@ class SwaraTest extends TestCase
         $this->get('/akun/swara')->assertRedirect('/swara');
     }
 
+    public function test_guide_page_requires_license_and_shows_placeholder_videos(): void
+    {
+        $c = $this->webLogin();
+        $this->get('/akun/swara/panduan')->assertRedirect('/swara');   // belum punya lisensi
+        $this->giveLifetime($c);
+        $this->get('/akun/swara/panduan')->assertOk()->assertSee('Voice Cloning')->assertSee('Video segera hadir');
+    }
+
+    public function test_guide_page_shows_configured_video_links(): void
+    {
+        $c = $this->webLogin();
+        $this->giveLifetime($c);
+        Settings::set('swara.video_clone', 'https://youtube.com/watch?v=abc');
+        $this->get('/akun/swara/panduan')->assertOk()->assertSee('https://youtube.com/watch?v=abc', false);
+    }
+
     public function test_pair_requires_license(): void
     {
         $this->webLogin();

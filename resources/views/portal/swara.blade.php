@@ -9,7 +9,10 @@
         <h1 class="text-xl font-semibold">🎙️ Swara</h1>
         <p class="text-sm text-gray-500">Cloning suara. Mesinnya jalan di Google Colab kamu sendiri — audio tidak pernah melewati server TemanSeller.</p>
     </div>
-    <div id="status" class="rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm text-gray-500">Memeriksa notebook…</div>
+    <div class="flex items-center gap-2">
+        <a href="{{ route('swara.guide') }}" class="rounded-xl border border-ts-orange/60 bg-ts-cream px-4 py-2 text-sm font-semibold text-ts-navy hover:bg-orange-100">📖 Panduan penggunaan</a>
+        <div id="status" class="rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm text-gray-500">Memeriksa notebook…</div>
+    </div>
 </div>
 
 <section class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-theme-sm">

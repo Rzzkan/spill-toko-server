@@ -15,6 +15,7 @@ class SettingDefs
         'ekstensi' => 'Extension',
         'layanan' => 'Layanan Sosmed',
         'audit' => 'Marketplace Audit',
+        'swara' => 'Swara',
     ];
 
     public static function all(): array
@@ -45,6 +46,11 @@ class SettingDefs
             'audit.retention_hours' => ['group' => 'audit', 'label' => 'Masa simpan hasil (jam)', 'type' => 'number', 'default' => '24', 'min' => 1, 'help' => 'Setelah ini tautan, data, dan hasil audit dihapus otomatis; hanya hitungan kuota yang tersisa.'],
             'audit.model'          => ['group' => 'audit', 'label' => 'Model AI untuk analisis audit', 'type' => 'model', 'default' => '', 'help' => 'Model kenari.id untuk membaca PDF dan menyusun hasil audit. Kosong = pakai Model utama dari pengaturan AI. Klik "Muat daftar model" di bawah untuk memilih.'],
             'audit.vision_model'   => ['group' => 'audit', 'label' => 'Model AI untuk membaca screenshot', 'type' => 'model', 'default' => '', 'help' => 'Harus model yang mendukung gambar (vision). Kosong = pakai model analisis di atas. Klik "Muat daftar model" di bawah untuk memilih.'],
+
+            // ---- swara (cloning suara) ----
+            'swara.video_akses' => ['group' => 'swara', 'label' => 'Video: cara akses & beli lisensi', 'type' => 'url', 'default' => '', 'help' => 'Tautan YouTube. Kosongkan untuk menampilkan "Video segera hadir" di halaman panduan.'],
+            'swara.video_sesi'  => ['group' => 'swara', 'label' => 'Video: cara menyambungkan notebook', 'type' => 'url', 'default' => '', 'help' => 'Tautan YouTube untuk langkah menjalankan notebook Colab dan menempel link sesi baru.'],
+            'swara.video_clone' => ['group' => 'swara', 'label' => 'Video: cara memakai Voice Cloning', 'type' => 'url', 'default' => '', 'help' => 'Tautan YouTube untuk langkah merekam referensi, menulis naskah, dan menghasilkan audio.'],
 
             // ---- ekstensi ----
             'app.extension_id' => ['group' => 'ekstensi', 'label' => 'ID extension Chrome', 'type' => 'text', 'default' => 'ecngchlgljjgclfjhljppkmmoamdfpjl', 'help' => 'Dipakai untuk menampilkan Redirect URI Google yang benar. Ganti dengan ID dari Chrome Web Store setelah publish.'],
