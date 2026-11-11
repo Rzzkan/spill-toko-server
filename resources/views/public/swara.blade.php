@@ -18,7 +18,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="facebook-domain-verification" content="gzts236t5urmz20vp3wahb33svsly8" />
-    <link rel="icon" href="{{ asset('favicon.ico') }}"><link rel="apple-touch-icon" href="{{ asset('img/brand/temanseller-180.png') }}">
+    <link rel="icon" href="{{ asset('img/brand/swara.ico') }}"><link rel="apple-touch-icon" href="{{ asset('img/brand/swara-180.png') }}">
     <title>Swara — Cloning Suara, Jalan di Google Colab Kamu | TemanSeller</title>
     <meta name="description" content="Swara: ubah teks jadi audio dengan suaramu sendiri. Mesinnya jalan gratis di Google Colab kamu, bukan di server kami. Sekali beli, bukan langganan.">
     @vite(['resources/css/app.css'])
