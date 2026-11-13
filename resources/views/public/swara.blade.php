@@ -3,7 +3,7 @@
     $cta = $loggedIn ? route('swara.page') : route('portal.login');
     $lifetime = $plans['lifetime'] ?? null;
     $faq = [
-        ['Apa itu Swara?', 'Alat cloning suara: rekam atau unggah contoh suaramu, ketik teks, lalu diubah jadi audio dengan suara itu. Mesinnya (OmniVoice) berjalan di Google Colab milik kamu sendiri — gratis dari Google — bukan di server TemanSeller.'],
+        ['Apa itu Swara?', 'Alat cloning suara: rekam atau unggah contoh suaramu, ketik teks, lalu diubah jadi audio dengan suara itu. Mesinnya berjalan di Google Colab milik kamu sendiri — gratis dari Google — bukan di server TemanSeller.'],
         ['Kenapa harus pakai Colab sendiri?', 'Supaya biayanya tidak membengkak kalau penggunanya banyak, dan supaya audio suaramu tidak pernah melewati server kami. Kamu hanya menjalankan satu notebook, menyalin link yang muncul, lalu menempelkannya di halaman Swara.'],
         ['Apakah ini sekali bayar?', 'Ya. Satu kali beli memberi akses memakai Swara selama aplikasinya masih kami operasikan — bukan biaya bulanan.'],
         ['Apakah suara saya disimpan di server TemanSeller?', 'Tidak. Audio referensi dan hasilnya dikirim langsung dari browser kamu ke Colab kamu sendiri, tidak lewat server kami sama sekali. Server kami hanya memeriksa lisensi dan menerbitkan izin pakai yang berumur pendek.'],

@@ -30,7 +30,7 @@ class SwaraController extends Controller
         if (!$a['access']) {
             return redirect('/swara')->with('msg', 'Swara belum dibeli atau lisensi sudah berakhir. Beli lisensi dulu untuk membuka alat ini.');
         }
-        return view('portal.swara', ['c' => $c, 'plans' => Plans::all(Swara::APP), 'ttl' => Swara::TOKEN_TTL]);
+        return view('portal.swara', ['c' => $c, 'plans' => Plans::all(Swara::APP), 'ttl' => Swara::TOKEN_TTL, 'notebookUrl' => Swara::NOTEBOOK_URL]);
     }
 
     /** Panduan penggunaan (mirip modul "wajib dibaca"), untuk pelanggan yang sudah punya lisensi. */
@@ -42,6 +42,7 @@ class SwaraController extends Controller
         }
         return view('portal.swara-panduan', [
             'videos' => ['akses' => Settings::raw('swara.video_akses'), 'sesi' => Settings::raw('swara.video_sesi'), 'clone' => Settings::raw('swara.video_clone')],
+            'notebookUrl' => Swara::NOTEBOOK_URL,
         ]);
     }
 

@@ -101,6 +101,16 @@ class SwaraTest extends TestCase
         $this->postJson('/akun/swara/token', ['sid' => 'new222'])->assertOk();          // sesi baru tetap jalan
     }
 
+    public function test_guide_and_landing_link_to_the_ready_to_run_notebook_without_naming_the_engine(): void
+    {
+        $this->get('/swara')->assertOk()->assertDontSee('OmniVoice', false)->assertDontSee('omnivoice', false);
+
+        $c = $this->webLogin();
+        $this->giveLifetime($c);
+        $this->get('/akun/swara')->assertOk()->assertSee(Swara::NOTEBOOK_URL, false)->assertDontSee('OmniVoice', false)->assertDontSee('omnivoice', false);
+        $this->get('/akun/swara/panduan')->assertOk()->assertSee(Swara::NOTEBOOK_URL, false)->assertDontSee('OmniVoice', false)->assertDontSee('omnivoice', false);
+    }
+
     public function test_invalid_sid_rejected(): void
     {
         $c = $this->webLogin();

@@ -24,7 +24,7 @@
 <section class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-theme-sm">
     <h2 class="text-lg font-bold text-ts-navy">Pendahuluan</h2>
     <p class="mt-3 text-sm leading-relaxed text-gray-600">Selamat datang di <b>Swara</b>, Juragan. Ini alat buat mengubah naskah jadi audio pakai suaramu sendiri — tanpa rekam ulang berkali-kali, tanpa biaya langganan bulanan.</p>
-    <p class="mt-3 text-sm leading-relaxed text-gray-600">Mesinnya (OmniVoice) jalan di Google Colab-mu sendiri, gratis dari Google, bukan di server TemanSeller. Jadi suaramu tidak pernah dikirim ke kami — ini yang bikin Swara bisa sekali bayar, bukan langganan. Konsekuensinya satu: notebook itu perlu kamu jalankan tiap mau pakai, dan satu lisensi cuma buat satu sesi aktif.</p>
+    <p class="mt-3 text-sm leading-relaxed text-gray-600">Mesinnya jalan di Google Colab-mu sendiri, gratis dari Google, bukan di server TemanSeller. Jadi suaramu tidak pernah dikirim ke kami — ini yang bikin Swara bisa sekali bayar, bukan langganan. Konsekuensinya satu: notebook itu perlu kamu jalankan tiap mau pakai, dan satu lisensi cuma buat satu sesi aktif.</p>
     <p class="mt-3 text-sm leading-relaxed text-gray-600">Panduan ini pelan-pelan saja, satu langkah demi satu langkah. Kalau ada yang kurang jelas, boleh tanya lewat WhatsApp — tautannya ada di halaman Layanan.</p>
 </section>
 
@@ -49,9 +49,13 @@
 
     <div class="mt-6 border-t border-gray-100 pt-5">
         <h3 class="font-bold text-ts-navy">Cara menyambungkan notebook / membuka sesi baru</h3>
-        <p class="mt-1.5 text-sm text-gray-600">Setiap mau pakai Swara, kamu jalankan notebook Colab-nya dulu. Begini urutannya:</p>
-        <ol class="mt-2 list-decimal space-y-1.5 pl-5 text-sm text-gray-600">
-            <li>Buka notebook <i>Swara_Worker.ipynb</i> di Google Colab, pilih <b>Runtime → Change runtime type → T4 GPU</b>.</li>
+        <p class="mt-1.5 text-sm text-gray-600">Setiap mau pakai Swara, kamu jalankan notebook Colab-nya dulu — tidak perlu menulis kode apa pun, tinggal buka lalu jalankan semua selnya. Begini urutannya:</p>
+        <a href="{{ $notebookUrl }}" target="_blank" rel="noopener" class="mt-3 flex items-center gap-3 rounded-xl border-2 border-ts-orange bg-ts-cream p-3 hover:border-ts-orange-dark">
+            <span class="grid size-11 shrink-0 place-items-center rounded-lg bg-ts-navy text-white">📓</span>
+            <span class="min-w-0"><span class="block truncate text-sm font-semibold text-ts-navy">Buka notebook Swara di Google Colab</span><span class="block truncate text-xs text-gray-500">Link resmi — tinggal jalankan, tidak perlu menyalin atau mengetik kode.</span></span>
+        </a>
+        <ol class="mt-3 list-decimal space-y-1.5 pl-5 text-sm text-gray-600">
+            <li>Klik tombol di atas, lalu di Colab pilih <b>Runtime → Change runtime type → T4 GPU</b>.</li>
             <li>Jalankan semua sel (<b>Runtime → Run all</b>), tunggu sampai sel terakhir mencetak sebuah link.</li>
             <li>Buka link itu, atau salin lalu tempel di halaman <a href="{{ route('swara.page') }}" class="text-ts-orange-text hover:underline">Swara</a> milikmu.</li>
             <li>Biarkan tab notebook tetap terbuka selama kamu pakai Swara. Menjalankan notebook baru otomatis membuka sesi baru dan mengambil alih dari sesi lama — jadi kalau tiba-tiba halaman Swara bilang "sesi digantikan", itu tandanya ada notebook lain yang baru dijalankan dengan akun yang sama.</li>

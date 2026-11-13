@@ -7,7 +7,7 @@ use App\Models\Customer;
 use App\Models\SwaraPairing;
 
 /**
- * Swara: voice cloning (OmniVoice) jalan di Google Colab milik pengguna, antarmuka di temanseller.com.
+ * Swara: voice cloning (mesin suara jalan di Google Colab milik pengguna), antarmuka di temanseller.com.
  * Server TIDAK pernah menerima audio: browser memanggil Colab langsung (tunnel URL hanya ada di hash URL,
  * tidak pernah dikirim ke server kita). Server hanya mengurus lisensi dan menandatangani token pendek yang
  * diperiksa notebook (tanda tangan Ed25519; kunci publik dilayani lewat GET /api/swara/pubkey, aman dibuka
@@ -20,6 +20,9 @@ use App\Models\SwaraPairing;
 class Swara
 {
     public const APP = 'swara';
+
+    /** Notebook Colab siap-jalan yang dibagikan ke pembeli (lihat deploy/swara/README.md untuk cara memperbaruinya). */
+    public const NOTEBOOK_URL = 'https://colab.research.google.com/github/Rzzkan/spill-toko-server/blob/main/deploy/swara/Swara_Worker.ipynb';
 
     /** Umur token (detik). Notebook menolak token yang sudah lewat exp; browser memperpanjang berkala. */
     public const TOKEN_TTL = 900;
