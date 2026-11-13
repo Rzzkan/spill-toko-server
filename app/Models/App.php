@@ -35,6 +35,28 @@ class App extends Model
         return url('/akun/aplikasi/' . $this->slug);
     }
 
+    /**
+     * Alamat tombol "buka/pakai aplikasi" di halaman akun — beda dari landingUrl() (itu halaman promosi publik).
+     * Extension Chrome (ada `download_url`) -> langsung ke Chrome Web Store. Aplikasi web dengan halaman alat sendiri
+     * (Swara, Marketplace Audit) -> langsung ke halaman alatnya. Lainnya -> halaman paket (belum punya halaman alat).
+     */
+    public function toolUrl(): string
+    {
+        $dl = trim((string) $this->download_url);
+        if ($dl !== '') return $dl;
+        return match ($this->slug) {
+            'swara' => route('swara.page'),
+            'audit' => route('audit'),
+            default => route('portal.app', $this->slug),
+        };
+    }
+
+    /** True bila tombol "buka aplikasi" mengarah ke tempat lain (Chrome Web Store), bukan halaman kami sendiri. */
+    public function toolUrlExternal(): bool
+    {
+        return trim((string) $this->download_url) !== '';
+    }
+
     public static function slugOk(string $slug): bool { return (bool) preg_match('/^[a-z][a-z0-9\-]{1,29}$/', $slug); }
 
     public static function bySlug(string $slug): ?self { return AppCatalog::find($slug); }

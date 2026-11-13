@@ -150,6 +150,26 @@ class MultiAppTest extends TestCase
         $this->getJson('/api/index.php?r=plans', ['X-App' => 'kasirku'])->assertOk();
     }
 
+    public function test_lifetime_plan_is_shown_on_app_page_even_without_monthly_yearly(): void
+    {
+        // Aplikasi yang cuma jual Lifetime (mis. Swara) — kartu paketnya tidak boleh hilang.
+        AppModel::query()->create(['slug' => 'voiceapp', 'name' => 'VoiceApp', 'trial_days' => 0, 'active' => true, 'sort' => 3,
+            'plans' => ['monthly' => ['price' => 0], 'yearly' => ['price' => 0], 'lifetime' => ['enabled' => true, 'price' => 99000]]]);
+        $c = Customer::query()->create(['google_sub' => 'lt1', 'email' => 'lt1@test.id', 'trial_ends_at' => now()->subDay()]);
+        \App\Services\Settings::set('midtrans.server_key', 'SB-Mid-server-lt');
+        $this->withSession(['customer_id' => $c->id])->get('/akun/aplikasi/voiceapp')
+            ->assertOk()->assertSee('Lifetime')->assertSee('Rp99.000', false)->assertSee('Beli Lifetime');
+    }
+
+    public function test_account_page_has_open_app_button_and_shofee_goes_to_chrome_webstore(): void
+    {
+        $c = Customer::query()->create(['google_sub' => 'ob1', 'email' => 'ob1@test.id', 'trial_ends_at' => now()->addDays(3)]);
+        $this->withSession(['customer_id' => $c->id])->get('/akun')
+            ->assertOk()
+            ->assertSee('Buka di Chrome Web Store')
+            ->assertSee('chromewebstore.google.com', false);
+    }
+
     public function test_hub_lists_apps_and_shofee_landing_by_host_and_path(): void
     {
         $this->app2();

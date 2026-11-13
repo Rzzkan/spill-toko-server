@@ -54,6 +54,19 @@
         </div>
     @endforeach
 </div>
+@if (isset($plans['lifetime']) && !$isLifetime)
+    @php $lt = $plans['lifetime']; $discLt = \App\Services\Plans::discount($lt); @endphp
+    <div class="mt-4 rounded-2xl border-2 border-brand-300 bg-white p-6 shadow-theme-sm sm:max-w-sm">
+        <div class="flex items-center justify-between text-sm text-gray-500"><span>{{ $lt['label'] }}</span>@if ($discLt)<span class="rounded-full bg-success-50 px-2 py-0.5 text-xs font-medium text-success-700">Hemat {{ $discLt }}%</span>@endif</div>
+        <div class="mt-1 flex items-baseline gap-2">
+            @if ($lt['original'] > $lt['price'])<s class="text-sm text-gray-400">{{ Fmt::rp($lt['original']) }}</s>@endif
+            <span class="text-2xl font-bold">{{ Fmt::rp($lt['price']) }}</span><span class="text-sm font-normal text-gray-500">sekali bayar</span>
+        </div>
+        <p class="mt-2 text-sm text-gray-500">Akses selamanya untuk {{ $appRow->name }} — bukan langganan bulanan.</p>
+        <form method="POST" action="{{ route('portal.pay', $appRow->slug) }}" class="mt-4">@csrf<input type="hidden" name="plan" value="lifetime">
+            <button @disabled(!$canPay) class="w-full rounded-lg bg-brand-500 px-4 py-3 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-50">Beli {{ $lt['label'] }}</button></form>
+    </div>
+@endif
 @if ($isLifetime)<p class="mt-3 text-sm text-gray-500">Kamu memiliki akses Lifetime untuk {{ $appRow->name }} — tidak perlu berlangganan.</p>@endif
 @if (!count($plans))<p class="mt-3 text-sm text-gray-500">Paket {{ $appRow->name }} belum dibuka.</p>@endif
 

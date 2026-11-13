@@ -29,8 +29,13 @@
                 <div><dt class="text-xs uppercase text-gray-500">Berlaku sampai</dt><dd class="mt-0.5 font-medium">{{ $a['plan'] === 'lifetime' ? 'Selamanya' : ($until ? Fmt::dt($until, false) : '—') }}</dd></div>
                 <div><dt class="text-xs uppercase text-gray-500">Sisa waktu</dt><dd class="mt-0.5 font-medium">@if ($a['plan'] === 'lifetime') ∞ @elseif ($a['access']) {{ $left }} hari @elseif ($a['plan'] === 'none') — @else Sudah berakhir @endif</dd></div>
             </dl>
-            <a href="{{ route('portal.app', $app->slug) }}" class="mt-4 rounded-lg {{ $a['access'] && $a['plan'] !== 'trial' ? 'border border-gray-300 text-gray-700 hover:bg-gray-50' : 'bg-brand-500 text-white hover:bg-brand-600' }} px-4 py-2.5 text-center text-sm font-medium">
-                {{ $a['plan'] === 'none' ? 'Lihat paket' : ($a['plan'] === 'lifetime' ? 'Lihat detail' : ($a['plan'] === 'monthly' ? 'Perpanjang' : 'Berlangganan')) }}</a>
+            <div class="mt-4 flex gap-2">
+                @if ($a['access'])
+                    <a href="{{ $app->toolUrl() }}" @if ($app->toolUrlExternal()) target="_blank" rel="noopener" @endif class="flex-1 rounded-lg bg-brand-500 px-4 py-2.5 text-center text-sm font-medium text-white hover:bg-brand-600">{{ $app->toolUrlExternal() ? 'Buka di Chrome Web Store' : 'Buka ' . $app->name }}</a>
+                @endif
+                <a href="{{ route('portal.app', $app->slug) }}" class="rounded-lg {{ $a['access'] ? 'border border-gray-300 text-gray-700 hover:bg-gray-50' : 'flex-1 bg-brand-500 text-white hover:bg-brand-600' }} px-4 py-2.5 text-center text-sm font-medium">
+                    {{ $a['plan'] === 'none' ? 'Lihat paket' : ($a['plan'] === 'lifetime' ? 'Lihat detail' : ($a['plan'] === 'monthly' ? 'Perpanjang' : 'Berlangganan')) }}</a>
+            </div>
         </div>
     @endforeach
 </div>
